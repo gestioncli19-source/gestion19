@@ -1,140 +1,294 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Gestión de Clientes</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    input, button { padding: 5px; margin: 5px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background-color: #f2f2f2; }
-    tr:hover { background-color: #f9f9f9; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión de Clientes</title>
+<style>
+body {
+  font-family: 'Montserrat', sans-serif;
+  margin:0; padding:20px;
+  transition: background 0.3s, color 0.3s;
+}
+body.dark { background: #0f121d; color: #e0e0e0; }
+body.light { background: #f5f5f5; color: #222; }
+
+/* Botón modo claro/oscuro */
+#btnToggleMode {
+  position:fixed; top:20px; right:20px;
+  padding:8px 12px; border:none; border-radius:8px; cursor:pointer;
+  background:#444; color:#fff; font-weight:600; transition:0.3s;
+}
+body.light #btnToggleMode { background:#ccc; color:#222; }
+#btnToggleMode:hover { opacity:0.8; }
+
+/* Dashboard */
+.dashboard {
+  display:flex; flex-wrap:wrap; gap:15px;
+  justify-content:center;
+  margin:60px 0 25px 0;
+}
+.dash-card {
+  border-radius:12px;
+  padding:12px 15px;
+  min-width:120px;
+  flex:1 1 120px;
+  text-align:center;
+  cursor:pointer;
+  transition:all 0.3s ease-in-out;
+  box-shadow:0 0 10px rgba(0,0,0,0.3);
+}
+.dash-card:hover { transform:translateY(-3px); box-shadow:0 0 15px rgba(0,0,0,0.6); }
+.dash-card h3 { margin:0; font-size:14px; font-weight:600; }
+.dash-card p { margin:5px 0 0 0; font-size:18px; font-weight:700; }
+
+body.dark .dash-card-total { background:rgba(0,180,255,0.15); color:#00b4ff; }
+body.dark .dash-card-vigente { background:rgba(0,200,0,0.15); color:#00c800; }
+body.dark .dash-card-alerta { background:rgba(255,100,100,0.15); color:#ff6464; }
+body.dark .dash-card-caducado { background:rgba(150,150,150,0.15); color:#999; }
+
+body.light .dash-card-total { background:rgba(0,180,255,0.1); color:#0077aa; }
+body.light .dash-card-vigente { background:rgba(0,200,0,0.1); color:#009900; }
+body.light .dash-card-alerta { background:rgba(255,100,100,0.1); color:#aa0000; }
+body.light .dash-card-caducado { background:rgba(150,150,150,0.1); color:#666; }
+
+/* Formulario */
+.form-container, .filter-container {
+  display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:25px;
+}
+input, textarea, button {
+  padding:12px; border-radius:12px; border:1px solid #444; font-size:14px;
+  transition: background 0.3s, color 0.3s;
+}
+body.light input, body.light textarea { background:#fff; color:#222; border:1px solid #ccc; }
+body.dark input, body.dark textarea { background:#1a1f2b; color:#e0e0e0; border:1px solid #444; }
+input, textarea { flex:1 1 200px; }
+textarea { resize:none; }
+button { cursor:pointer; font-weight:600; min-width:130px; border:none; transition:0.3s; }
+button:hover { opacity:0.85; }
+
+.btn-edit { background-color:#2196F3; margin-right:5px; } 
+.btn-delete { background-color:#f44336; margin-right:5px; }
+.btn-renovar { background-color:#FF9800; margin-right:5px; }
+.btn-share { background-color:#9C27B0; margin-top:5px; }
+
+/* Tarjetas clientes */
+.cards-container { display:flex; flex-direction:column; gap:20px; }
+.card {
+  border-radius:18px;
+  padding:20px;
+  transition:all 0.25s ease-in-out;
+  border-left:8px solid #4CAF50;
+  cursor:pointer;
+  box-shadow:0 6px 15px rgba(0,0,0,0.5);
+}
+body.dark .card { background:#1a1f2b; color:#e0e0e0; }
+body.light .card { background:#eaeaea; color:#222; border-left:8px solid #4CAF50; box-shadow:0 4px 10px rgba(0,0,0,0.15); }
+.card:hover { transform:translateY(-3px); box-shadow:0 10px 25px rgba(0,0,0,0.6); }
+.card h3 { margin:0 0 8px 0; font-size:18px; font-weight:700; }
+.card p { margin:4px 0; font-size:14px; }
+.alert-soft { box-shadow:0 0 10px rgba(255,100,100,0.4); border-left:8px solid #ff6464 !important; }
+
+/* Toast */
+#toast { visibility:hidden; min-width:220px; background-color:#333; color:white; text-align:center; border-radius:8px; padding:12px; position:fixed; z-index:300; left:50%; bottom:30px; transform:translateX(-50%); font-size:14px; }
+#toast.show { visibility:visible; animation:fadein 0.5s, fadeout 0.5s 2s; }
+@keyframes fadein { from {bottom:0; opacity:0;} to {bottom:30px; opacity:1;} }
+@keyframes fadeout { from {bottom:30px; opacity:1;} to {bottom:0; opacity:0;} }
+
+@media (min-width:700px){ .cards-container{ flex-direction:row; flex-wrap:wrap; } .card{ width:calc(50% - 15px); } }
+@media (min-width:1100px){ .card{ width:calc(33% - 20px); } }
+</style>
 </head>
-<body>
-  <h1>Gestión de Clientes</h1>
+<body class="dark">
 
-  <h2>Agregar Cliente</h2>
-  <div>
-    <input id="nombre" placeholder="Nombre">
-    <input id="precio" placeholder="Precio">
-    <input id="fecha_contratacion" type="date" placeholder="Fecha Contratación">
-    <input id="caducidad" type="date" placeholder="Caducidad">
-    <input id="usuario" placeholder="Usuario">
-    <input id="contrasena" placeholder="Contraseña">
-    <input id="recomendaciones" placeholder="Recomendaciones">
-    <button onclick="agregarCliente()">Agregar</button>
-  </div>
+<button id="btnToggleMode">Modo Claro</button>
 
-  <h2>Lista de Clientes</h2>
-  <table id="tabla-clientes">
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Precio</th>
-        <th>Fecha Contratación</th>
-        <th>Caducidad</th>
-        <th>Usuario</th>
-        <th>Contraseña</th>
-        <th>Recomendaciones</th>
-        <th>Acción</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Filas se agregan aquí -->
-    </tbody>
-  </table>
+<div class="dashboard" id="dashboard"></div>
 
-  <script>
-    // ==============================
-    // CONFIGURACIÓN DE SUPABASE
-    // ==============================
-    const supabaseUrl = 'https://xqxkcijmsdnjmuhyzvsj.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxeGtjaWptc2Ruam11aHl6dnNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNDUxNzgsImV4cCI6MjA3ODYyMTE3OH0.flvMDAfepvWMp88IU37bGoawhsE52c2GF-I1IKKdzQA';
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+<div class="form-container">
+  <input type="text" id="nombre" placeholder="Nombre de cliente">
+  <input type="text" id="precio" placeholder="Precio" oninput="agregarEuro(this)">
+  <input type="date" id="caducidad" placeholder="Caducidad">
+  <input type="text" id="usuario" placeholder="Usuario">
+  <input type="text" id="contrasena" placeholder="Contraseña">
+  <textarea id="recomendaciones" placeholder="Recomendaciones"></textarea>
+  <button id="btnAgregar" onclick="guardarRegistro()">Agregar Cliente</button>
+</div>
 
-    // ==============================
-    // FUNCIONES
-    // ==============================
-    async function cargarClientes() {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('*')
-        .order('fecha_creacion', { ascending: false });
+<div class="filter-container">
+  <input type="text" id="filtro" placeholder="Filtrar por nombre o usuario" oninput="filtrar()">
+</div>
 
-      if (error) { 
-        console.error('Error cargando clientes:', error.message);
-        alert('Error cargando clientes: ' + error.message); 
-        return; 
-      }
+<div class="cards-container" id="cardsContainer"></div>
 
-      const tbody = document.getElementById('tabla-clientes').querySelector('tbody');
-      tbody.innerHTML = '';
+<div id="toast"></div>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
-      data.forEach(c => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${c.nombre || ''}</td>
-          <td>${c.precio || ''}</td>
-          <td>${c.fecha_contratacion || ''}</td>
-          <td>${c.caducidad || ''}</td>
-          <td>${c.usuario || ''}</td>
-          <td>${c.contrasena || ''}</td>
-          <td>${c.recomendaciones || ''}</td>
-          <td><button onclick="eliminarCliente('${c.id}')">Eliminar</button></td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
+<script>
+  // Inicializar Firebase
+  const firebaseConfig = {
+    apiKey: "TU_API_KEY",
+    authDomain: "tu-proyecto.firebaseapp.com",
+    projectId: "tu-proyecto",
+    storageBucket: "tu-proyecto.appspot.com",
+    messagingSenderId: "XXXXXX",
+    appId: "XXXXXX"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const auth = firebase.auth();
+</script>
+<script>
+let registros = JSON.parse(localStorage.getItem('registros')) || [];
+let editIndex = null;
+let filtroDashboard = 'total';
+const btnAgregar = document.getElementById('btnAgregar');
+const toastEl = document.getElementById('toast');
+const btnToggleMode = document.getElementById('btnToggleMode');
 
-    async function agregarCliente() {
-      const cliente = {
-        nombre: document.getElementById('nombre').value,
-        precio: document.getElementById('precio').value,
-        fecha_contratacion: document.getElementById('fecha_contratacion').value,
-        caducidad: document.getElementById('caducidad').value,
-        usuario: document.getElementById('usuario').value,
-        contrasena: document.getElementById('contrasena').value,
-        recomendaciones: document.getElementById('recomendaciones').value
-      };
+function guardarLocal(){ localStorage.setItem('registros', JSON.stringify(registros)); }
+function mostrarToast(msg){ toastEl.textContent=msg; toastEl.className="show"; setTimeout(()=>{toastEl.className=toastEl.className.replace("show","");},2500); }
+function agregarEuro(input){ let valor = input.value.replace(/[^\d.,]/g,''); if(valor) input.value = valor + ' €'; else input.value = ''; }
 
-      if (!cliente.nombre) { alert('El nombre es obligatorio'); return; }
+btnToggleMode.addEventListener('click', ()=>{
+  if(document.body.classList.contains('dark')){
+    document.body.classList.replace('dark','light');
+    btnToggleMode.textContent='Modo Oscuro';
+  } else {
+    document.body.classList.replace('light','dark');
+    btnToggleMode.textContent='Modo Claro';
+  }
+});
 
-      const { data, error } = await supabase.from('clientes').insert([cliente]);
+function guardarRegistro(){
+  const nombre=document.getElementById('nombre').value.trim();
+  const precio=document.getElementById('precio').value.trim();
+  const caducidad=document.getElementById('caducidad').value;
+  const usuario=document.getElementById('usuario').value.trim();
+  const contrasena=document.getElementById('contrasena').value.trim();
+  const recomendaciones=document.getElementById('recomendaciones').value.trim();
+  if(!nombre||!usuario){ alert('Nombre y usuario son obligatorios'); return; }
+  const historial=editIndex!==null?registros[editIndex].historial||[]:[];
+  const registro={nombre, precio, caducidad: caducidad||new Date().toISOString().split('T')[0], usuario, contrasena, recomendaciones, historial};
+  if(editIndex!==null){ registros[editIndex]=registro; editIndex=null; btnAgregar.textContent='Agregar Cliente'; mostrarToast('Cliente actualizado'); }
+  else{ registros.push(registro); mostrarToast('Cliente agregado'); }
+  guardarLocal(); mostrarRegistros(); limpiarFormulario();
+}
 
-      if (error) {
-        console.error('Error agregando cliente:', error.message);
-        alert('Error agregando cliente: ' + error.message);
-      } else {
-        // Limpiar campos
-        document.getElementById('nombre').value = '';
-        document.getElementById('precio').value = '';
-        document.getElementById('fecha_contratacion').value = '';
-        document.getElementById('caducidad').value = '';
-        document.getElementById('usuario').value = '';
-        document.getElementById('contrasena').value = '';
-        document.getElementById('recomendaciones').value = '';
+function limpiarFormulario(){ document.getElementById('nombre').value=''; document.getElementById('precio').value=''; document.getElementById('caducidad').value=''; document.getElementById('usuario').value=''; document.getElementById('contrasena').value=''; document.getElementById('recomendaciones').value=''; }
 
-        cargarClientes(); // Actualizar tabla
-      }
-    }
+function actualizarDashboard(){
+  const dash=document.getElementById('dashboard'); dash.innerHTML='';
+  const hoy=new Date();
+  const total=registros.length;
+  const vigentes=registros.filter(r=>new Date(r.caducidad)>=hoy).length;
+  const proximos=registros.filter(r=>{ const diff=Math.ceil((new Date(r.caducidad)-hoy)/(1000*60*60*24)); return diff>0&&diff<=7; }).length;
+  const caducados=registros.filter(r=>new Date(r.caducidad)<hoy).length;
+  const alerta=proximos+caducados;
+  const items=[
+    {titulo:'Total', valor:total, filtro:'total'},
+    {titulo:'Vigentes', valor:vigentes, filtro:'vigente'},
+    {titulo:'Alerta', valor:alerta, filtro:'alerta'},
+    {titulo:'Caducados', valor:caducados, filtro:'caducado'}
+  ];
+  items.forEach(i=>{
+    const div=document.createElement('div'); div.className='dash-card';
+    if(i.filtro==='total') div.classList.add('dash-card-total');
+    else if(i.filtro==='vigente') div.classList.add('dash-card-vigente');
+    else if(i.filtro==='alerta') div.classList.add('dash-card-alerta');
+    else if(i.filtro==='caducado') div.classList.add('dash-card-caducado');
+    div.innerHTML=`<h3>${i.titulo}</h3><p>${i.valor}</p>`;
+    div.onclick=()=>{ filtroDashboard=i.filtro; mostrarRegistros(); };
+    dash.appendChild(div);
+  });
+}
 
-    async function eliminarCliente(id) {
-      const { error } = await supabase.from('clientes').delete().eq('id', id);
-      if (error) { 
-        console.error('Error eliminando cliente:', error.message);
-        alert('Error eliminando cliente: ' + error.message); 
-      } else {
-        cargarClientes();
-      }
-    }
+function mostrarRegistros(filtro=''){
+  actualizarDashboard();
+  const container=document.getElementById('cardsContainer'); container.innerHTML='';
+  const hoy=new Date();
+  let listaFinal=[];
+  if(filtroDashboard==='total'){ listaFinal=registros; }
+  else if(filtroDashboard==='vigente'){ listaFinal=registros.filter(r=>new Date(r.caducidad)>=hoy); }
+  else if(filtroDashboard==='alerta'){ listaFinal=registros.filter(r=>{ const diff=Math.ceil((new Date(r.caducidad)-hoy)/(1000*60*60*24)); return diff<7; }); }
+  else if(filtroDashboard==='caducado'){ listaFinal=registros.filter(r=>new Date(r.caducidad)<hoy); }
 
-    // ==============================
-    // CARGAR CLIENTES AL INICIO
-    // ==============================
-    cargarClientes();
-  </script>
+  listaFinal = listaFinal.filter(r=> r.nombre.toLowerCase().includes(filtro.toLowerCase()) || r.usuario.toLowerCase().includes(filtro.toLowerCase()));
+  listaFinal.sort((a,b)=> new Date(a.caducidad)-new Date(b.caducidad));
+
+  listaFinal.forEach((r,index)=>{
+    const card=document.createElement('div'); card.className='card';
+    const fechaCad=new Date(r.caducidad);
+    let diffDias=Math.ceil((fechaCad-hoy)/(1000*60*60*24));
+    if(fechaCad<hoy){ card.style.borderLeftColor='#999'; card.style.opacity=0.7; }
+    else if(diffDias<=7){ card.classList.add('alert-soft'); }
+    else if(diffDias<=30) card.style.borderLeftColor='#FF9800';
+
+    card.innerHTML = `
+      <h3>${r.nombre}</h3>
+      <p>Caducidad: ${r.caducidad} (${diffDias>=0?diffDias:0} días)</p>
+      <button class="btn-edit" onclick="editarRegistroDirecto(${index})">Editar</button>
+      <button class="btn-renovar" onclick="renovarCaducidad(${index})">Renovar 90 días</button>
+      <button class="btn-share" onclick="compartirCliente(${index})">Copiar datos</button>
+      <button class="btn-delete" onclick="eliminarRegistro(${index})">Eliminar</button>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function editarRegistroDirecto(index){
+  const r = registros[index];
+  document.getElementById('nombre').value = r.nombre;
+  document.getElementById('precio').value = r.precio;
+  document.getElementById('caducidad').value = r.caducidad;
+  document.getElementById('usuario').value = r.usuario;
+  document.getElementById('contrasena').value = r.contrasena;
+  document.getElementById('recomendaciones').value = r.recomendaciones;
+  editIndex = index;
+  btnAgregar.textContent = 'Guardar Cambios';
+}
+
+function renovarCaducidad(index){
+  let fecha=new Date(registros[index].caducidad); if(isNaN(fecha.getTime())) fecha=new Date();
+  fecha.setDate(fecha.getDate()+90);
+  registros[index].caducidad=fecha.toISOString().split('T')[0];
+  registros[index].historial=registros[index].historial||[];
+  registros[index].historial.push(`Renovado ${new Date().toLocaleDateString()}`);
+  guardarLocal(); mostrarRegistros(); mostrarToast('Caducidad renovada 90 días');
+}
+
+function compartirCliente(index){
+  const c = registros[index];
+  const texto = 
+`🧾 Cliente: ${c.nombre}
+💶 Precio: ${c.precio}
+📅 Caducidad: ${c.caducidad}
+👤 Usuario: ${c.usuario}
+🔑 Contraseña: ${c.contrasena}
+💬 Recomendaciones: ${c.recomendaciones || 'Sin recomendaciones'}`;
+
+  navigator.clipboard.writeText(texto).then(() => {
+    mostrarToast('Datos del cliente copiados al portapapeles');
+  }).catch(() => {
+    alert('No se pudo copiar los datos automáticamente');
+  });
+}
+
+function eliminarRegistro(index){
+  if(confirm(`¿Seguro que deseas eliminar al cliente "${registros[index].nombre}"?`)){
+    registros.splice(index,1);
+    guardarLocal();
+    mostrarRegistros();
+    mostrarToast('Cliente eliminado');
+  }
+}
+
+function filtrar(){ mostrarRegistros(document.getElementById('filtro').value); }
+
+window.addEventListener('load', () => { mostrarRegistros(); });
+</script>
 </body>
 </html>
