@@ -1,4 +1,4 @@
-const API_URL = "https://TU-APP-EN-RENDER.onrender.com/api/clientes"; // Cambia esto luego
+const API_URL = "https://gestion19.onrender.com // Cambia esto luego
 
 const form = document.getElementById("form");
 const contenedor = document.getElementById("clientes-container");
