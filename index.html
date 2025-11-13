@@ -1,16 +1,33 @@
-<!DOCTYPE html><html lang="es">
+<!doctype html>
+<html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gestión Candy — Panel (Login)</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-yH8fQGk9+5j6qj3kzv7KQ5o8zS9G5tR5m1XxZqFqz6Zl3q9s3g6k5zQv9h2Y6rF6Q/3k6a5Z1R8k3a5Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <style>
-    :root{ --bg:#0f1216; --panel:#11141a; --muted:#9aa4ad; --accent:#00b4ff; --accent2:#0077aa; --success:#23c552; --danger:#ff6b6b }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Montserrat,system-ui,Arial;background:var(--bg);color:#e9f0f7}
-    .app{display:flex;min-height:100vh}/* SIDEBAR */
-.sidebar{width:260px;background:linear-gradient(180deg,var(--panel),#0b0d11);padding:26px;box-shadow:4px 0 30px rgba(0,0,0,0.6);position:fixed;left:0;top:0;bottom:0;transform:translateX(-300px);transition:transform .45s cubic-bezier(.2,.9,.2,1);z-index:220}
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Gestión Candy — Panel</title>
+
+<!-- Tipografía e iconos -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<style>
+:root{
+  --bg:#0f1216; --panel:#111318; --muted:#9aa4ad;
+  --accent:#00b4ff; --accent2:#0077aa; --success:#23c552; --danger:#ff6b6b;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;font-family:Montserrat,system-ui,Arial;background:var(--bg);color:#e9f0f7;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+}
+
+/* Layout */
+.app{display:flex;min-height:100vh;overflow-x:hidden}
+.sidebar{
+  width:260px;background:linear-gradient(180deg,var(--panel),#0b0d11);padding:26px;
+  box-shadow:4px 0 30px rgba(0,0,0,0.6);position:fixed;left:0;top:0;bottom:0;
+  transform:translateX(-320px);transition:transform .45s cubic-bezier(.2,.9,.2,1);z-index:220;
+}
 .sidebar.open{transform:translateX(0)}
 .brand{display:flex;gap:12px;align-items:center;margin-bottom:18px}
 .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800}
@@ -18,23 +35,22 @@
 .nav a{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;text-decoration:none;color:#cfe6ff;font-weight:700}
 .nav a.active,.nav a:hover{background:rgba(255,255,255,0.03);color:#fff}
 
-/* MENU BUTTON */
+/* menu button */
 .menu-btn{position:fixed;left:16px;top:16px;background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;color:#fff;padding:10px 12px;border-radius:10px;cursor:pointer;z-index:240}
 
-/* MAIN CONTENT */
+/* Main */
 main{flex:1;margin-left:20px;padding:30px 36px}
 header{display:flex;justify-content:space-between;align-items:center;gap:12px}
-header .right{display:flex;gap:12px;align-items:center}
 .icon-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:10px;color:inherit;cursor:pointer}
 
-/* DASHBOARD boxes */
+/* Dashboard */
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px;margin-top:18px}
 .box{background:linear-gradient(145deg,#121417,#181a1f);padding:18px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,0.55);transition:transform .2s}
 .box:hover{transform:translateY(-6px)}
 .num{font-size:28px;font-weight:800;color:var(--accent)}
 .label{font-size:13px;color:var(--muted);margin-top:8px}
 
-/* CARD LIST */
+/* Card list */
 .card-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-top:22px}
 .card{background:linear-gradient(180deg,#0f1418,#15181c);border-radius:14px;padding:16px;box-shadow:0 10px 25px rgba(0,0,0,0.6);transition:transform .18s}
 .card:hover{transform:translateY(-6px)}
@@ -60,7 +76,7 @@ header .right{display:flex;gap:12px;align-items:center}
 .copy{background:linear-gradient(90deg,#9b6bff,#7c3aed);color:#fff}
 .del{background:linear-gradient(90deg,#ff7b7b,#ff3b3b);color:#fff}
 
-/* FORM */
+/* Panels & form */
 .panel{background:linear-gradient(180deg,#0f1316,#13161a);padding:16px;border-radius:12px;margin-top:18px}
 .row{display:flex;gap:12px}
 .field{flex:1;display:flex;flex-direction:column}
@@ -68,222 +84,436 @@ input,textarea,select{padding:10px;border-radius:10px;border:none;background:#16
 textarea{min-height:80px}
 .form-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:10px}
 
-/* PAGINACION */
+/* pagination */
 .pagination{display:flex;gap:8px;justify-content:center;margin-top:18px}
 .page-btn{padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:inherit;cursor:pointer}
 .page-btn.active{background:var(--accent);color:#fff}
 
-/* LOGIN SCREEN */
+/* login screen (modal-like) */
 #loginScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(0,0,0,0.5),rgba(0,0,0,0.6));z-index:500}
 .login-card{background:#0f1418;padding:28px;border-radius:12px;min-width:320px;box-shadow:0 20px 60px rgba(0,0,0,0.7)}
-.login-card h2{margin:0 0 8px 0}
+.login-card h2{margin:0 0 12px 0}
 .login-card input{width:100%;padding:12px;border-radius:10px;border:none;margin-top:10px;background:#15181b;color:#fff}
 .login-card button{width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;font-weight:800;margin-top:12px;cursor:pointer}
 
+/* toast */
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;padding:10px 14px;border-radius:10px;background:#222;color:#fff;display:none}
+
+/* responsive */
 @media (max-width:900px){
-  .sidebar{position:fixed}
+  .sidebar{width:220px}
   .menu-btn{left:10px}
   main{padding:18px}
   .avatar{width:44px;height:44px}
 }
-
-  </style>
+</style>
 </head>
-<body>  <!-- MENU BTN --><button class="menu-btn" id="menuBtn" title="Menú"><i class="fa-solid fa-bars"></i></button>
+<body>
 
-  <!-- SIDEBAR -->  <aside class="sidebar" id="sidebar">
-    <div class="brand">
-      <div class="logo">GC</div>
-      <div>
-        <div style="font-weight:800">Gestión Candy</div>
-        <div style="font-size:12px;color:var(--muted)">Admin Panel</div>
-      </div>
+<button class="menu-btn" id="menuBtn" title="Menú"><i class="fa-solid fa-bars"></i></button>
+
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo">GC</div>
+    <div>
+      <div style="font-weight:800">Gestión Candy</div>
+      <div style="font-size:12px;color:var(--muted)">Admin Panel</div>
     </div>
-    <nav class="nav">
-      <a href="#" data-view="dashboard" class="active"><i class="fa-solid fa-chart-simple"></i> Dashboard</a>
-      <a href="#" data-view="clientes"><i class="fa-solid fa-users"></i> Clientes</a>
-      <a href="#" data-view="nuevo"><i class="fa-solid fa-plus"></i> Añadir cliente</a>
-      <a href="#" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</a>
-    </nav>
-  </aside>  <main>
-    <header>
-      <div>
-        <h1 style="margin:0">Panel — Gestión Candy</h1>
-        <div style="color:var(--muted);font-size:13px">Control de clientes y caducidades</div>
-      </div>
-      <div class="right">
-        <button id="refreshBtn" class="icon-btn" title="Refrescar"><i class="fa-solid fa-arrows-rotate"></i></button>
-      </div>
-    </header><!-- VIEWS -->
-<section id="view-dashboard" class="view">
-  <div class="grid">
-    <div class="box"><div class="num" id="totalCount">0</div><div class="label">Total clientes</div></div>
-    <div class="box"><div class="num" id="vigentesCount">0</div><div class="label">Vigentes</div></div>
-    <div class="box"><div class="num" id="alertCount">0</div><div class="label">En alerta</div></div>
-    <div class="box"><div class="num" id="expCount">0</div><div class="label">Caducados</div></div>
   </div>
 
-  <div id="overview" class="card-list"></div>
-</section>
+  <nav class="nav">
+    <a href="#" data-view="dashboard" class="active"><i class="fa-solid fa-chart-simple"></i> Dashboard</a>
+    <a href="#" data-view="clientes"><i class="fa-solid fa-users"></i> Clientes</a>
+    <a href="#" data-view="nuevo"><i class="fa-solid fa-plus"></i> Añadir cliente</a>
+    <a href="#" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</a>
+  </nav>
+</aside>
 
-<section id="view-clientes" class="view" style="display:none">
-  <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
-    <input id="search" placeholder="Buscar por nombre o usuario" style="flex:1;padding:12px;border-radius:10px;border:none;background:#15181b;color:#fff" />
-    <button id="exportBtn" class="btn" style="background:#222;color:#fff">Exportar CSV</button>
+<main>
+  <header>
+    <div>
+      <h1 style="margin:0">Panel — Gestión Candy</h1>
+      <div style="color:var(--muted);font-size:13px">Control de clientes y caducidades</div>
+    </div>
+    <div class="right">
+      <button id="refreshBtn" class="icon-btn" title="Refrescar"><i class="fa-solid fa-arrows-rotate"></i></button>
+    </div>
+  </header>
+
+  <!-- Views -->
+  <section id="view-dashboard" class="view">
+    <div class="grid">
+      <div class="box"><div class="num" id="totalCount">0</div><div class="label">Total clientes</div></div>
+      <div class="box"><div class="num" id="vigentesCount">0</div><div class="label">Vigentes</div></div>
+      <div class="box"><div class="num" id="alertCount">0</div><div class="label">En alerta (7 días)</div></div>
+      <div class="box"><div class="num" id="expCount">0</div><div class="label">Caducados</div></div>
+    </div>
+
+    <div id="overview" class="card-list"></div>
+  </section>
+
+  <section id="view-clientes" class="view" style="display:none">
+    <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
+      <input id="search" placeholder="Buscar por nombre o usuario" style="flex:1;padding:12px;border-radius:10px;border:none;background:#15181b;color:#fff" />
+      <button id="exportBtn" class="btn" style="background:#222;color:#fff">Exportar CSV</button>
+    </div>
+    <div id="clientsList" class="card-list"></div>
+    <div id="pagination" class="pagination"></div>
+  </section>
+
+  <section id="view-nuevo" class="view" style="display:none">
+    <div class="panel">
+      <div class="row">
+        <div class="field">
+          <label>Nombre</label>
+          <input id="n_nombre" placeholder="Nombre completo" />
+        </div>
+        <div class="field">
+          <label>Precio</label>
+          <input id="n_precio" placeholder="12,50 €" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <div class="field">
+          <label>Caducidad</label>
+          <input id="n_caducidad" type="date" />
+        </div>
+        <div class="field">
+          <label>Usuario</label>
+          <input id="n_usuario" placeholder="usuario" />
+        </div>
+      </div>
+
+      <div style="margin-top:10px">
+        <label>Contraseña</label>
+        <input id="n_contrasena" placeholder="contraseña" />
+      </div>
+
+      <div style="margin-top:10px">
+        <label>Recomendaciones</label>
+        <textarea id="n_recomendaciones" placeholder="Notas"></textarea>
+      </div>
+
+      <div class="form-footer">
+        <button class="btn edit" id="saveBtn">Guardar</button>
+        <button class="btn" id="clearBtn">Limpiar</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Login Modal -->
+<div id="loginScreen">
+  <div class="login-card">
+    <h2>Inicia sesión</h2>
+    <input id="email" placeholder="Correo electrónico" />
+    <input id="password" type="password" placeholder="Contraseña" />
+    <button id="btnLogin">Entrar</button>
   </div>
-  <div id="clientsList" class="card-list"></div>
-  <div id="pagination" class="pagination"></div>
-</section>
+</div>
 
-<section id="view-nuevo" class="view" style="display:none">
-  <div class="panel">
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      <div class="field"><label>Nombre</label><input id="n_nombre" /></div>
-      <div class="field"><label>Precio</label><input id="n_precio" placeholder="12,50 €" /></div>
-    </div>
-    <div style="display:flex;gap:12px;margin-top:10px">
-      <div class="field"><label>Caducidad</label><input id="n_caducidad" type="date" /></div>
-      <div class="field"><label>Usuario</label><input id="n_usuario" /></div>
-    </div>
-    <div style="margin-top:10px">
-      <label>Contraseña</label>
-      <input id="n_contrasena" />
-    </div>
-    <div style="margin-top:10px">
-      <label>Recomendaciones</label>
-      <textarea id="n_recomendaciones"></textarea>
-    </div>
-    <div class="form-footer"><button class="btn edit" onclick="saveNew()">Guardar</button><button class="btn" onclick="clearNew()">Limpiar</button></div>
-  </div>
-</section>
+<div id="toast"></div>
 
-  </main>  <!-- LOGIN SCREEN -->  <div id="loginScreen">
-    <div class="login-card" style="display:none">
-      <h2>Inicia sesión</h2>
-      <input id="email" placeholder="Correo electrónico" />
-      <input id="password" type="password" placeholder="Contraseña" />
-      <button id="btnLogin">Entrar</button>
-    </div>
-  </div>  <!-- TOAST -->  <div id="toast" style="position:fixed;left:50%;transform:translateX(-50%);bottom:24px;padding:10px 14px;border-radius:10px;background:#222;color:#fff;display:none"></div>  <!-- FIREBASE (modular) -->  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+<!-- Firebase modular (v10) + App script -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
-      authDomain: "gestioncandy-b9356.firebaseapp.com",
-      projectId: "gestioncandy-b9356",
-      storageBucket: "gestioncandy-b9356.firebasestorage.app",
-      messagingSenderId: "869982852654",
-      appId: "1:869982852654:web:ac450321a746e62365f1bf"
-    };
+  // --- CONFIG (tu config real) ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
+    authDomain: "gestioncandy-b9356.firebaseapp.com",
+    projectId: "gestioncandy-b9356",
+    storageBucket: "gestioncandy-b9356.firebasestorage.app",
+    messagingSenderId: "869982852654",
+    appId: "1:869982852654:web:ac450321a746e62365f1bf"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-    // UI elems
-    const sidebar = document.getElementById('sidebar');
-    const menuBtn = document.getElementById('menuBtn');
-    const links = document.querySelectorAll('.nav a');
-    const views = document.querySelectorAll('.view');
-    const loginScreen = document.getElementById('loginScreen');
-    const loginCard = document.querySelector('.login-card');
-    const btnLogin = document.getElementById('btnLogin');
-    const emailInput = document.getElementById('email');
-    const passInput = document.getElementById('password');
-    const toast = document.getElementById('toast');
+  // UI elems
+  const sidebar = document.getElementById('sidebar');
+  const menuBtn = document.getElementById('menuBtn');
+  const links = document.querySelectorAll('.nav a');
+  const views = document.querySelectorAll('.view');
+  const loginScreen = document.getElementById('loginScreen');
+  const loginCard = document.querySelector('.login-card');
+  const btnLogin = document.getElementById('btnLogin');
+  const emailInput = document.getElementById('email');
+  const passInput = document.getElementById('password');
+  const toast = document.getElementById('toast');
 
-    // state
-    let clients = []; // live data
-    let currentPage = 1; const perPage = 6;
-    let editingId = null;
+  // state
+  let clients = []; // loaded from Firestore
+  let currentPage = 1; const perPage = 6;
+  let editingId = null;
 
-    function showToast(msg, t=2500){ toast.textContent = msg; toast.style.display='block'; setTimeout(()=>toast.style.display='none',t); }
+  function showToast(msg, t=2500){
+    toast.textContent = msg; toast.style.display='block';
+    setTimeout(()=>toast.style.display='none', t);
+  }
 
-    // menu actions
-    menuBtn.addEventListener('click', ()=>{ sidebar.classList.toggle('open'); menuBtn.animate([{transform:'scale(1)'},{transform:'scale(.96)'},{transform:'scale(1)'}],{duration:260}); });
+  // Toggle sidebar
+  menuBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    menuBtn.animate([{transform:'scale(1)'},{transform:'scale(.96)'},{transform:'scale(1)'}],{duration:260});
+  });
 
-    links.forEach(a=>a.addEventListener('click',(e)=>{ e.preventDefault(); links.forEach(x=>x.classList.remove('active')); a.classList.add('active'); const view=document.getElementById('view-'+a.dataset.view); views.forEach(v=>v.style.display='none'); view.style.display='block'; if(window.innerWidth<900) sidebar.classList.remove('open'); }));
+  // SPA nav
+  links.forEach(a=>a.addEventListener('click', (e) => {
+    e.preventDefault();
+    links.forEach(x=>x.classList.remove('active'));
+    a.classList.add('active');
+    const view = document.getElementById('view-'+a.dataset.view);
+    views.forEach(v=>v.style.display='none');
+    view.style.display='block';
+    if(window.innerWidth < 900) sidebar.classList.remove('open');
+  }));
 
-    // AUTH
-    btnLogin.addEventListener('click', ()=>{ const email=emailInput.value.trim(); const pass=passInput.value.trim(); if(!email||!pass){ showToast('Introduce email y contraseña'); return } signInWithEmailAndPassword(auth,email,pass).then(()=>{ loginCard.style.display='none'; loginScreen.style.display='none'; initApp(); }).catch(e=>{ showToast('Error login: '+e.message); }); });
+  // AUTH: login button
+  btnLogin.addEventListener('click', async () => {
+    const email = emailInput.value.trim();
+    const pass = passInput.value.trim();
+    if(!email || !pass){ showToast('Introduce email y contraseña'); return; }
+    try{
+      await signInWithEmailAndPassword(auth, email, pass);
+      // onAuthStateChanged handles UI
+    } catch(e){
+      showToast('Error: ' + (e.message || e.code));
+    }
+  });
 
-    document.getElementById('logoutBtn').addEventListener('click', async ()=>{ await signOut(auth); location.reload(); });
+  // logout
+  document.getElementById('logoutBtn').addEventListener('click', async (e) => {
+    e.preventDefault();
+    await signOut(auth);
+    location.reload();
+  });
 
-    onAuthStateChanged(auth,user=>{ if(user){ loginScreen.style.display='none'; initApp(); } else { loginScreen.style.display='flex'; loginCard.style.display='block'; } });
+  // monitor auth state
+  onAuthStateChanged(auth, user => {
+    if(user){
+      // hide login, init app
+      loginScreen.style.display = 'none';
+      initApp();
+    } else {
+      // show login
+      loginScreen.style.display = 'flex';
+      loginCard.style.display = 'block';
+      // hide main views until login
+      views.forEach(v=>v.style.display='none');
+    }
+  });
 
-    // CRUD
-    async function cargarClientes(){
-      const q = query(collection(db,'clientes'), orderBy('nombre'));
-      const snap = await getDocs(q);
-      clients = [];
-      snap.forEach(d=>clients.push({id:d.id,...d.data()}));
-      // if no clients, add one de prueba
-      if(clients.length===0){
-        const demo = { nombre:'Cliente de prueba', precio:'0 €', caducidad:new Date().toISOString().split('T')[0], usuario:'prueba', contrasena:'prueba', recomendaciones:'Cliente creado para pruebas', historial:[] };
-        const ref = await addDoc(collection(db,'clientes'), demo);
-        clients.push({id:ref.id,...demo});
-      }
-      renderDashboard(); renderClients(1,document.getElementById('search').value||'');
+  // -------- Firestore CRUD --------
+  async function cargarClientes(){
+    const q = query(collection(db,'clientes'), orderBy('nombre'));
+    const snap = await getDocs(q);
+    clients = [];
+    snap.forEach(d => clients.push({ id: d.id, ...d.data() }));
+    // if empty, create single demo client (only one)
+    if(clients.length === 0){
+      const demo = {
+        nombre: 'Cliente de prueba',
+        precio: '0 €',
+        caducidad: new Date().toISOString().split('T')[0],
+        usuario: 'prueba',
+        contrasena: 'prueba',
+        recomendaciones: 'Cliente creado para pruebas',
+        historial: []
+      };
+      const ref = await addDoc(collection(db,'clientes'), demo);
+      clients.push({ id: ref.id, ...demo });
+    }
+    renderDashboard();
+    renderClients(1, document.getElementById('search').value || '');
+  }
+
+  async function saveNew(){
+    const nombre = document.getElementById('n_nombre').value.trim();
+    const precio = document.getElementById('n_precio').value.trim();
+    const caducidad = document.getElementById('n_caducidad').value || new Date().toISOString().split('T')[0];
+    const usuario = document.getElementById('n_usuario').value.trim();
+    const contrasena = document.getElementById('n_contrasena').value.trim();
+    const recomendaciones = document.getElementById('n_recomendaciones').value.trim();
+    if(!nombre || !usuario){ showToast('Nombre y usuario obligatorios'); return; }
+
+    if(editingId){
+      const ref = doc(db,'clientes',editingId);
+      await updateDoc(ref, { nombre, precio, caducidad, usuario, contrasena, recomendaciones });
+      showToast('Cliente actualizado');
+      editingId = null;
+      clearNew();
+      await cargarClientes();
+      // go to clients view
+      document.querySelector('.nav a[data-view="clientes"]').click();
+      return;
     }
 
-    async function saveNew(){
-      const nombre = document.getElementById('n_nombre').value.trim();
-      const precio = document.getElementById('n_precio').value.trim();
-      const caducidad = document.getElementById('n_caducidad').value || new Date().toISOString().split('T')[0];
-      const usuario = document.getElementById('n_usuario').value.trim();
-      const contrasena = document.getElementById('n_contrasena').value.trim();
-      const recomendaciones = document.getElementById('n_recomendaciones').value.trim();
-      if(!nombre||!usuario){ showToast('Nombre y usuario obligatorios'); return }
-      if(editingId){
-        const r = doc(db,'clientes',editingId);
-        await updateDoc(r,{ nombre, precio, caducidad, usuario, contrasena, recomendaciones });
-        showToast('Cliente actualizado'); editingId=null; document.querySelector('.nav a[data-view="clientes"]').click(); await cargarClientes(); return;
-      }
-      await addDoc(collection(db,'clientes'),{ nombre, precio, caducidad, usuario, contrasena, recomendaciones, historial:[] });
-      showToast('Cliente guardado'); clearNew(); await cargarClientes(); document.querySelector('.nav a[data-view="clientes"]').click();
+    await addDoc(collection(db,'clientes'), { nombre, precio, caducidad, usuario, contrasena, recomendaciones, historial: [] });
+    showToast('Cliente guardado');
+    clearNew();
+    await cargarClientes();
+    document.querySelector('.nav a[data-view="clientes"]').click();
+  }
+
+  function clearNew(){
+    ['n_nombre','n_precio','n_caducidad','n_usuario','n_contrasena','n_recomendaciones'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    editingId = null;
+  }
+
+  async function editarCliente(id){
+    const d = clients.find(c => c.id === id);
+    if(!d) return;
+    document.getElementById('n_nombre').value = d.nombre || '';
+    document.getElementById('n_precio').value = d.precio || '';
+    document.getElementById('n_caducidad').value = d.caducidad || '';
+    document.getElementById('n_usuario').value = d.usuario || '';
+    document.getElementById('n_contrasena').value = d.contrasena || '';
+    document.getElementById('n_recomendaciones').value = d.recomendaciones || '';
+    editingId = id;
+    document.querySelector('.nav a[data-view="nuevo"]').click();
+  }
+
+  async function eliminarCliente(id){
+    if(!confirm('¿Eliminar cliente?')) return;
+    await deleteDoc(doc(db,'clientes',id));
+    showToast('Cliente eliminado');
+    await cargarClientes();
+  }
+
+  async function renovar90(id){
+    const c = clients.find(x => x.id === id);
+    if(!c) return;
+    let fecha = new Date(c.caducidad);
+    if(isNaN(fecha)) fecha = new Date();
+    fecha.setDate(fecha.getDate() + 90);
+    const historial = c.historial || [];
+    historial.push('Renovado ' + new Date().toLocaleDateString());
+    await updateDoc(doc(db,'clientes',id), { caducidad: fecha.toISOString().split('T')[0], historial });
+    showToast('Caducidad renovada 90 días');
+    await cargarClientes();
+  }
+
+  function copiarCliente(id){
+    const c = clients.find(x => x.id === id);
+    if(!c) return;
+    const txt = `Cliente: ${c.nombre}\nPrecio: ${c.precio}\nCaducidad: ${c.caducidad}\nUsuario: ${c.usuario}\nContraseña: ${c.contrasena}\nRecomendaciones: ${c.recomendaciones||'-'}`;
+    navigator.clipboard.writeText(txt).then(()=>showToast('Copiado al portapapeles'));
+  }
+
+  // -------- Rendering --------
+  function renderDashboard(){
+    const total = clients.length;
+    const hoy = new Date();
+    const vigentes = clients.filter(c => new Date(c.caducidad) >= hoy).length;
+    const proximos = clients.filter(c => { const diff = Math.ceil((new Date(c.caducidad) - hoy)/(1000*60*60*24)); return diff>0 && diff<=7; }).length;
+    const cad = clients.filter(c => new Date(c.caducidad) < hoy).length;
+
+    document.getElementById('totalCount').textContent = total;
+    document.getElementById('vigentesCount').textContent = vigentes;
+    document.getElementById('alertCount').textContent = proximos;
+    document.getElementById('expCount').textContent = cad;
+
+    const ov = document.getElementById('overview'); ov.innerHTML = '';
+    clients.slice(0,4).forEach(c => {
+      const div = document.createElement('div'); div.className = 'card';
+      const fecha = new Date(c.caducidad); const diff = Math.ceil((fecha - new Date())/(1000*60*60*24));
+      const status = (fecha < new Date()) ? 'exp' : (diff <= 7 ? 'warn' : 'vig');
+      div.innerHTML = `
+        <div class="top">
+          <div class="left">
+            <div class="avatar">${(c.nombre||'--').slice(0,2).toUpperCase()}</div>
+            <div>
+              <div class="title">${c.nombre}</div>
+              <div class="meta">${c.usuario}</div>
+            </div>
+          </div>
+          <div class="tags"><div class="tag ${status}">${status==='exp'?'Caducado':status==='warn'?'Próx. caducidad':'Vigente'}</div></div>
+        </div>
+        <div class="info-row">
+          <div>Caducidad<br><div class="caducidad">${c.caducidad}</div></div>
+          <div>Precio<br><div style="font-weight:800">${c.precio||'-'}</div></div>
+        </div>
+      `;
+      ov.appendChild(div);
+    });
+  }
+
+  function renderClients(page = 1, filter = ''){
+    currentPage = page;
+    const list = document.getElementById('clientsList'); list.innerHTML = '';
+    const filt = clients.filter(c => c.nombre.toLowerCase().includes(filter.toLowerCase()) || c.usuario.toLowerCase().includes(filter.toLowerCase()));
+    const totalPages = Math.max(1, Math.ceil(filt.length / perPage));
+    const start = (page - 1) * perPage; const slice = filt.slice(start, start + perPage);
+
+    slice.forEach(c => {
+      const div = document.createElement('div'); div.className = 'card';
+      const fecha = new Date(c.caducidad); const diff = Math.ceil((fecha - new Date())/(1000*60*60*24));
+      const status = (fecha < new Date()) ? 'exp' : (diff <= 7 ? 'warn' : 'vig');
+      div.innerHTML = `
+        <div class="top">
+          <div class="left">
+            <div class="avatar">${(c.nombre||'--').slice(0,2).toUpperCase()}</div>
+            <div><div class="title">${c.nombre}</div><div class="meta">${c.usuario}</div></div>
+          </div>
+          <div class="tags"><div class="tag ${status}">${status==='exp'?'Caducado':status==='warn'?'Próx. caducidad':'Vigente'}</div></div>
+        </div>
+        <div style="margin-top:10px;color:var(--muted)">Precio: <strong>${c.precio||'-'}</strong></div>
+        <div style="margin-top:6px;color:var(--muted)">Caducidad: <strong>${c.caducidad}</strong></div>
+        <div style="margin-top:6px;color:var(--muted)">Recomendaciones: <strong>${c.recomendaciones||'-'}</strong></div>
+        <div class="actions">
+          <button class="btn edit" onclick="editarCliente('${c.id}')"><i class="fa-solid fa-pen"></i> Editar</button>
+          <button class="btn renew" onclick="renovar90('${c.id}')"><i class="fa-solid fa-calendar-plus"></i> Renovar 90 días</button>
+          <button class="btn copy" onclick="copiarCliente('${c.id}')"><i class="fa-solid fa-copy"></i> Copiar</button>
+          <button class="btn del" onclick="eliminarCliente('${c.id}')"><i class="fa-solid fa-trash"></i> Eliminar</button>
+        </div>
+      `;
+      list.appendChild(div);
+    });
+
+    // pagination
+    const pag = document.getElementById('pagination'); pag.innerHTML = '';
+    for(let p=1; p<=totalPages; p++){
+      const btn = document.createElement('button'); btn.className = 'page-btn' + (p===page ? ' active' : ''); btn.textContent = p;
+      btn.addEventListener('click', ()=>renderClients(p, document.getElementById('search').value));
+      pag.appendChild(btn);
     }
+  }
 
-    function clearNew(){ ['n_nombre','n_precio','n_caducidad','n_usuario','n_contrasena','n_recomendaciones'].forEach(id=>document.getElementById(id).value=''); editingId=null; }
+  // events
+  document.getElementById('refreshBtn').addEventListener('click', () => cargarClientes());
+  document.getElementById('search').addEventListener('input', (e) => renderClients(1, e.target.value));
+  document.getElementById('exportBtn').addEventListener('click', async () => {
+    const csvHeaders = 'Nombre,Precio,Caducidad,Usuario,Contraseña,Recomendaciones\n';
+    const rows = clients.map(c => `${(c.nombre||'').replace(/,/g,' ' )},${(c.precio||'')},${c.caducidad},${c.usuario},${c.contrasena||''},"${(c.recomendaciones||'').replace(/"/g,'')}"`).join('\n');
+    const blob = new Blob([csvHeaders + rows], {type:'text/csv'});
+    const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'clientes.csv'; link.click();
+  });
 
-    async function editarCliente(id){ const d = clients.find(c=>c.id===id); if(!d) return; document.getElementById('n_nombre').value=d.nombre; document.getElementById('n_precio').value=d.precio; document.getElementById('n_caducidad').value=d.caducidad; document.getElementById('n_usuario').value=d.usuario; document.getElementById('n_contrasena').value=d.contrasena; document.getElementById('n_recomendaciones').value=d.recomendaciones||''; editingId=id; document.querySelector('.nav a[data-view="nuevo"]').click(); }
+  // Save button on nuevo view
+  document.getElementById('saveBtn').addEventListener('click', ()=> saveNew());
+  document.getElementById('clearBtn').addEventListener('click', ()=> clearNew());
 
-    async function eliminarCliente(id){ if(!confirm('¿Eliminar cliente?')) return; await deleteDoc(doc(db,'clientes',id)); showToast('Cliente eliminado'); await cargarClientes(); }
+  // Expose some functions to global for inline onclicks in generated cards
+  window.editarCliente = editarCliente;
+  window.eliminarCliente = eliminarCliente;
+  window.renovar90 = renovar90;
+  window.copiarCliente = copiarCliente;
+  window.saveNew = saveNew;
+  window.clearNew = clearNew;
 
-    async function renovar90(id){ const d = clients.find(c=>c.id===id); if(!d) return; let fecha = new Date(d.caducidad); if(isNaN(fecha)) fecha = new Date(); fecha.setDate(fecha.getDate()+90); const hist = d.historial||[]; hist.push('Renovado '+ new Date().toLocaleDateString()); await updateDoc(doc(db,'clientes',id),{ caducidad: fecha.toISOString().split('T')[0], historial: hist }); showToast('Caducidad renovada 90 días'); await cargarClientes(); }
+  async function initApp(){
+    await cargarClientes();
+    // open dashboard view
+    document.querySelector('.nav a[data-view="dashboard"]').click();
+  }
 
-    function copiarCliente(id){ const c = clients.find(x=>x.id===id); if(!c) return; const txt = `Cliente: ${c.nombre}
-Precio: ${c.precio}
-Caducidad: ${c.caducidad}
-Usuario: ${c.usuario}
-Contraseña: ${c.contrasena}
-Recomendaciones: ${c.recomendaciones||'-'}`; navigator.clipboard.writeText(txt).then(()=>showToast('Copiado al portapapeles')); }
-
-    // RENDER
-    function renderDashboard(){ const total = clients.length; const hoy = new Date(); const vigentes = clients.filter(c=> new Date(c.caducidad) >= hoy).length; const proximos = clients.filter(c=>{ const diff = Math.ceil((new Date(c.caducidad)-hoy)/(1000*60*60*24)); return diff>0 && diff<=7; }).length; const cad = clients.filter(c=> new Date(c.caducidad) < hoy).length; document.getElementById('totalCount').textContent=total; document.getElementById('vigentesCount').textContent=vigentes; document.getElementById('alertCount').textContent=proximos; document.getElementById('expCount').textContent=cad; const ov=document.getElementById('overview'); ov.innerHTML=''; clients.slice(0,4).forEach(c=>{ const div=document.createElement('div'); div.className='card'; const fecha=new Date(c.caducidad); const diff=Math.ceil((fecha-new Date())/(1000*60*60*24)); const status = (fecha < new Date())? 'exp' : (diff<=7? 'warn':'vig'); div.innerHTML = `<div class="top"><div class="left"><div class="avatar">${(c.nombre||'--').slice(0,2).toUpperCase()}</div><div><div class="title">${c.nombre}</div><div class="meta">${c.usuario}</div></div></div><div class="tags"><div class="tag ${status}">${status==='exp'?'Caducado':status==='warn'?'Próx. caducidad':'Vigente'}</div></div></div><div class="info-row"><div>Caducidad<br><div class="caducidad">${c.caducidad}</div></div><div>Precio<br><div style="font-weight:800">${c.precio||'-'}</div></div></div>`; ov.appendChild(div); }); }
-
-    function renderClients(page=1,filter=''){ currentPage=page; const list = document.getElementById('clientsList'); list.innerHTML=''; const filt = clients.filter(c=> c.nombre.toLowerCase().includes(filter.toLowerCase()) || c.usuario.toLowerCase().includes(filter.toLowerCase())); const totalPages = Math.max(1, Math.ceil(filt.length / perPage)); const start=(page-1)*perPage; const slice=filt.slice(start,start+perPage); slice.forEach(c=>{ const div=document.createElement('div'); div.className='card'; const fecha=new Date(c.caducidad); const diff=Math.ceil((fecha-new Date())/(1000*60*60*24)); const status=(fecha<new Date())?'exp':(diff<=7?'warn':'vig'); div.innerHTML=`<div class="top"><div class="left"><div class="avatar">${(c.nombre||'--').slice(0,2).toUpperCase()}</div><div><div class="title">${c.nombre}</div><div class="meta">${c.usuario}</div></div></div><div class="tags"><div class="tag ${status}">${status==='exp'?'Caducado':status==='warn'?'Próx. caducidad':'Vigente'}</div></div></div><div style="margin-top:10px;color:var(--muted)">Precio: <strong>${c.precio||'-'}</strong></div><div style="margin-top:6px;color:var(--muted)">Caducidad: <strong>${c.caducidad}</strong></div><div style="margin-top:6px;color:var(--muted)">Recomendaciones: <strong>${c.recomendaciones||'-'}</strong></div><div class="actions"><button class="btn edit" onclick="editarCliente('${c.id}')"><i class="fa-solid fa-pen"></i> Editar</button><button class="btn renew" onclick="renovar90('${c.id}')"><i class="fa-solid fa-calendar-plus"></i> Renovar 90 días</button><button class="btn copy" onclick="copiarCliente('${c.id}')"><i class="fa-solid fa-copy"></i> Copiar</button><button class="btn del" onclick="eliminarCliente('${c.id}')"><i class="fa-solid fa-trash"></i> Eliminar</button></div>`; list.appendChild(div); }); // pagination
-      const pag=document.getElementById('pagination'); pag.innerHTML=''; for(let p=1;p<=Math.max(1,Math.ceil(filt.length/perPage));p++){ const btn=document.createElement('button'); btn.className='page-btn'+(p===page?' active':''); btn.textContent=p; btn.addEventListener('click',()=>renderClients(p,document.getElementById('search').value)); pag.appendChild(btn); }
-    }
-
-    // hooks
-    document.getElementById('refreshBtn').addEventListener('click', ()=>cargarClientes());
-    document.getElementById('search').addEventListener('input',(e)=>renderClients(1,e.target.value));
-    document.getElementById('exportBtn').addEventListener('click', async ()=>{ // export filtered
-      const csvHeaders='Nombre,Precio,Caducidad,Usuario,Contraseña,Recomendaciones
-'; const rows = clients.map(c=>`${c.nombre.replace(/,/g,' ' )},${c.precio||''},${c.caducidad},${c.usuario},${c.contrasena||''},"${(c.recomendaciones||'').replace(/\"/g,'') }"`).join('
-'); const blob=new Blob([csvHeaders+rows],{type:'text/csv'}); const link=document.createElement('a'); link.href=URL.createObjectURL(blob); link.download='clientes.csv'; link.click(); });
-
-    // save new (exposed globally)
-    window.saveNew = async function(){ await saveNew(); };
-    window.clearNew = clearNew;
-    window.editarCliente = editarCliente;
-    window.eliminarCliente = eliminarCliente;
-    window.renovar90 = renovar90;
-    window.copiarCliente = copiarCliente;
-
-    async function initApp(){ await cargarClientes(); document.querySelector('.nav a[data-view="dashboard"]').click(); }
-
-  </script></body>
+</script>
+</body>
 </html>
