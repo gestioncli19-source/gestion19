@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Clientes</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    input, select { margin: 5px; padding: 5px; }
+    button { padding: 5px 10px; margin-left: 5px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    tr:hover { background-color: #f9f9f9; }
+  </style>
+</head>
+<body>
+  <h1>Gestión de Clientes</h1>
+
+  <h2>Agregar Cliente</h2>
+  <div>
+    <input id="nombre" placeholder="Nombre">
+    <input id="precio" placeholder="Precio">
+    <input id="fecha_contratacion" type="date" placeholder="Fecha de contratación">
+    <input id="caducidad" type="date" placeholder="Caducidad">
+    <input id="usuario" placeholder="Usuario">
+    <input id="contrasena" placeholder="Contraseña">
+    <input id="recomendaciones" placeholder="Recomendaciones">
+    <button onclick="agregarCliente()">Agregar</button>
+  </div>
+
+  <h2>Lista de Clientes</h2>
+  <table id="tabla-clientes">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Precio</th>
+        <th>Fecha Contratación</th>
+        <th>Caducidad</th>
+        <th>Usuario</th>
+        <th>Contraseña</th>
+        <th>Recomendaciones</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Filas se agregan aquí -->
+    </tbody>
+  </table>
+
+  <script>
+    // ==============================
+    // CONFIGURACIÓN DE SUPABASE
+    // ==============================
+    const supabaseUrl = 'TU_SUPABASE_URL';      // Reemplaza con tu URL de Supabase
+    const supabaseKey = 'TU_SUPABASE_ANON_KEY'; // Reemplaza con tu anon key
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // ==============================
+    // FUNCIONES
+    // ==============================
+
+    async function cargarClientes() {
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('*')
+        .order('fecha_creacion', { ascending: false });
+
+      if (error) { alert('Error cargando clientes: ' + error.message); return; }
+
+      const tbody = document.getElementById('tabla-clientes').querySelector('tbody');
+      tbody.innerHTML = '';
+
+      data.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${c.nombre}</td>
+          <td>${c.precio}</td>
+          <td>${c.fecha_contratacion}</td>
+          <td>${c.caducidad}</td>
+          <td>${c.usuario}</td>
+          <td>${c.contrasena}</td>
+          <td>${c.recomendaciones}</td>
+          <td><button onclick="eliminarCliente('${c.id}')">Eliminar</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function agregarCliente() {
+      const cliente = {
+        nombre: document.getElementById('nombre').value,
+        precio: document.getElementById('precio').value,
+        fecha_contratacion: document.getElementById('fecha_contratacion').value,
+        caducidad: document.getElementById('caducidad').value,
+        usuario: document.getElementById('usuario').value,
+        contrasena: document.getElementById('contrasena').value,
+        recomendaciones: document.getElementById('recomendaciones').value
+      };
+
+      if (!cliente.nombre) { alert('El nombre es obligatorio'); return; }
+
+      const { error } = await supabase.from('clientes').insert([cliente]);
+
+      if (error) {
+        alert('Error agregando cliente: ' + error.message);
+      } else {
+        // Limpiar campos
+        document.getElementById('nombre').value = '';
+        document.getElementById('precio').value = '';
+        document.getElementById('fecha_contratacion').value = '';
+        document.getElementById('caducidad').value = '';
+        document.getElementById('usuario').value = '';
+        document.getElementById('contrasena').value = '';
+        document.getElementById('recomendaciones').value = '';
+
+        cargarClientes();
+      }
+    }
+
+    async function eliminarCliente(id) {
+      const { error } = await supabase.from('clientes').delete().eq('id', id);
+      if (error) { alert('Error eliminando cliente: ' + error.message); }
+      else { cargarClientes(); }
+    }
+
+    // ==============================
+    // CARGAR CLIENTES AL INICIO
+    // ==============================
+    cargarClientes();
+  </script>
+</body>
+</html>
