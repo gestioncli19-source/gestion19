@@ -64,7 +64,11 @@
         .select('*')
         .order('fecha_creacion', { ascending: false });
 
-      if (error) { alert('Error cargando clientes: ' + error.message); return; }
+      if (error) { 
+        console.error('Error cargando clientes:', error.message);
+        alert('Error cargando clientes: ' + error.message); 
+        return; 
+      }
 
       const tbody = document.getElementById('tabla-clientes').querySelector('tbody');
       tbody.innerHTML = '';
@@ -72,13 +76,13 @@
       data.forEach(c => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td>${c.nombre}</td>
-          <td>${c.precio}</td>
-          <td>${c.fecha_contratacion}</td>
-          <td>${c.caducidad}</td>
-          <td>${c.usuario}</td>
-          <td>${c.contrasena}</td>
-          <td>${c.recomendaciones}</td>
+          <td>${c.nombre || ''}</td>
+          <td>${c.precio || ''}</td>
+          <td>${c.fecha_contratacion || ''}</td>
+          <td>${c.caducidad || ''}</td>
+          <td>${c.usuario || ''}</td>
+          <td>${c.contrasena || ''}</td>
+          <td>${c.recomendaciones || ''}</td>
           <td><button onclick="eliminarCliente('${c.id}')">Eliminar</button></td>
         `;
         tbody.appendChild(tr);
@@ -98,9 +102,10 @@
 
       if (!cliente.nombre) { alert('El nombre es obligatorio'); return; }
 
-      const { error } = await supabase.from('clientes').insert([cliente]);
+      const { data, error } = await supabase.from('clientes').insert([cliente]);
 
       if (error) {
+        console.error('Error agregando cliente:', error.message);
         alert('Error agregando cliente: ' + error.message);
       } else {
         // Limpiar campos
@@ -112,14 +117,18 @@
         document.getElementById('contrasena').value = '';
         document.getElementById('recomendaciones').value = '';
 
-        cargarClientes();
+        cargarClientes(); // Actualizar tabla
       }
     }
 
     async function eliminarCliente(id) {
       const { error } = await supabase.from('clientes').delete().eq('id', id);
-      if (error) { alert('Error eliminando cliente: ' + error.message); return; }
-      cargarClientes();
+      if (error) { 
+        console.error('Error eliminando cliente:', error.message);
+        alert('Error eliminando cliente: ' + error.message); 
+      } else {
+        cargarClientes();
+      }
     }
 
     // ==============================
