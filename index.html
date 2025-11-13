@@ -1,246 +1,45 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestión de Clientes - Firebase</title>
-
-<style>
-body { font-family:'Montserrat',sans-serif; margin:0; padding:20px; transition: background 0.3s, color 0.3s; }
-body.dark { background:#0f121d; color:#e0e0e0; }
-body.light { background:#f5f5f5; color:#222; }
-#btnToggleMode { position:fixed; top:20px; right:20px; padding:8px 12px; border:none; border-radius:8px; cursor:pointer; background:#444; color:#fff; font-weight:600; transition:0.3s; }
-body.light #btnToggleMode { background:#ccc; color:#222; }
-#btnToggleMode:hover { opacity:0.8; }
-.dashboard { display:flex; flex-wrap:wrap; gap:15px; justify-content:center; margin:60px 0 25px 0; }
-.dash-card { border-radius:12px; padding:12px 15px; min-width:120px; flex:1 1 120px; text-align:center; cursor:pointer; transition:all 0.3s ease-in-out; box-shadow:0 0 10px rgba(0,0,0,0.3); }
-.dash-card:hover { transform:translateY(-3px); box-shadow:0 0 15px rgba(0,0,0,0.6); }
-.dash-card h3 { margin:0; font-size:14px; font-weight:600; }
-.dash-card p { margin:5px 0 0 0; font-size:18px; font-weight:700; }
-body.dark .dash-card-total { background:rgba(0,180,255,0.15); color:#00b4ff; }
-body.dark .dash-card-vigente { background:rgba(0,200,0,0.15); color:#00c800; }
-body.dark .dash-card-alerta { background:rgba(255,100,100,0.15); color:#ff6464; }
-body.dark .dash-card-caducado { background:rgba(150,150,150,0.15); color:#999; }
-body.light .dash-card-total { background:rgba(0,180,255,0.1); color:#0077aa; }
-body.light .dash-card-vigente { background:rgba(0,200,0,0.1); color:#009900; }
-body.light .dash-card-alerta { background:rgba(255,100,100,0.1); color:#aa0000; }
-body.light .dash-card-caducado { background:rgba(150,150,150,0.1); color:#666; }
-.form-container, .filter-container { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:25px; }
-input, textarea, button { padding:12px; border-radius:12px; border:1px solid #444; font-size:14px; transition: background 0.3s, color 0.3s; }
-body.light input, body.light textarea { background:#fff; color:#222; border:1px solid #ccc; }
-body.dark input, body.dark textarea { background:#1a1f2b; color:#e0e0e0; border:1px solid #444; }
-input, textarea { flex:1 1 200px; }
-textarea { resize:none; }
-button { cursor:pointer; font-weight:600; min-width:130px; border:none; transition:0.3s; }
-button:hover { opacity:0.85; }
-.btn-edit { background-color:#2196F3; margin-right:5px; } 
-.btn-delete { background-color:#f44336; margin-right:5px; }
-.btn-renovar { background-color:#FF9800; margin-right:5px; }
-.btn-share { background-color:#9C27B0; margin-top:5px; }
-.cards-container { display:flex; flex-direction:column; gap:20px; }
-.card { border-radius:18px; padding:20px; transition:all 0.25s ease-in-out; border-left:8px solid #4CAF50; cursor:pointer; box-shadow:0 6px 15px rgba(0,0,0,0.5); }
-body.dark .card { background:#1a1f2b; color:#e0e0e0; }
-body.light .card { background:#eaeaea; color:#222; border-left:8px solid #4CAF50; box-shadow:0 4px 10px rgba(0,0,0,0.15); }
-.card:hover { transform:translateY(-3px); box-shadow:0 10px 25px rgba(0,0,0,0.6); }
-.card h3 { margin:0 0 8px 0; font-size:18px; font-weight:700; }
-.card p { margin:4px 0; font-size:14px; }
-.alert-soft { box-shadow:0 0 10px rgba(255,100,100,0.4); border-left:8px solid #ff6464 !important; }
-#toast { visibility:hidden; min-width:220px; background-color:#333; color:white; text-align:center; border-radius:8px; padding:12px; position:fixed; z-index:300; left:50%; bottom:30px; transform:translateX(-50%); font-size:14px; }
-#toast.show { visibility:visible; animation:fadein 0.5s, fadeout 0.5s 2s; }
-@keyframes fadein { from {bottom:0; opacity:0;} to {bottom:30px; opacity:1;} }
-@keyframes fadeout { from {bottom:30px; opacity:1;} to {bottom:0; opacity:0;} }
-@media (min-width:700px){ .cards-container{ flex-direction:row; flex-wrap:wrap; } .card{ width:calc(50% - 15px); } }
-@media (min-width:1100px){ .card{ width:calc(33% - 20px); } }
-#loginForm { max-width:400px; margin:50px auto; display:flex; flex-direction:column; gap:10px; }
-</style>
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
-  authDomain: "gestioncandy-b9356.firebaseapp.com",
-  projectId: "gestioncandy-b9356",
-  storageBucket: "gestioncandy-b9356.firebasestorage.app",
-  messagingSenderId: "869982852654",
-  appId: "1:869982852654:web:ac450321a746e62365f1bf"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
-</script>
-</head>
-<body class="dark">
-
-<button id="btnToggleMode">Modo Claro</button>
-
-<!-- Login -->
-<div id="loginForm">
-  <input type="email" id="email" placeholder="Email">
-  <input type="password" id="password" placeholder="Contraseña">
-  <button onclick="login()">Entrar</button>
+<!-- LOGIN MODERNO CON TRANSICIÓN -->
+<div id="loginForm" style="display:flex; justify-content:center; align-items:center; height:100vh; background:#121212; transition: background 0.3s;">
+  <div id="loginBox" style="background:linear-gradient(145deg,#1f1f1f,#2c2c2c); padding:40px 30px; border-radius:20px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); width:320px; text-align:center; color:#fff; font-family: 'Montserrat', sans-serif; opacity:1; transition: opacity 0.5s;">
+    <h2 style="margin-bottom:25px; font-weight:700; font-size:24px; letter-spacing:1px;">Inicia sesión</h2>
+    <input type="email" id="email" placeholder="Correo electrónico" style="width:100%; padding:12px 15px; margin-bottom:15px; border-radius:12px; border:none; outline:none; font-size:14px; background:#2c2c2c; color:#fff; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);">
+    <input type="password" id="password" placeholder="Contraseña" style="width:100%; padding:12px 15px; margin-bottom:20px; border-radius:12px; border:none; outline:none; font-size:14px; background:#2c2c2c; color:#fff; box-shadow: inset 0 2px 5px rgba(0,0,0,0.4);">
+    <button onclick="login()" style="width:100%; padding:12px 0; border:none; border-radius:12px; background:linear-gradient(90deg,#00b4ff,#0077aa); color:#fff; font-weight:700; font-size:16px; cursor:pointer; transition:0.3s;">Entrar</button>
+    <p style="margin-top:15px; font-size:12px; color:#aaa;">¿Olvidaste tu contraseña? Contacta al administrador</p>
+  </div>
 </div>
 
-<!-- App -->
-<div id="app" style="display:none;">
-  <div class="dashboard" id="dashboard"></div>
-
-  <div class="form-container">
-    <input type="text" id="nombre" placeholder="Nombre de cliente">
-    <input type="text" id="precio" placeholder="Precio" oninput="agregarEuro(this)">
-    <input type="date" id="caducidad" placeholder="Caducidad">
-    <input type="text" id="usuario" placeholder="Usuario">
-    <input type="text" id="contrasena" placeholder="Contraseña">
-    <textarea id="recomendaciones" placeholder="Recomendaciones"></textarea>
-    <button id="btnAgregar" onclick="guardarRegistro()">Agregar Cliente</button>
-  </div>
-
-  <div class="filter-container">
-    <input type="text" id="filtro" placeholder="Filtrar por nombre o usuario" oninput="filtrar()">
-  </div>
-
-  <div class="cards-container" id="cardsContainer"></div>
-</div>
-
-<div id="toast"></div>
-
 <script>
-let editIndex = null;
-let filtroDashboard = 'total';
-const btnAgregar = document.getElementById('btnAgregar');
-const toastEl = document.getElementById('toast');
-const btnToggleMode = document.getElementById('btnToggleMode');
+const loginFormDiv = document.getElementById('loginForm');
+const loginBox = document.getElementById('loginBox');
 
 btnToggleMode.addEventListener('click', ()=>{
   if(document.body.classList.contains('dark')){
-    document.body.classList.replace('dark','light');
-    btnToggleMode.textContent='Modo Oscuro';
+    loginBox.style.background='linear-gradient(145deg,#f0f0f0,#e0e0e0)';
+    loginBox.querySelectorAll('input').forEach(i=>{i.style.background='#fff'; i.style.color='#222';});
+    loginFormDiv.style.background='#f5f5f5';
   } else {
-    document.body.classList.replace('light','dark');
-    btnToggleMode.textContent='Modo Claro';
+    loginBox.style.background='linear-gradient(145deg,#1f1f1f,#2c2c2c)';
+    loginBox.querySelectorAll('input').forEach(i=>{i.style.background='#2c2c2c'; i.style.color='#fff';});
+    loginFormDiv.style.background='#121212';
   }
 });
 
-function mostrarToast(msg){ toastEl.textContent=msg; toastEl.className="show"; setTimeout(()=>{toastEl.className=toastEl.className.replace("show","");},2500); }
-function agregarEuro(input){ let valor=input.value.replace(/[^\d.,]/g,''); input.value=valor?valor+' €':''; }
-
-// ----- LOGIN -----
 function login(){
   const email=document.getElementById('email').value;
   const pass=document.getElementById('password').value;
   auth.signInWithEmailAndPassword(email, pass)
-    .then(user=>{
-      document.getElementById('loginForm').style.display='none';
-      document.getElementById('app').style.display='block';
-      mostrarRegistros();
+    .then(()=>{
+      // Animación de fade out login
+      loginBox.style.opacity='0';
+      setTimeout(()=>{
+        loginFormDiv.style.display='none';
+        document.getElementById('app').style.display='block';
+        document.getElementById('app').style.opacity='0';
+        setTimeout(()=>{ document.getElementById('app').style.opacity='1'; },50);
+        mostrarRegistros();
+      },500);
     })
     .catch(e=>alert('Error de login: '+e.message));
 }
-
-// ----- GUARDAR REGISTRO -----
-function guardarRegistro(){
-  const nombre=document.getElementById('nombre').value.trim();
-  const precio=document.getElementById('precio').value.trim();
-  const caducidad=document.getElementById('caducidad').value || new Date().toISOString().split('T')[0];
-  const usuario=document.getElementById('usuario').value.trim();
-  const contrasena=document.getElementById('contrasena').value.trim();
-  const recomendaciones=document.getElementById('recomendaciones').value.trim();
-  if(!nombre || !usuario){ alert('Nombre y usuario son obligatorios'); return; }
-
-  const registro = { nombre, precio, caducidad, usuario, contrasena, recomendaciones, timestamp: Date.now() };
-
-  db.collection('clientes').add(registro)
-    .then(()=>{ mostrarToast('Cliente agregado en la nube'); mostrarRegistros(); limpiarFormulario(); })
-    .catch(e=>alert('Error al guardar: '+e.message));
-}
-
-function limpiarFormulario(){
-  document.getElementById('nombre').value=''; document.getElementById('precio').value='';
-  document.getElementById('caducidad').value=''; document.getElementById('usuario').value='';
-  document.getElementById('contrasena').value=''; document.getElementById('recomendaciones').value='';
-}
-
-// ----- MOSTRAR REGISTROS -----
-function actualizarDashboard(registros){
-  const dash=document.getElementById('dashboard'); dash.innerHTML='';
-  const hoy=new Date();
-  const total=registros.length;
-  const vigentes=registros.filter(r=>new Date(r.caducidad)>=hoy).length;
-  const proximos=registros.filter(r=>{ const diff=Math.ceil((new Date(r.caducidad)-hoy)/(1000*60*60*24)); return diff>0&&diff<=7; }).length;
-  const caducados=registros.filter(r=>new Date(r.caducidad)<hoy).length;
-  const alerta=proximos+caducados;
-  const items=[
-    {titulo:'Total', valor:total, filtro:'total'},
-    {titulo:'Vigentes', valor:vigentes, filtro:'vigente'},
-    {titulo:'Alerta', valor:alerta, filtro:'alerta'},
-    {titulo:'Caducados', valor:caducados, filtro:'caducado'}
-  ];
-  items.forEach(i=>{
-    const div=document.createElement('div'); div.className='dash-card';
-    if(i.filtro==='total') div.classList.add('dash-card-total');
-    else if(i.filtro==='vigente') div.classList.add('dash-card-vigente');
-    else if(i.filtro==='alerta') div.classList.add('dash-card-alerta');
-    else if(i.filtro==='caducado') div.classList.add('dash-card-caducado');
-    div.innerHTML=`<h3>${i.titulo}</h3><p>${i.valor}</p>`;
-    div.onclick=()=>{ filtroDashboard=i.filtro; mostrarRegistros(); };
-    dash.appendChild(div);
-  });
-}
-
-function mostrarRegistros(filtro=''){
-  db.collection('clientes').orderBy('caducidad').get()
-    .then(snapshot=>{
-      let registros=snapshot.docs.map(doc=>({id:doc.id,...doc.data()}));
-      const hoy=new Date();
-      let listaFinal=[];
-      if(filtroDashboard==='total') listaFinal=registros;
-      else if(filtroDashboard==='vigente') listaFinal=registros.filter(r=>new Date(r.caducidad)>=hoy);
-      else if(filtroDashboard==='alerta') listaFinal=registros.filter(r=>{ const diff=Math.ceil((new Date(r.caducidad)-hoy)/(1000*60*60*24)); return diff<7; });
-      else if(filtroDashboard==='caducado') listaFinal=registros.filter(r=>new Date(r.caducidad)<hoy);
-
-      listaFinal=listaFinal.filter(r=> r.nombre.toLowerCase().includes(filtro.toLowerCase()) || r.usuario.toLowerCase().includes(filtro.toLowerCase()));
-      listaFinal.sort((a,b)=> new Date(a.caducidad)-new Date(b.caducidad));
-      actualizarDashboard(listaFinal);
-
-      const container=document.getElementById('cardsContainer'); container.innerHTML='';
-      listaFinal.forEach(r=>{
-        const card=document.createElement('div'); card.className='card';
-        const fechaCad=new Date(r.caducidad);
-        let diffDias=Math.ceil((fechaCad-hoy)/(1000*60*60*24));
-        if(fechaCad<hoy){ card.style.borderLeftColor='#999'; card.style.opacity=0.7; }
-        else if(diffDias<=7){ card.classList.add('alert-soft'); }
-        else if(diffDias<=30) card.style.borderLeftColor='#FF9800';
-        card.innerHTML=`
-          <h3>${r.nombre}</h3>
-          <p>Caducidad: ${r.caducidad} (${diffDias>=0?diffDias:0} días)</p>
-          <button class="btn-share" onclick="copiarCliente('${r.id}')">Copiar datos</button>
-          <button class="btn-delete" onclick="eliminarRegistro('${r.id}')">Eliminar</button>
-        `;
-        container.appendChild(card);
-      });
-    });
-}
-
-// ----- OTRAS FUNCIONES -----
-function filtrar(){ mostrarRegistros(document.getElementById('filtro').value); }
-
-function copiarCliente(id){
-  db.collection('clientes').doc(id).get().then(doc=>{
-    const c=doc.data();
-    const texto=`Cliente: ${c.nombre}\nPrecio: ${c.precio}\nCaducidad: ${c.caducidad}\nUsuario: ${c.usuario}\nContraseña: ${c.contrasena}\nRecomendaciones: ${c.recomendaciones||'Sin recomendaciones'}`;
-    navigator.clipboard.writeText(texto).then(()=>mostrarToast('Datos copiados')).catch(()=>alert('No se pudo copiar'));
-  });
-}
-
-function eliminarRegistro(id){
-  if(confirm('¿Seguro que deseas eliminar este cliente?')){
-    db.collection('clientes').doc(id).delete().then(()=>{ mostrarToast('Cliente eliminado'); mostrarRegistros(); });
-  }
-}
-
 </script>
-</body>
-</html>
