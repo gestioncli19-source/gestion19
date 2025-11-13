@@ -3,16 +3,17 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Gestión Candy — Panel</title>
+<title>Gestión Candy 🍃</title>
 
 <!-- Tipografía e iconos -->
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 <style>
 :root{
   --bg:#0f1216; --panel:#111318; --muted:#9aa4ad;
   --accent:#00b4ff; --accent2:#0077aa; --success:#23c552; --danger:#ff6b6b;
+  --touch:48px;
 }
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -21,107 +22,137 @@ body{
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
 }
 
-/* Layout */
-.app{display:flex;min-height:100vh;overflow-x:hidden}
-.sidebar{
-  width:260px;background:linear-gradient(180deg,var(--panel),#0b0d11);padding:26px;
-  box-shadow:4px 0 30px rgba(0,0,0,0.6);position:fixed;left:0;top:0;bottom:0;
-  transform:translateX(-320px);transition:transform .45s cubic-bezier(.2,.9,.2,1);z-index:220;
+/* APP LAYOUT */
+.app { display:flex; min-height:100vh; overflow-x:hidden; }
+
+/* SIDEBAR */
+.sidebar {
+  width:260px; background:linear-gradient(180deg,var(--panel),#0b0d11);
+  padding:20px 18px; box-shadow:4px 0 30px rgba(0,0,0,0.6);
+  position:fixed; left:0; top:0; bottom:0; transform:translateX(-320px);
+  transition:transform .38s cubic-bezier(.2,.9,.2,1); z-index:240;
 }
-.sidebar.open{transform:translateX(0)}
+.sidebar.open { transform:translateX(0); }
 .brand{display:flex;gap:12px;align-items:center;margin-bottom:18px}
 .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800}
 .nav{display:flex;flex-direction:column;gap:6px}
 .nav a{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;text-decoration:none;color:#cfe6ff;font-weight:700}
 .nav a.active,.nav a:hover{background:rgba(255,255,255,0.03);color:#fff}
 
-/* menu button */
-.menu-btn{position:fixed;left:16px;top:16px;background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;color:#fff;padding:10px 12px;border-radius:10px;cursor:pointer;z-index:240}
+/* MENU BUTTON */
+.menu-btn {
+  position:fixed; left:14px; top:14px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  border:none; color:#fff; padding:10px 12px; border-radius:10px; cursor:pointer; z-index:260;
+  box-shadow:0 10px 30px rgba(0,0,0,0.35);
+}
 
-/* Main */
-main{flex:1;margin-left:20px;padding:30px 36px}
-header{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.icon-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:10px;color:inherit;cursor:pointer}
+/* MAIN */
+main { flex:1; margin-left:20px; padding:20px 20px 80px 20px; transition:margin .3s; }
+header { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:6px 6px; }
+.header-left { display:flex; align-items:center; gap:12px; }
+.header-title { font-weight:800; font-size:20px; display:flex; align-items:center; gap:8px; }
+.icon-btn { background:transparent; border:1px solid rgba(255,255,255,0.04); padding:10px; border-radius:10px; color:inherit; cursor:pointer }
 
-/* Dashboard */
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:18px;margin-top:18px}
-.box{background:linear-gradient(145deg,#121417,#181a1f);padding:18px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,0.55);transition:transform .2s}
-.box:hover{transform:translateY(-6px)}
-.num{font-size:28px;font-weight:800;color:var(--accent)}
-.label{font-size:13px;color:var(--muted);margin-top:8px}
+/* DASHBOARD */
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-top:14px; }
+.box { background:linear-gradient(145deg,#121417,#181a1f); padding:14px; border-radius:12px; box-shadow:0 10px 24px rgba(0,0,0,0.55); transition:transform .18s; text-align:center; }
+.box:hover{ transform:translateY(-6px) }
+.num { font-size:24px; font-weight:800; color:var(--accent); }
+.label { font-size:12px; color:var(--muted); margin-top:6px; }
 
-/* Card list */
-.card-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-top:22px}
-.card{background:linear-gradient(180deg,#0f1418,#15181c);border-radius:14px;padding:16px;box-shadow:0 10px 25px rgba(0,0,0,0.6);transition:transform .18s}
-.card:hover{transform:translateY(-6px)}
-.top{display:flex;justify-content:space-between;align-items:center}
-.left{display:flex;gap:12px;align-items:center}
-.avatar{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800}
-.title{font-size:18px;font-weight:700}
-.meta{font-size:13px;color:var(--muted)}
-.tags{display:flex;gap:8px}
-.tag{padding:6px 10px;border-radius:999px;font-weight:800;font-size:12px}
-.vig{background:rgba(60,200,100,0.08);color:#4be07a}
-.warn{background:rgba(255,170,60,0.08);color:#ffb05c}
-.exp{background:rgba(200,200,200,0.06);color:#bdbdbd}
+/* CARDS */
+.card-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin-top:18px; }
+.card { background:linear-gradient(180deg,#0f1418,#15181c); border-radius:12px; padding:14px; box-shadow:0 10px 30px rgba(0,0,0,0.6); transition:transform .18s; }
+.card:hover{ transform:translateY(-6px) }
+.top { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.left { display:flex; gap:12px; align-items:center; }
+.avatar { width:52px; height:52px; border-radius:10px; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; }
+.title { font-size:16px; font-weight:700; }
+.meta { font-size:13px; color:var(--muted); }
+.tags { display:flex; gap:8px; align-items:center; }
+.tag { padding:6px 10px; border-radius:999px; font-weight:800; font-size:12px; }
 
-.info-row{display:flex;justify-content:space-between;gap:8px;margin-top:12px}
-.info-row div{font-size:14px}
-.caducidad{font-weight:800;color:var(--danger)}
+/* tags states */
+.vig { background:rgba(60,200,100,0.08); color:#4be07a; }
+.warn { background:rgba(255,170,60,0.08); color:#ffb05c; }
+.exp  { background:rgba(200,200,200,0.06); color:#bdbdbd; }
 
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.btn{padding:8px 10px;border-radius:10px;border:none;cursor:pointer;font-weight:800}
-.edit{background:linear-gradient(90deg,#3b82f6,#2563eb);color:#fff}
-.renew{background:linear-gradient(90deg,#ffb86b,#ff8a00);color:#fff}
-.copy{background:linear-gradient(90deg,#9b6bff,#7c3aed);color:#fff}
-.del{background:linear-gradient(90deg,#ff7b7b,#ff3b3b);color:#fff}
+/* info rows */
+.info-row { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+.info-row .row { display:flex; justify-content:space-between; gap:8px; align-items:center; font-size:14px; }
+.caducidad { font-weight:800; color:var(--danger); }
 
-/* Panels & form */
-.panel{background:linear-gradient(180deg,#0f1316,#13161a);padding:16px;border-radius:12px;margin-top:18px}
-.row{display:flex;gap:12px}
-.field{flex:1;display:flex;flex-direction:column}
-input,textarea,select{padding:10px;border-radius:10px;border:none;background:#16181b;color:#fff}
-textarea{min-height:80px}
-.form-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:10px}
+/* actions */
+.actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.btn { padding:10px 12px; border-radius:10px; border:none; cursor:pointer; font-weight:800; font-size:13px; display:inline-flex; gap:8px; align-items:center; }
+.btn.touch { min-height:var(--touch); } /* touch targets */
+.edit { background:linear-gradient(90deg,#3b82f6,#2563eb); color:#fff; }
+.renew { background:linear-gradient(90deg,#ffb86b,#ff8a00); color:#fff; }
+.copy { background:linear-gradient(90deg,#9b6bff,#7c3aed); color:#fff; }
+.del { background:linear-gradient(90deg,#ff7b7b,#ff3b3b); color:#fff; }
+
+/* FORM PANEL */
+.panel { background:linear-gradient(180deg,#0f1316,#13161a); padding:14px; border-radius:12px; margin-top:14px; }
+.row { display:flex; gap:10px; flex-wrap:wrap; }
+.field { flex:1; display:flex; flex-direction:column; min-width:140px; }
+label{ font-size:12px; color:var(--muted); margin-bottom:6px; }
+input, textarea, select { padding:10px; border-radius:10px; border:none; background:#161819; color:#fff; outline:none; }
+textarea{ min-height:80px; resize:vertical; }
+.form-footer{ display:flex; gap:10px; justify-content:flex-end; margin-top:10px; }
 
 /* pagination */
-.pagination{display:flex;gap:8px;justify-content:center;margin-top:18px}
-.page-btn{padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:transparent;color:inherit;cursor:pointer}
-.page-btn.active{background:var(--accent);color:#fff}
+.pagination { display:flex; gap:8px; justify-content:center; margin-top:16px; }
+.page-btn { padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); background:transparent; color:inherit; cursor:pointer; }
+.page-btn.active { background:var(--accent); color:#fff; }
 
-/* login screen (modal-like) */
-#loginScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(0,0,0,0.5),rgba(0,0,0,0.6));z-index:500}
-.login-card{background:#0f1418;padding:28px;border-radius:12px;min-width:320px;box-shadow:0 20px 60px rgba(0,0,0,0.7)}
-.login-card h2{margin:0 0 12px 0}
-.login-card input{width:100%;padding:12px;border-radius:10px;border:none;margin-top:10px;background:#15181b;color:#fff}
-.login-card button{width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;font-weight:800;margin-top:12px;cursor:pointer}
+/* login modal */
+#loginScreen { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg,rgba(0,0,0,0.5),rgba(0,0,0,0.6)); z-index:500; }
+.login-card { background:#0f1418; padding:20px; border-radius:12px; min-width:320px; box-shadow:0 20px 60px rgba(0,0,0,0.7); }
+.login-card h2{ margin:0 0 8px 0; }
+.login-card input{ width:100%; padding:12px; border-radius:10px; border:none; margin-top:10px; background:#15181b; color:#fff; }
 
 /* toast */
-#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;padding:10px 14px;border-radius:10px;background:#222;color:#fff;display:none}
+#toast { position:fixed; left:50%; transform:translateX(-50%); bottom:24px; padding:10px 14px; border-radius:10px; background:#222; color:#fff; display:none; z-index:600; }
 
-/* responsive */
+/* MOBILE ADJUST */
 @media (max-width:900px){
   .sidebar{width:220px}
   .menu-btn{left:10px}
-  main{padding:18px}
+  main{padding:14px}
   .avatar{width:44px;height:44px}
+  .num{font-size:20px}
+  .title{font-size:15px}
+  .btn{padding:10px; font-size:13px}
+  /* main left margin removed so content uses full width */
+  main { margin-left: 0; }
+  .sidebar { position:fixed; }
+}
+
+/* VERY SMALL */
+@media (max-width:420px){
+  .card { padding:12px; }
+  .avatar{width:40px;height:40px}
+  .actions{gap:6px}
+  .btn { font-size:12px; padding:9px 10px; }
 }
 </style>
 </head>
 <body>
 
+<!-- Menu button -->
 <button class="menu-btn" id="menuBtn" title="Menú"><i class="fa-solid fa-bars"></i></button>
 
-<aside class="sidebar" id="sidebar">
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar" aria-hidden="true">
   <div class="brand">
     <div class="logo">GC</div>
     <div>
-      <div style="font-weight:800">Gestión Candy</div>
-      <div style="font-size:12px;color:var(--muted)">Admin Panel</div>
+      <div style="font-weight:800; font-size:16px">Gestión Candy 🍃</div>
     </div>
   </div>
 
-  <nav class="nav">
+  <nav class="nav" role="navigation">
     <a href="#" data-view="dashboard" class="active"><i class="fa-solid fa-chart-simple"></i> Dashboard</a>
     <a href="#" data-view="clientes"><i class="fa-solid fa-users"></i> Clientes</a>
     <a href="#" data-view="nuevo"><i class="fa-solid fa-plus"></i> Añadir cliente</a>
@@ -129,18 +160,18 @@ textarea{min-height:80px}
   </nav>
 </aside>
 
+<!-- Main -->
 <main>
   <header>
-    <div>
-      <h1 style="margin:0">Panel — Gestión Candy</h1>
-      <div style="color:var(--muted);font-size:13px">Control de clientes y caducidades</div>
+    <div class="header-left">
+      <div class="header-title">Gestión Candy 🍃</div>
     </div>
-    <div class="right">
+    <div class="header-right">
       <button id="refreshBtn" class="icon-btn" title="Refrescar"><i class="fa-solid fa-arrows-rotate"></i></button>
     </div>
   </header>
 
-  <!-- Views -->
+  <!-- DASHBOARD VIEW -->
   <section id="view-dashboard" class="view">
     <div class="grid">
       <div class="box"><div class="num" id="totalCount">0</div><div class="label">Total clientes</div></div>
@@ -149,54 +180,75 @@ textarea{min-height:80px}
       <div class="box"><div class="num" id="expCount">0</div><div class="label">Caducados</div></div>
     </div>
 
-    <div id="overview" class="card-list"></div>
+    <div id="overview" class="card-list" aria-live="polite"></div>
   </section>
 
+  <!-- CLIENTS VIEW -->
   <section id="view-clientes" class="view" style="display:none">
     <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
-      <input id="search" placeholder="Buscar por nombre o usuario" style="flex:1;padding:12px;border-radius:10px;border:none;background:#15181b;color:#fff" />
+      <input id="search" placeholder="Buscar por nombre o usuario" style="flex:1;padding:12px;border-radius:10px;border:none;background:#15181b;color:#fff" aria-label="Buscar clientes" />
       <button id="exportBtn" class="btn" style="background:#222;color:#fff">Exportar CSV</button>
     </div>
-    <div id="clientsList" class="card-list"></div>
-    <div id="pagination" class="pagination"></div>
+
+    <div id="clientsList" class="card-list" aria-live="polite"></div>
+    <div id="pagination" class="pagination" role="navigation" aria-label="Paginación"></div>
   </section>
 
+  <!-- NEW / EDIT VIEW -->
   <section id="view-nuevo" class="view" style="display:none">
-    <div class="panel">
+    <div class="panel" role="form" aria-labelledby="form-title">
+      <div id="form-title" style="font-weight:800;margin-bottom:8px">Añadir / Editar cliente</div>
+
       <div class="row">
         <div class="field">
           <label>Nombre</label>
           <input id="n_nombre" placeholder="Nombre completo" />
         </div>
         <div class="field">
-          <label>Precio</label>
-          <input id="n_precio" placeholder="12,50 €" />
+          <label>Aplicación</label>
+          <input id="n_aplicacion" placeholder="Nombre de la aplicación" />
         </div>
       </div>
 
       <div class="row" style="margin-top:10px">
         <div class="field">
-          <label>Caducidad</label>
+          <label>Precio</label>
+          <input id="n_precio" placeholder="12,50" inputmode="decimal" />
+        </div>
+        <div class="field">
+          <label>Caducidad (fecha)</label>
           <input id="n_caducidad" type="date" />
         </div>
+      </div>
+
+      <div style="margin-top:10px" class="row">
         <div class="field">
           <label>Usuario</label>
           <input id="n_usuario" placeholder="usuario" />
         </div>
-      </div>
-
-      <div style="margin-top:10px">
-        <label>Contraseña</label>
-        <input id="n_contrasena" placeholder="contraseña" />
+        <div class="field">
+          <label>Contraseña</label>
+          <input id="n_contrasena" placeholder="contraseña" />
+        </div>
       </div>
 
       <div style="margin-top:10px">
         <label>Recomendaciones</label>
-        <textarea id="n_recomendaciones" placeholder="Notas"></textarea>
+        <textarea id="n_recomendaciones" placeholder="Notas..."></textarea>
+      </div>
+
+      <div style="margin-top:10px; display:flex; gap:10px; align-items:center">
+        <div style="flex:1">
+          <label>Fecha de creación</label>
+          <input id="n_fechaCreacion" type="date" readonly />
+          <div style="font-size:12px;color:var(--muted);margin-top:6px">Se autogenera al guardar.</div>
+        </div>
+        <div style="width:160px; align-self:flex-end">
+          <button id="saveBtn" class="btn edit touch" style="width:100%">Guardar</button>
+        </div>
       </div>
 
       <div class="form-footer">
-        <button class="btn edit" id="saveBtn">Guardar</button>
         <button class="btn" id="clearBtn">Limpiar</button>
       </div>
     </div>
@@ -204,17 +256,18 @@ textarea{min-height:80px}
 
 </main>
 
-<!-- Login Modal -->
+<!-- LOGIN SCREEN -->
 <div id="loginScreen">
-  <div class="login-card">
-    <h2>Inicia sesión</h2>
-    <input id="email" placeholder="Correo electrónico" />
+  <div class="login-card" role="dialog" aria-modal="true" aria-labelledby="login-title">
+    <h2 id="login-title">Inicia sesión</h2>
+    <input id="email" placeholder="Correo electrónico" type="email" />
     <input id="password" type="password" placeholder="Contraseña" />
-    <button id="btnLogin">Entrar</button>
+    <button id="btnLogin" class="btn edit" style="width:100%; margin-top:12px">Entrar</button>
   </div>
 </div>
 
-<div id="toast"></div>
+<!-- TOAST -->
+<div id="toast" role="status" aria-live="polite"></div>
 
 <!-- Firebase modular (v10) + App script -->
 <script type="module">
@@ -222,7 +275,7 @@ textarea{min-height:80px}
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
   import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
-  // --- CONFIG (tu config real) ---
+  // --- TU CONFIG REAL ---
   const firebaseConfig = {
     apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
     authDomain: "gestioncandy-b9356.firebaseapp.com",
@@ -236,7 +289,7 @@ textarea{min-height:80px}
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // UI elems
+  // UI elements
   const sidebar = document.getElementById('sidebar');
   const menuBtn = document.getElementById('menuBtn');
   const links = document.querySelectorAll('.nav a');
@@ -249,74 +302,71 @@ textarea{min-height:80px}
   const toast = document.getElementById('toast');
 
   // state
-  let clients = []; // loaded from Firestore
+  let clients = [];
   let currentPage = 1; const perPage = 6;
   let editingId = null;
 
-  function showToast(msg, t=2500){
-    toast.textContent = msg; toast.style.display='block';
-    setTimeout(()=>toast.style.display='none', t);
+  function showToast(msg, t=2200){
+    toast.textContent = msg; toast.style.display = 'block';
+    setTimeout(()=> toast.style.display = 'none', t);
   }
 
-  // Toggle sidebar
-  menuBtn.addEventListener('click', () => {
+  // sidebar toggle
+  menuBtn.addEventListener('click', ()=>{
     sidebar.classList.toggle('open');
-    menuBtn.animate([{transform:'scale(1)'},{transform:'scale(.96)'},{transform:'scale(1)'}],{duration:260});
+    menuBtn.animate([{transform:'scale(1)'},{transform:'scale(.96)'},{transform:'scale(1)'}],{duration:240});
   });
 
-  // SPA nav
-  links.forEach(a=>a.addEventListener('click', (e) => {
+  // SPA navigation
+  links.forEach(a=>a.addEventListener('click', (e)=>{
     e.preventDefault();
     links.forEach(x=>x.classList.remove('active'));
     a.classList.add('active');
     const view = document.getElementById('view-'+a.dataset.view);
     views.forEach(v=>v.style.display='none');
-    view.style.display='block';
+    view.style.display = 'block';
     if(window.innerWidth < 900) sidebar.classList.remove('open');
   }));
 
-  // AUTH: login button
-  btnLogin.addEventListener('click', async () => {
-    const email = emailInput.value.trim();
-    const pass = passInput.value.trim();
+  // AUTH: login
+  btnLogin.addEventListener('click', async ()=>{
+    const email = (emailInput.value||'').trim();
+    const pass = (passInput.value||'').trim();
     if(!email || !pass){ showToast('Introduce email y contraseña'); return; }
     try{
       await signInWithEmailAndPassword(auth, email, pass);
-      // onAuthStateChanged handles UI
+      // onAuthStateChanged will init
     } catch(e){
       showToast('Error: ' + (e.message || e.code));
     }
   });
 
   // logout
-  document.getElementById('logoutBtn').addEventListener('click', async (e) => {
-    e.preventDefault();
+  document.getElementById('logoutBtn').addEventListener('click', async (ev)=>{
+    ev.preventDefault();
     await signOut(auth);
     location.reload();
   });
 
-  // monitor auth state
-  onAuthStateChanged(auth, user => {
+  // onAuth state
+  onAuthStateChanged(auth, user=>{
     if(user){
-      // hide login, init app
       loginScreen.style.display = 'none';
       initApp();
     } else {
-      // show login
       loginScreen.style.display = 'flex';
-      loginCard.style.display = 'block';
-      // hide main views until login
+      // hide all views until login
       views.forEach(v=>v.style.display='none');
     }
   });
 
-  // -------- Firestore CRUD --------
+  // Firestore CRUD
   async function cargarClientes(){
     const q = query(collection(db,'clientes'), orderBy('nombre'));
     const snap = await getDocs(q);
     clients = [];
     snap.forEach(d => clients.push({ id: d.id, ...d.data() }));
-    // if empty, create single demo client (only one)
+    // single demo client if empty
     if(clients.length === 0){
       const demo = {
         nombre: 'Cliente de prueba',
@@ -324,6 +374,8 @@ textarea{min-height:80px}
         caducidad: new Date().toISOString().split('T')[0],
         usuario: 'prueba',
         contrasena: 'prueba',
+        aplicacion: 'DemoApp',
+        fechaCreacion: new Date().toISOString().split('T')[0],
         recomendaciones: 'Cliente creado para pruebas',
         historial: []
       };
@@ -334,28 +386,33 @@ textarea{min-height:80px}
     renderClients(1, document.getElementById('search').value || '');
   }
 
+  // save new or update
   async function saveNew(){
-    const nombre = document.getElementById('n_nombre').value.trim();
-    const precio = document.getElementById('n_precio').value.trim();
+    const nombre = (document.getElementById('n_nombre').value||'').trim();
+    const precioRaw = (document.getElementById('n_precio').value||'').trim();
+    const precio = precioRaw ? (precioRaw.endsWith('€') ? precioRaw : precioRaw + ' €') : '';
     const caducidad = document.getElementById('n_caducidad').value || new Date().toISOString().split('T')[0];
-    const usuario = document.getElementById('n_usuario').value.trim();
-    const contrasena = document.getElementById('n_contrasena').value.trim();
-    const recomendaciones = document.getElementById('n_recomendaciones').value.trim();
+    const usuario = (document.getElementById('n_usuario').value||'').trim();
+    const contrasena = (document.getElementById('n_contrasena').value||'').trim();
+    const recomendaciones = (document.getElementById('n_recomendaciones').value||'').trim();
+    const aplicacion = (document.getElementById('n_aplicacion').value||'').trim();
+    const fechaCreacion = document.getElementById('n_fechaCreacion').value || new Date().toISOString().split('T')[0];
+
     if(!nombre || !usuario){ showToast('Nombre y usuario obligatorios'); return; }
 
     if(editingId){
       const ref = doc(db,'clientes',editingId);
-      await updateDoc(ref, { nombre, precio, caducidad, usuario, contrasena, recomendaciones });
+      await updateDoc(ref, { nombre, precio, caducidad, usuario, contrasena, recomendaciones, aplicacion, fechaCreacion });
       showToast('Cliente actualizado');
       editingId = null;
       clearNew();
       await cargarClientes();
-      // go to clients view
       document.querySelector('.nav a[data-view="clientes"]').click();
       return;
     }
 
-    await addDoc(collection(db,'clientes'), { nombre, precio, caducidad, usuario, contrasena, recomendaciones, historial: [] });
+    // new doc — include fechaCreacion
+    await addDoc(collection(db,'clientes'), { nombre, precio, caducidad, usuario, contrasena, recomendaciones, aplicacion, fechaCreacion, historial: [] });
     showToast('Cliente guardado');
     clearNew();
     await cargarClientes();
@@ -363,7 +420,9 @@ textarea{min-height:80px}
   }
 
   function clearNew(){
-    ['n_nombre','n_precio','n_caducidad','n_usuario','n_contrasena','n_recomendaciones'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    ['n_nombre','n_precio','n_caducidad','n_usuario','n_contrasena','n_recomendaciones','n_aplicacion','n_fechaCreacion'].forEach(id=>{
+      const el = document.getElementById(id); if(el) el.value = '';
+    });
     editingId = null;
   }
 
@@ -371,13 +430,17 @@ textarea{min-height:80px}
     const d = clients.find(c => c.id === id);
     if(!d) return;
     document.getElementById('n_nombre').value = d.nombre || '';
-    document.getElementById('n_precio').value = d.precio || '';
+    document.getElementById('n_precio').value = d.precio ? d.precio.replace(/\s*€/,'').trim() : '';
     document.getElementById('n_caducidad').value = d.caducidad || '';
     document.getElementById('n_usuario').value = d.usuario || '';
     document.getElementById('n_contrasena').value = d.contrasena || '';
     document.getElementById('n_recomendaciones').value = d.recomendaciones || '';
+    document.getElementById('n_aplicacion').value = d.aplicacion || '';
+    document.getElementById('n_fechaCreacion').value = d.fechaCreacion || new Date().toISOString().split('T')[0];
     editingId = id;
     document.querySelector('.nav a[data-view="nuevo"]').click();
+    // scroll into view on small screens
+    setTimeout(()=> document.getElementById('n_nombre').focus(), 200);
   }
 
   async function eliminarCliente(id){
@@ -388,11 +451,9 @@ textarea{min-height:80px}
   }
 
   async function renovar90(id){
-    const c = clients.find(x => x.id === id);
-    if(!c) return;
-    let fecha = new Date(c.caducidad);
-    if(isNaN(fecha)) fecha = new Date();
-    fecha.setDate(fecha.getDate() + 90);
+    const c = clients.find(x=>x.id === id); if(!c) return;
+    let fecha = new Date(c.caducidad); if(isNaN(fecha)) fecha = new Date();
+    fecha.setDate(fecha.getDate()+90);
     const historial = c.historial || [];
     historial.push('Renovado ' + new Date().toLocaleDateString());
     await updateDoc(doc(db,'clientes',id), { caducidad: fecha.toISOString().split('T')[0], historial });
@@ -401,13 +462,13 @@ textarea{min-height:80px}
   }
 
   function copiarCliente(id){
-    const c = clients.find(x => x.id === id);
-    if(!c) return;
-    const txt = `Cliente: ${c.nombre}\nPrecio: ${c.precio}\nCaducidad: ${c.caducidad}\nUsuario: ${c.usuario}\nContraseña: ${c.contrasena}\nRecomendaciones: ${c.recomendaciones||'-'}`;
-    navigator.clipboard.writeText(txt).then(()=>showToast('Copiado al portapapeles'));
+    const c = clients.find(x=>x.id===id); if(!c) return;
+    // copy only Usuario, Contraseña, Aplicación, Fecha de caducidad
+    const texto = `Usuario: ${c.usuario}\nContraseña: ${c.contrasena}\nAplicación: ${c.aplicacion || '-'}\nCaducidad: ${c.caducidad}`;
+    navigator.clipboard.writeText(texto).then(()=> showToast('Datos copiados (usuario, contraseña, aplicación, caducidad)'));
   }
 
-  // -------- Rendering --------
+  // Rendering
   function renderDashboard(){
     const total = clients.length;
     const hoy = new Date();
@@ -431,89 +492,104 @@ textarea{min-height:80px}
             <div class="avatar">${(c.nombre||'--').slice(0,2).toUpperCase()}</div>
             <div>
               <div class="title">${c.nombre}</div>
-              <div class="meta">${c.usuario}</div>
+              <div class="meta">${c.usuario} • ${c.aplicacion || '-'}</div>
             </div>
           </div>
-          <div class="tags"><div class="tag ${status}">${status==='exp'?'Caducado':status==='warn'?'Próx. caducidad':'Vigente'}</div></div>
+          <div class="tags">
+            <div class="tag ${status}">${status==='exp'?'Caducado':status==='warn'?'Próx. caducidad':'Vigente'}</div>
+          </div>
         </div>
         <div class="info-row">
-          <div>Caducidad<br><div class="caducidad">${c.caducidad}</div></div>
-          <div>Precio<br><div style="font-weight:800">${c.precio||'-'}</div></div>
+          <div class="row"><div>Caducidad</div><div class="caducidad">${c.caducidad}</div></div>
+          <div class="row"><div>Precio</div><div style="font-weight:800">${c.precio||'-'}</div></div>
         </div>
       `;
       ov.appendChild(div);
     });
   }
 
-  function renderClients(page = 1, filter = ''){
+  function renderClients(page=1, filter=''){
     currentPage = page;
     const list = document.getElementById('clientsList'); list.innerHTML = '';
-    const filt = clients.filter(c => c.nombre.toLowerCase().includes(filter.toLowerCase()) || c.usuario.toLowerCase().includes(filter.toLowerCase()));
+    const filt = clients.filter(c => c.nombre.toLowerCase().includes(filter.toLowerCase()) || (c.usuario||'').toLowerCase().includes(filter.toLowerCase()));
     const totalPages = Math.max(1, Math.ceil(filt.length / perPage));
-    const start = (page - 1) * perPage; const slice = filt.slice(start, start + perPage);
+    const start = (page-1)*perPage; const slice = filt.slice(start, start+perPage);
 
-    slice.forEach(c => {
-      const div = document.createElement('div'); div.className = 'card';
+    slice.forEach(c=>{
+      const div = document.createElement('div'); div.className='card';
       const fecha = new Date(c.caducidad); const diff = Math.ceil((fecha - new Date())/(1000*60*60*24));
       const status = (fecha < new Date()) ? 'exp' : (diff <= 7 ? 'warn' : 'vig');
       div.innerHTML = `
         <div class="top">
           <div class="left">
             <div class="avatar">${(c.nombre||'--').slice(0,2).toUpperCase()}</div>
-            <div><div class="title">${c.nombre}</div><div class="meta">${c.usuario}</div></div>
+            <div><div class="title">${c.nombre}</div><div class="meta">${c.usuario} • ${c.aplicacion || '-'}</div></div>
           </div>
           <div class="tags"><div class="tag ${status}">${status==='exp'?'Caducado':status==='warn'?'Próx. caducidad':'Vigente'}</div></div>
         </div>
+
         <div style="margin-top:10px;color:var(--muted)">Precio: <strong>${c.precio||'-'}</strong></div>
         <div style="margin-top:6px;color:var(--muted)">Caducidad: <strong>${c.caducidad}</strong></div>
-        <div style="margin-top:6px;color:var(--muted)">Recomendaciones: <strong>${c.recomendaciones||'-'}</strong></div>
-        <div class="actions">
-          <button class="btn edit" onclick="editarCliente('${c.id}')"><i class="fa-solid fa-pen"></i> Editar</button>
-          <button class="btn renew" onclick="renovar90('${c.id}')"><i class="fa-solid fa-calendar-plus"></i> Renovar 90 días</button>
-          <button class="btn copy" onclick="copiarCliente('${c.id}')"><i class="fa-solid fa-copy"></i> Copiar</button>
-          <button class="btn del" onclick="eliminarCliente('${c.id}')"><i class="fa-solid fa-trash"></i> Eliminar</button>
+        <div style="margin-top:6px;color:var(--muted)">Aplicación: <strong>${c.aplicacion || '-'}</strong></div>
+        <div style="margin-top:6px;color:var(--muted)">Fecha creación: <strong>${c.fechaCreacion || '-'}</strong></div>
+
+        <div class="actions" style="margin-top:12px">
+          <button class="btn edit touch" onclick="editarCliente('${c.id}')"><i class="fa-solid fa-pen"></i> Editar</button>
+          <button class="btn renew touch" onclick="renovar90('${c.id}')"><i class="fa-solid fa-calendar-plus"></i> Renovar 90 días</button>
+          <button class="btn copy touch" onclick="copiarCliente('${c.id}')"><i class="fa-solid fa-copy"></i> Copiar</button>
+          <button class="btn del touch" onclick="eliminarCliente('${c.id}')"><i class="fa-solid fa-trash"></i> Eliminar</button>
         </div>
       `;
       list.appendChild(div);
     });
 
     // pagination
-    const pag = document.getElementById('pagination'); pag.innerHTML = '';
-    for(let p=1; p<=totalPages; p++){
+    const pag = document.getElementById('pagination'); pag.innerHTML='';
+    for(let p=1;p<=totalPages;p++){
       const btn = document.createElement('button'); btn.className = 'page-btn' + (p===page ? ' active' : ''); btn.textContent = p;
-      btn.addEventListener('click', ()=>renderClients(p, document.getElementById('search').value));
+      btn.addEventListener('click', ()=> renderClients(p, document.getElementById('search').value));
       pag.appendChild(btn);
     }
   }
 
   // events
-  document.getElementById('refreshBtn').addEventListener('click', () => cargarClientes());
-  document.getElementById('search').addEventListener('input', (e) => renderClients(1, e.target.value));
-  document.getElementById('exportBtn').addEventListener('click', async () => {
-    const csvHeaders = 'Nombre,Precio,Caducidad,Usuario,Contraseña,Recomendaciones\n';
-    const rows = clients.map(c => `${(c.nombre||'').replace(/,/g,' ' )},${(c.precio||'')},${c.caducidad},${c.usuario},${c.contrasena||''},"${(c.recomendaciones||'').replace(/"/g,'')}"`).join('\n');
-    const blob = new Blob([csvHeaders + rows], {type:'text/csv'});
+  document.getElementById('refreshBtn').addEventListener('click', ()=> cargarClientes());
+  document.getElementById('search').addEventListener('input', (e)=> renderClients(1, e.target.value));
+  document.getElementById('exportBtn').addEventListener('click', async ()=>{
+    const csvHeaders = 'Nombre,Precio,Caducidad,Usuario,Contraseña,Aplicación,FechaCreacion,Recomendaciones\n';
+    const rows = clients.map(c => `${(c.nombre||'').replace(/,/g,' ' )},${(c.precio||'')},${c.caducidad},${c.usuario},${c.contrasena||''},${c.aplicacion||''},${c.fechaCreacion||''},"${(c.recomendaciones||'').replace(/"/g,'')}"`).join('\n');
+    const blob = new Blob([csvHeaders + rows], { type:'text/csv' });
     const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = 'clientes.csv'; link.click();
   });
 
-  // Save button on nuevo view
+  // price input: append euro symbol visually while typing (mobile-friendly)
+  const priceInput = document.getElementById('n_precio');
+  priceInput.addEventListener('input', (e)=>{
+    // keep the raw numeric value but show € symbol when focus lost — here keep it simple: don't re-add repeatedly
+    let v = e.target.value.replace(/[^\d,.\s]/g,'').trim();
+    e.target.value = v;
+  });
+  priceInput.addEventListener('blur', (e)=>{ if(e.target.value) e.target.value = e.target.value + ' €'; });
+  priceInput.addEventListener('focus', (e)=>{ e.target.value = (e.target.value||'').replace(/\s*€/,'').trim(); });
+
+  // form save/clear
   document.getElementById('saveBtn').addEventListener('click', ()=> saveNew());
   document.getElementById('clearBtn').addEventListener('click', ()=> clearNew());
 
-  // Expose some functions to global for inline onclicks in generated cards
+  // expose functions for inline use in generated HTML
   window.editarCliente = editarCliente;
   window.eliminarCliente = eliminarCliente;
   window.renovar90 = renovar90;
   window.copiarCliente = copiarCliente;
-  window.saveNew = saveNew;
-  window.clearNew = clearNew;
 
+  // init app once logged in
   async function initApp(){
     await cargarClientes();
-    // open dashboard view
+    // default view
     document.querySelector('.nav a[data-view="dashboard"]').click();
+    // ensure sidebar closed on mobile
+    if(window.innerWidth < 900) sidebar.classList.remove('open'); else sidebar.classList.add('open');
   }
-
 </script>
 </body>
 </html>
