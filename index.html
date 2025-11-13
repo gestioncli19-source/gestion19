@@ -6,8 +6,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
-    input, select { margin: 5px; padding: 5px; }
-    button { padding: 5px 10px; margin-left: 5px; }
+    input, button { padding: 5px; margin: 5px; }
     table { border-collapse: collapse; width: 100%; margin-top: 20px; }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
     th { background-color: #f2f2f2; }
@@ -21,7 +20,7 @@
   <div>
     <input id="nombre" placeholder="Nombre">
     <input id="precio" placeholder="Precio">
-    <input id="fecha_contratacion" type="date" placeholder="Fecha de contratación">
+    <input id="fecha_contratacion" type="date" placeholder="Fecha Contratación">
     <input id="caducidad" type="date" placeholder="Caducidad">
     <input id="usuario" placeholder="Usuario">
     <input id="contrasena" placeholder="Contraseña">
@@ -52,14 +51,13 @@
     // ==============================
     // CONFIGURACIÓN DE SUPABASE
     // ==============================
-    const supabaseUrl = 'https://xqxkcijmsdnjmuhyzvsj.supabase.co';      // Reemplaza con tu URL de Supabase
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxeGtjaWptc2Ruam11aHl6dnNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNDUxNzgsImV4cCI6MjA3ODYyMTE3OH0.flvMDAfepvWMp88IU37bGoawhsE52c2GF-I1IKKdzQA'; // Reemplaza con tu anon key
+    const supabaseUrl = 'https://xqxkcijmsdnjmuhyzvsj.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhxeGtjaWptc2Ruam11aHl6dnNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNDUxNzgsImV4cCI6MjA3ODYyMTE3OH0.flvMDAfepvWMp88IU37bGoawhsE52c2GF-I1IKKdzQA';
     const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
     // ==============================
     // FUNCIONES
     // ==============================
-
     async function cargarClientes() {
       const { data, error } = await supabase
         .from('clientes')
@@ -120,8 +118,8 @@
 
     async function eliminarCliente(id) {
       const { error } = await supabase.from('clientes').delete().eq('id', id);
-      if (error) { alert('Error eliminando cliente: ' + error.message); }
-      else { cargarClientes(); }
+      if (error) { alert('Error eliminando cliente: ' + error.message); return; }
+      cargarClientes();
     }
 
     // ==============================
