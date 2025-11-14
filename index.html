@@ -1,5 +1,4 @@
 <!doctype html>
-
 <html lang="es">
 <head>
 <meta charset="utf-8" />
@@ -8,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 <style>
-/* FULL CSS (same as enviado por chat) */
+/* FULL CSS */
 :root{ --bg:#0f1216; --panel:#111318; --muted:#9aa4ad; --accent:#00b4ff; --accent2:#0077aa; --success:#23c552; --danger:#ff6b6b; --touch:48px; }
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -30,10 +29,10 @@ header { display:flex; justify-content:space-between; align-items:center; }
 .num { font-size:28px; font-weight:800; color:var(--accent); }
 .label { font-size:14px; color:var(--muted); margin-top:6px; }
 .card-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin-top:18px; }
-.card { background:linear-gradient(180deg,#0f1418,#15181c); border-radius:12px; padding:14px; }
+.card { background:linear-gradient(180deg,#0f1418,#15181c); border-radius:12px; padding:14px; box-shadow:0 10px 30px rgba(0,0,0,0.6); }
 .info-row { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
 .actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
-.btn { padding:10px 12px; border-radius:10px; border:none; cursor:pointer; font-weight:800; font-size:13px; display:flex; gap:8px; }
+.btn { padding:10px 12px; border-radius:10px; border:none; cursor:pointer; font-weight:800; font-size:13px; display:flex; gap:8px; align-items:center; }
 .edit { background:linear-gradient(90deg,#3b82f6,#2563eb); color:#fff; }
 .copy { background:linear-gradient(90deg,#9b6bff,#7c3aed); color:#fff; }
 .del { background:linear-gradient(90deg,#ff7b7b,#ff3b3b); color:#fff; }
@@ -47,13 +46,21 @@ textarea{ min-height:80px; resize:vertical; }
 .page-btn { padding:8px 12px; border-radius:8px; background:transparent; border:1px solid rgba(255,255,255,0.1); color:#fff; }
 .page-btn.active { background:var(--accent); }
 #toast { position:fixed; left:50%; transform:translateX(-50%); bottom:24px; padding:10px 14px; border-radius:10px; background:#222; color:#fff; display:none; z-index:600; }
+
+/* Overlay for menu */
+#overlay { position:fixed; inset:0; background:rgba(0,0,0,0.35); opacity:0; pointer-events:none; transition:opacity .25s; z-index:235; }
+#overlay.show { opacity:1; pointer-events:auto; }
+
+/* prevent scroll when menu open */
+body.no-scroll { overflow: hidden; }
 </style>
 </head>
 <body class="app">
+<div id="overlay"></div>
 <button class="menu-btn" id="menuBtn"><i class="fa-solid fa-bars"></i></button>
-<aside class="sidebar" id="sidebar">
+<aside class="sidebar" id="sidebar" aria-hidden="true">
   <div class="brand"><div class="logo">GC</div><div><div style="font-weight:800;font-size:16px">Gestión Candy 🍃</div></div></div>
-  <nav class="nav">
+  <nav class="nav" role="navigation" aria-label="Principal">
     <a href="#" data-view="dashboard" class="active"><i class="fa-solid fa-chart-simple"></i> Dashboard</a>
     <a href="#" data-view="clientes"><i class="fa-solid fa-users"></i> Clientes</a>
     <a href="#" data-view="nuevo"><i class="fa-solid fa-plus"></i> Añadir cliente</a>
@@ -62,8 +69,9 @@ textarea{ min-height:80px; resize:vertical; }
 <main>
 <header>
   <div class="header-title">Gestión Candy 🍃</div>
-  <button id="refreshBtn" class="icon-btn"><i class="fa-solid fa-arrows-rotate"></i></button>
+  <button id="refreshBtn" class="icon-btn" title="Refrescar"><i class="fa-solid fa-arrows-rotate"></i></button>
 </header>
+
 <section id="view-dashboard" class="view">
   <div class="grid">
     <div class="box" id="box-total"><div class="num" id="totalCount">0</div><div class="label">Total clientes</div></div>
@@ -72,61 +80,69 @@ textarea{ min-height:80px; resize:vertical; }
     <div class="box" id="box-exp"><div class="num" id="expCount">0</div><div class="label">Caducados</div></div>
   </div>
 </section>
+
 <section id="view-clientes" class="view" style="display:none">
   <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
-    <input id="search" placeholder="Buscar por nombre o usuario" style="flex:1;padding:12px;border-radius:10px;border:none;background:#15181b;color:#fff" />
+    <input id="search" placeholder="Buscar por nombre o usuario" style="flex:1;padding:12px;border-radius:10px;border:none;background:#15181b;color:#fff" aria-label="Buscar clientes" />
     <button id="filterBtn" class="btn" style="background:#222;color:#fff">Orden caducidad ↑/↓</button>
     <button id="exportBtn" class="btn" style="background:#222;color:#fff">Exportar CSV</button>
   </div>
-  <div id="clientsList" class="card-list"></div>
-  <div id="pagination" class="pagination"></div>
+  <div id="clientsList" class="card-list" aria-live="polite"></div>
+  <div id="pagination" class="pagination" role="navigation" aria-label="Paginación"></div>
 </section>
+
 <section id="view-nuevo" class="view" style="display:none">
-  <div class="panel">
-    <div style="font-weight:800;margin-bottom:8px">Añadir / Editar cliente</div>
+  <div class="panel" role="form" aria-labelledby="form-title">
+    <div id="form-title" style="font-weight:800;margin-bottom:8px">Añadir / Editar cliente</div>
+
     <div class="row">
-      <div class="field">
-        <label>Nombre</label>
-        <input id="n_nombre" />
-      </div>
+      <div class="field"><label>Nombre</label><input id="n_nombre" /></div>
       <div class="field">
         <label>Aplicación</label>
-      <select id="n_aplicacion">
-        <option value="Spinning TV">Spinning TV</option>
-        <option value="Spinning IBO">Spinning IBO</option>
-        <option value="Spinning MATE">Spinning MATE</option>
-      </select>
+        <select id="n_aplicacion" aria-label="Aplicación">
+          <option value="Spinning TV">Spinning TV</option>
+          <option value="Spinning IBO">Spinning IBO</option>
+          <option value="Spinning MATE">Spinning MATE</option>
+        </select>
+      </div>
     </div>
-  </div>  <div class="row" style="margin-top:10px">
-    <div class="field">
-      <label>Precio</label>
-      <input id="n_precio" />
+
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label>Precio</label><input id="n_precio" inputmode="decimal" placeholder="12,50" /></div>
+      <div class="field"><label>Caducidad</label><input id="n_caducidad" type="date" /></div>
     </div>
-    <div class="field">
-      <label>Caducidad</label>
-      <input id="n_caducidad" type="date" />
+
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label>Usuario</label><input id="n_usuario" /></div>
+      <div class="field"><label>Contraseña</label><input id="n_contrasena" /></div>
     </div>
-  </div>  <div class="row" style="margin-top:10px">
-    <div class="field">
-      <label>Usuario</label>
-      <input id="n_usuario" />
+
+    <div style="margin-top:10px">
+      <label>Recomendaciones</label>
+      <textarea id="n_recomendaciones" placeholder="Notas..."></textarea>
     </div>
-    <div class="field">
-      <label>Contraseña</label>
-      <input id="n_contrasena" />
+
+    <div style="margin-top:10px;display:flex;gap:10px;align-items:center">
+      <div style="flex:1">
+        <label>Fecha de creación</label>
+        <input id="n_fechaCreacion" type="date" />
+        <div style="font-size:12px;color:var(--muted);margin-top:6px">Se autogenera si dejas vacío.</div>
+      </div>
+      <div style="width:160px;align-self:flex-end">
+        <button id="saveBtn" class="btn edit touch" style="width:100%">Guardar</button>
+      </div>
     </div>
-  </div>  <div style="margin-top:10px">
-    <label>Recomendaciones</label>
-    <textarea id="n_recomendaciones"></textarea>
-  </div>  <div style="margin-top:10px">
-    <label>Fecha de creación</label>
-    <input id="n_fechaCreacion" type="date" />
-  </div>  <div class="form-footer">
-    <button class="btn edit" id="saveBtn">Guardar</button>
-    <button class="btn" id="clearBtn">Limpiar</button>
+
+    <div class="form-footer" style="margin-top:12px;display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" id="clearBtn">Limpiar</button>
+    </div>
   </div>
-</div>
-</section><div id="toast"></div><script type="module">
+</section>
+</main>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
@@ -135,126 +151,231 @@ const firebaseConfig={ apiKey:"AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8", authDom
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
-const sidebar=document.getElementById('sidebar');
-const menuBtn=document.getElementById('menuBtn');
-const links=document.querySelectorAll('.nav a');
-const views=document.querySelectorAll('.view');
-const toast=document.getElementById('toast');
-let editingId=null;
-let clients=[];
-let sortAsc=true;
+// DOM refs
+const sidebar = document.getElementById('sidebar');
+const menuBtn = document.getElementById('menuBtn');
+const overlay = document.getElementById('overlay');
+const links = document.querySelectorAll('.nav a');
+const views = document.querySelectorAll('.view');
+const toast = document.getElementById('toast');
+const clientsList = document.getElementById('clientsList');
+const paginationEl = document.getElementById('pagination');
+const searchEl = document.getElementById('search');
+const filterBtn = document.getElementById('filterBtn');
+const exportBtn = document.getElementById('exportBtn');
+const refreshBtn = document.getElementById('refreshBtn');
+const saveBtn = document.getElementById('saveBtn');
+const clearBtn = document.getElementById('clearBtn');
 
-function showToast(msg){ toast.textContent=msg; toast.style.display='block'; setTimeout(()=>toast.style.display='none',2200); }
+// form fields
+const f_nombre = document.getElementById('n_nombre');
+const f_precio = document.getElementById('n_precio');
+const f_caducidad = document.getElementById('n_caducidad');
+const f_usuario = document.getElementById('n_usuario');
+const f_contrasena = document.getElementById('n_contrasena');
+const f_aplicacion = document.getElementById('n_aplicacion');
+const f_recomendaciones = document.getElementById('n_recomendaciones');
+const f_fechaCreacion = document.getElementById('n_fechaCreacion');
 
-menuBtn.addEventListener('click',()=> sidebar.classList.toggle('open'));
+let registros = []; let editingId = null; let sortAsc = true; const perPage = 9; let currentPage = 1;
 
-links.forEach(a=>a.addEventListener('click',e=>{
+function showToast(msg, t=2200){ toast.textContent = msg; toast.style.display = 'block'; setTimeout(()=> toast.style.display = 'none', t); }
+
+// menu open/close + overlay + prevent scroll
+menuBtn.addEventListener('click', ()=>{
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('show');
+  document.body.classList.toggle('no-scroll');
+});
+
+// close when clicking overlay
+overlay.addEventListener('click', ()=>{
+  sidebar.classList.remove('open');
+  overlay.classList.remove('show');
+  document.body.classList.remove('no-scroll');
+});
+
+// close when clicking menu links and navigate views
+links.forEach(a=> a.addEventListener('click', (e)=>{
   e.preventDefault();
-  links.forEach(x=>x.classList.remove('active'));
+  links.forEach(x=> x.classList.remove('active'));
   a.classList.add('active');
-  const view=document.getElementById('view-'+a.dataset.view);
-  views.forEach(v=>v.style.display='none');
-  view.style.display='block';
-  if(a.dataset.view==='clientes') loadClients();
+  const view = document.getElementById('view-' + a.dataset.view);
+  document.querySelectorAll('.view').forEach(v=> v.style.display = 'none');
+  if(view) view.style.display = 'block';
+  sidebar.classList.remove('open');
+  overlay.classList.remove('show');
+  document.body.classList.remove('no-scroll');
+  if(a.dataset.view === 'clientes') renderClients();
 }));
 
-async function loadClients(){
-  const q=query(collection(db,'clientes'),orderBy('caducidad'));
-  const snap=await getDocs(q);
-  clients=[];
-  snap.forEach(d=>clients.push({id:d.id,...d.data()}));
-  renderDashboard();
-  renderClients();
+// simple drag-to-close for sidebar on touch devices
+let startX = 0; let dragging = false;
+sidebar.addEventListener('pointerdown', (e)=>{
+  if(window.innerWidth > 900) return; // only on mobile
+  dragging = true; startX = e.clientX;
+  sidebar.classList.add('dragging');
+  sidebar.setPointerCapture(e.pointerId);
+});
+sidebar.addEventListener('pointermove', (e)=>{
+  if(!dragging) return;
+  const dx = e.clientX - startX;
+  if(dx < -30){
+    sidebar.style.transform = `translateX(${Math.min(0, dx)}px)`;
+  }
+});
+sidebar.addEventListener('pointerup', (e)=>{
+  if(!dragging) return;
+  dragging = false;
+  sidebar.classList.remove('dragging');
+  const dx = e.clientX - startX;
+  sidebar.style.transform = '';
+  if(dx < -80){
+    // close
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+    document.body.classList.remove('no-scroll');
+  }
+  try{ sidebar.releasePointerCapture(e.pointerId); }catch(e){}
+});
+
+// Firestore loader
+async function loadClientsFromFirestore(){
+  try{
+    const q = query(collection(db, 'clientes'), orderBy('caducidad'));
+    const snap = await getDocs(q);
+    registros = [];
+    snap.forEach(d => registros.push({ id: d.id, ...d.data() }));
+    // seed test client if empty
+    if(registros.length === 0){
+      const test = { nombre:'Cliente Prueba', precio:'10 €', caducidad:new Date(new Date().setDate(new Date().getDate()+7)).toISOString().split('T')[0], usuario:'userprueba', contrasena:'pass123', aplicacion:'Spinning TV', recomendaciones:'Prueba inicial', fechaCreacion:new Date().toISOString().split('T')[0] };
+      await addDoc(collection(db,'clientes'), test);
+      return loadClientsFromFirestore();
+    }
+    renderDashboard(); renderClients();
+  }catch(err){
+    console.error(err); showToast('Error cargando datos');
+  }
 }
 
 function renderDashboard(){
-  const hoy=new Date();
-  document.getElementById('totalCount').textContent=clients.length;
-  document.getElementById('vigentesCount').textContent=clients.filter(c=>new Date(c.caducidad)>=hoy).length;
-  document.getElementById('alertCount').textContent=clients.filter(c=>{const diff=Math.ceil((new Date(c.caducidad)-hoy)/86400000);return diff>0&&diff<=3;}).length;
-  document.getElementById('expCount').textContent=clients.filter(c=>new Date(c.caducidad)<hoy).length;
+  const hoy = new Date();
+  document.getElementById('totalCount').textContent = registros.length;
+  document.getElementById('vigentesCount').textContent = registros.filter(r=> new Date(r.caducidad) >= hoy).length;
+  document.getElementById('alertCount').textContent = registros.filter(r=>{ const diff = Math.ceil((new Date(r.caducidad)-hoy)/(1000*60*60*24)); return diff>0 && diff<=3; }).length;
+  document.getElementById('expCount').textContent = registros.filter(r=> new Date(r.caducidad) < hoy).length;
 }
 
-function renderClients(){
-  const list=document.getElementById('clientsList'); list.innerHTML='';
-  let sorted=[...clients].sort((a,b)=>sortAsc?new Date(a.caducidad)-new Date(b.caducidad):new Date(b.caducidad)-new Date(a.caducidad));
+function escapeHtml(s){ if(s===0) return '0'; if(!s) return ''; return String(s).replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]; }); }
 
-  sorted.forEach(c=>{
-    const card=document.createElement('div'); card.className='card';
-    card.innerHTML=`<div style="font-weight:700;font-size:16px;margin-bottom:6px">${c.nombre}</div>
+function renderClients(page=1, search=''){
+  currentPage = page;
+  clientsList.innerHTML = '';
+  let list = registros.slice();
+  if(search) list = list.filter(r=> (r.nombre||'').toLowerCase().includes(search.toLowerCase()) || (r.usuario||'').toLowerCase().includes(search.toLowerCase()));
+  list.sort((a,b)=> sortAsc ? new Date(a.caducidad) - new Date(b.caducidad) : new Date(b.caducidad) - new Date(a.caducidad));
+  const total = list.length; const pages = Math.max(1, Math.ceil(total / perPage)); if(page>pages) page = pages;
+  const start = (page-1)*perPage; const pageItems = list.slice(start, start+perPage);
+
+  pageItems.forEach(c=>{
+    const diff = Math.ceil((new Date(c.caducidad) - new Date())/(1000*60*60*24));
+    const card = document.createElement('div'); card.className = 'card';
+    let leftStyle = '';
+    if(isNaN(diff)) leftStyle = 'border-left:4px solid #666;'; else if(diff<0) leftStyle = 'border-left:4px solid #ff6b6b;'; else if(diff<=3) leftStyle = 'border-left:4px solid #ffb86b;'; else leftStyle = 'border-left:4px solid #23c552;';
+    card.setAttribute('style', leftStyle);
+    card.innerHTML = `
+      <div style="font-weight:700;font-size:16px;margin-bottom:6px">${escapeHtml(c.nombre||'')}</div>
       <div class="info-row">
-        <div class="row"><span>Usuario:</span><span>${c.usuario}</span></div>
-        <div class="row"><span>Contraseña:</span><span>${c.contrasena}</span></div>
-        <div class="row"><span>Aplicación:</span><span>${c.aplicacion}</span></div>
-        <div class="row"><span>Caducidad:</span><span>${c.caducidad}</span></div>
+        <div class="row"><span>Precio:</span><span>${escapeHtml(c.precio||'')}</span></div>
+        <div class="row"><span>Usuario:</span><span>${escapeHtml(c.usuario||'')}</span></div>
+        <div class="row"><span>Contraseña:</span><span>${escapeHtml(c.contrasena||'')}</span></div>
+        <div class="row"><span>Aplicación:</span><span>${escapeHtml(c.aplicacion||'')}</span></div>
+        <div class="row"><span>Caducidad:</span><span>${escapeHtml(c.caducidad||'')}</span></div>
       </div>
       <div class="actions">
-        <button class="btn edit" onclick="editClient('${c.id}')"><i class='fa-solid fa-pen'></i> Editar</button>
-        <button class="btn copy" onclick="copyClient('${c.id}')"><i class='fa-solid fa-copy'></i> Copiar</button>
-        <button class="btn del" onclick="deleteClient('${c.id}')"><i class='fa-solid fa-trash'></i> Eliminar</button>
-      </div>`;
-    list.appendChild(card);
+        <button class="btn edit" data-id="${c.id}"><i class="fa-solid fa-pen"></i> Editar</button>
+        <button class="btn copy" data-id="${c.id}"><i class="fa-solid fa-copy"></i> Copiar</button>
+        <button class="btn del" data-id="${c.id}"><i class="fa-solid fa-trash"></i> Eliminar</button>
+      </div>
+    `;
+    clientsList.appendChild(card);
   });
+
+  // attach handlers
+  clientsList.querySelectorAll('.btn.edit').forEach(b=> b.addEventListener('click', ()=> editarFirestoreClient(b.dataset.id)));
+  clientsList.querySelectorAll('.btn.copy').forEach(b=> b.addEventListener('click', ()=> copiarFirestoreClient(b.dataset.id)));
+  clientsList.querySelectorAll('.btn.del').forEach(b=> b.addEventListener('click', ()=> eliminarFirestoreClient(b.dataset.id)));
+
+  // pagination
+  paginationEl.innerHTML = '';
+  for(let p=1;p<=pages;p++){ const btn = document.createElement('button'); btn.className = 'page-btn' + (p===page? ' active':''); btn.textContent = p; btn.addEventListener('click', ()=> renderClients(p, searchEl.value)); paginationEl.appendChild(btn); }
+  renderDashboard();
 }
 
-window.editClient=function(id){
-  const c=clients.find(x=>x.id===id);
-  editingId=id;
-  document.querySelector('[data-view=nuevo]').click();
-  n_nombre.value=c.nombre;
-  n_precio.value=c.precio;
-  n_caducidad.value=c.caducidad;
-  n_usuario.value=c.usuario;
-  n_contrasena.value=c.contrasena;
-  n_aplicacion.value=c.aplicacion;
-  n_recomendaciones.value=c.recomendaciones;
-  n_fechaCreacion.value=c.fechaCreacion;
+async function editarFirestoreClient(id){
+  const c = registros.find(x=>x.id===id); if(!c) return;
+  editingId = id;
+  links.forEach(x=>x.classList.remove('active'));
+  document.querySelector('[data-view="nuevo"]').classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.style.display='none');
+  document.getElementById('view-nuevo').style.display='block';
+  f_nombre.value = c.nombre||'';
+  f_precio.value = c.precio?c.precio.replace(' €',''):'';
+  f_caducidad.value = c.caducidad||'';
+  f_usuario.value = c.usuario||'';
+  f_contrasena.value = c.contrasena||'';
+  f_aplicacion.value = c.aplicacion||'';
+  f_recomendaciones.value = c.recomendaciones||'';
+  f_fechaCreacion.value = c.fechaCreacion||'';
 }
 
-window.copyClient=function(id){
-  const c=clients.find(x=>x.id===id);
-  navigator.clipboard.writeText(`Usuario: ${c.usuario}
-Contraseña: ${c.contrasena}
-Aplicación: ${c.aplicacion}
-Caducidad: ${c.caducidad}`);
-  showToast('Copiado');
-}
+async function eliminarFirestoreClient(id){ if(!confirm('¿Eliminar cliente?')) return; await deleteDoc(doc(db,'clientes',id)); showToast('Cliente eliminado'); await loadClientsFromFirestore(); }
 
-window.deleteClient=async function(id){
-  if(!confirm('¿Eliminar cliente?')) return;
-  await deleteDoc(doc(db,'clientes',id));
-  showToast('Cliente eliminado');
-  loadClients();
-}
+function copiarFirestoreClient(id){ const c = registros.find(x=>x.id===id); const text = `Usuario: ${c.usuario}\\nContraseña: ${c.contrasena}\\nAplicación: ${c.aplicacion}\\nCaducidad: ${c.caducidad}`; navigator.clipboard.writeText(text).then(()=>showToast('Copiado al portapapeles')); }
 
-saveBtn.addEventListener('click',async()=>{
-  const nombre=n_nombre.value.trim();
-  const usuario=n_usuario.value.trim();
-  if(!nombre||!usuario){showToast('Nombre y usuario obligatorios');return;}
-
-  const data={
-    nombre,
-    precio:n_precio.value.trim()?n_precio.value.trim()+' €':'',
-    caducidad:n_caducidad.value||new Date().toISOString().split('T')[0],
-    usuario,
-    contrasena:n_contrasena.value.trim(),
-    aplicacion:n_aplicacion.value,
-    recomendaciones:n_recomendaciones.value,
-    fechaCreacion:n_fechaCreacion.value||new Date().toISOString().split('T')[0]
-  };
-
-  if(editingId){ await updateDoc(doc(db,'clientes',editingId),data); showToast('Actualizado'); editingId=null; }
-  else{ await addDoc(collection(db,'clientes'),data); showToast('Cliente agregado'); }
-
-  clearForm(); loadClients(); document.querySelector('[data-view=clientes]').click();
+saveBtn.addEventListener('click', async ()=>{
+  const nombre = f_nombre.value.trim(); const usuario = f_usuario.value.trim();
+  if(!nombre || !usuario){ showToast('Nombre y usuario son obligatorios'); return; }
+  const data = { nombre, precio: f_precio.value.trim() ? f_precio.value.trim().replace(/[^\\d,\\.]/g,'').replace(/,/g,'.') + ' €' : '', caducidad: f_caducidad.value || new Date().toISOString().split('T')[0], usuario, contrasena: f_contrasena.value.trim(), aplicacion: f_aplicacion.value, recomendaciones: f_recomendaciones.value.trim(), fechaCreacion: f_fechaCreacion.value || new Date().toISOString().split('T')[0] };
+  if(editingId){ await updateDoc(doc(db,'clientes',editingId), data); showToast('Cliente actualizado'); editingId = null; } else { await addDoc(collection(db,'clientes'), data); showToast('Cliente agregado'); }
+  clearForm(); await loadClientsFromFirestore();
+  links.forEach(x=>x.classList.remove('active'));
+  document.querySelector('[data-view=\"clientes\"]').classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.style.display='none');
+  document.getElementById('view-clientes').style.display='block';
 });
 
-function clearForm(){ ['n_nombre','n_precio','n_caducidad','n_usuario','n_contrasena','n_aplicacion','n_recomendaciones','n_fechaCreacion'].forEach(id=>document.getElementById(id).value=''); }
-clearBtn.addEventListener('click',clearForm);
+clearBtn.addEventListener('click', ()=>{ clearForm(); });
 
-filterBtn.addEventListener('click',()=>{sortAsc=!sortAsc;renderClients();});
-refreshBtn.addEventListener('click',loadClients);
+filterBtn.addEventListener('click', ()=>{ sortAsc = !sortAsc; renderClients(currentPage, searchEl.value); });
+searchEl.addEventListener('input', ()=> renderClients(1, searchEl.value));
+refreshBtn.addEventListener('click', ()=> loadClientsFromFirestore());
 
-loadClients();
-</script></body>
+function clearForm(){ [f_nombre,f_precio,f_caducidad,f_usuario,f_contrasena,f_aplicacion,f_recomendaciones,f_fechaCreacion].forEach(el=> el.value=''); editingId=null; }
+
+function mostrarAlertas(){
+  const hoy=new Date();
+  const lista = registros.filter(r=>{ const d=new Date(r.caducidad); const diff=Math.ceil((d-hoy)/(1000*60*60*24)); return diff>0 && diff<=3; });
+  clientsList.innerHTML=''; lista.forEach(c=>{ const card=document.createElement('div'); card.className='card'; card.setAttribute('style', isNaN(Math.ceil((new Date(c.caducidad)-new Date())/(1000*60*60*24))) ? 'border-left:4px solid #666;' : (new Date(c.caducidad) < new Date() ? 'border-left:4px solid #ff6b6b;' : (Math.ceil((new Date(c.caducidad)-new Date())/(1000*60*60*24))<=3 ? 'border-left:4px solid #ffb86b;' : 'border-left:4px solid #23c552;'))); card.innerHTML = `<div style="font-weight:700;font-size:16px;margin-bottom:6px">${escapeHtml(c.nombre||'')}</div><div class="info-row"><div class="row"><span>Precio:</span><span>${escapeHtml(c.precio||'')}</span></div><div class="row"><span>Caducidad:</span><span>${escapeHtml(c.caducidad||'')}</span></div></div><div class="actions"><button class="btn edit" onclick="editarFirestoreClient('${c.id}')">Editar</button><button class="btn copy" onclick="copiarFirestoreCliente('${c.id}')">Copiar</button><button class="btn del" onclick="eliminarFirestoreClient('${c.id}')">Eliminar</button></div>`; clientsList.appendChild(card); });
+  links.forEach(x=>x.classList.remove('active')); document.querySelector('[data-view=\"clientes\"]').classList.add('active'); document.querySelectorAll('.view').forEach(v=>v.style.display='none'); document.getElementById('view-clientes').style.display='block';
+}
+
+function mostrarCaducados(){
+  const hoy=new Date();
+  const lista = registros.filter(r=> new Date(r.caducidad) < hoy );
+  clientsList.innerHTML='';
+  lista.forEach(c=>{ const card=document.createElement('div'); card.className='card'; card.setAttribute('style','border-left:4px solid #ff6b6b;'); card.innerHTML = `<div style="font-weight:700;font-size:16px;margin-bottom:6px">${escapeHtml(c.nombre||'')}</div><div class="info-row"><div class="row"><span>Precio:</span><span>${escapeHtml(c.precio||'')}</span></div><div class="row"><span>Caducidad:</span><span>${escapeHtml(c.caducidad||'')}</span></div></div><div class="actions"><button class="btn edit" onclick="editarFirestoreClient('${c.id}')">Editar</button><button class="btn copy" onclick="copiarFirestoreClient('${c.id}')">Copiar</button><button class="btn del" onclick="eliminarFirestoreClient('${c.id}')">Eliminar</button></div>`; clientsList.appendChild(card); });
+  links.forEach(x=>x.classList.remove('active')); document.querySelector('[data-view=\"clientes\"]').classList.add('active'); document.querySelectorAll('.view').forEach(v=>v.style.display='none'); document.getElementById('view-clientes').style.display='block';
+}
+
+// expose some globals for inline handlers fallback
+window.editarFirestoreClient = editarFirestoreClient;
+window.eliminarFirestoreClient = eliminarFirestoreClient;
+window.copiarFirestoreClient = copiarFirestoreClient;
+window.mostrarAlertas = mostrarAlertas;
+window.mostrarCaducados = mostrarCaducados;
+
+loadClientsFromFirestore().catch(e=>{ console.error(e); showToast('Error al iniciar'); });
+</script>
+</body>
 </html>
