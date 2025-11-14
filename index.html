@@ -23,14 +23,6 @@
     .cards-col{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:18px;}
     .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
     .stat{background:var(--glass);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
-    /* NUEVO: ESTILO PARA ESTADÍSTICAS CLICABLES */
-    .stat-clickable {
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-    .stat-clickable:hover {
-        background: rgba(255,255,255,0.05);
-    }
     .stat h3{margin:0;font-size:12px;color:var(--muted)}
     .stat p{margin:8px 0 0;font-size:20px;font-weight:600}
     .grid-clients{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
@@ -63,58 +55,6 @@
     .toast p { margin: 0; font-size: 13px; color: var(--muted); }
     /* Dashboard: checkbox */
     .exp-card .flex-end { display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
-    /* NUEVOS ESTILOS: Campo de Recomendaciones Dinámico */
-    .dynamic-input-container {
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid rgba(255,255,255,0.04);
-        background: transparent;
-    }
-    .tag-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-bottom: 8px;
-        min-height: 18px; /* Para evitar colapso si está vacío */
-    }
-    .recommendation-tag {
-        background: var(--accent);
-        color: #052018;
-        padding: 4px 8px;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        font-size: 13px;
-        font-weight: 600;
-        line-height: 1;
-    }
-    .recommendation-tag button {
-        background: none;
-        border: none;
-        color: #052018;
-        margin-left: 6px;
-        cursor: pointer;
-        font-weight: 700;
-        line-height: 1;
-        padding: 0;
-    }
-    .input-add-row {
-        display: flex;
-        gap: 8px;
-    }
-    .input-add-row input[type=text] {
-        flex-grow: 1;
-        padding: 6px 10px; 
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-    .input-add-row button {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        padding: 0;
-        font-size: 18px;
-        line-height: 1;
-    }
 
     @media (min-width: 701px) {
         .cards-col {
@@ -149,10 +89,10 @@
     <div class="stat">
       <h3>Total clientes</h3><p id="stat-total">—</p>
     </div>
-    <div class="stat stat-clickable" id="stat-3days-link" title="Haz clic para filtrar clientes.">
+    <div class="stat">
       <h3>Caducan en 3 días</h3><p id="stat-today-3days">—</p>
     </div>
-    <div class="stat stat-clickable" id="stat-expired-link" title="Haz clic para filtrar clientes.">
+    <div class="stat">
       <h3>Cliente caducado</h3><p id="stat-expired">—</p>
     </div>
   </div>
@@ -207,14 +147,8 @@
         <option value="Hot Player">Hot Player</option>
       </select>
 
-      <label>Clientes recomendados</label>
-      <div id="f-recomendaciones-container" class="dynamic-input-container">
-          <div id="f-recommended-clients" class="tag-list"></div>
-          <div class="input-add-row">
-              <input type="text" id="f-new-recommendation" placeholder="Nombre de cliente recomendado" />
-              <button type="button" class="btn copy" id="f-add-recommendation-btn">+</button>
-          </div>
-      </div>
+      <label>Recomendaciones</label>
+      <textarea id="f-recomendaciones"></textarea>
 
       <div style="display:flex;gap:8px;margin-top:8px">
         <button type="submit" class="btn edit">Guardar</button>
@@ -266,14 +200,8 @@
         <option value="Hot Player">Hot Player</option>
       </select>
 
-      <label>Clientes recomendados</label>
-      <div id="e-recomendaciones-container" class="dynamic-input-container">
-          <div id="e-recommended-clients" class="tag-list"></div>
-          <div class="input-add-row">
-              <input type="text" id="e-new-recommendation" placeholder="Nombre de cliente recomendado" />
-              <button type="button" class="btn copy" id="e-add-recommendation-btn">+</button>
-          </div>
-      </div>
+      <label>Recomendaciones</label>
+      <textarea id="e-recomendaciones"></textarea>
 
       <div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end">
         <button type="button" id="modal-cancel" class="btn copy">Cancelar</button>
@@ -321,21 +249,13 @@ const statTotal = document.getElementById('stat-total');
 const statToday3Days = document.getElementById('stat-today-3days');
 const statExpired = document.getElementById('stat-expired');
 const dashboardSoonExp = document.getElementById('dashboard-soon-exp');
-const stat3DaysLink = document.getElementById('stat-3days-link'); // Nuevo
-const statExpiredLink = document.getElementById('stat-expired-link'); // Nuevo
 
 // FORM ADD
 const formAdd = document.getElementById('form-add');
 const fReset = document.getElementById('f-reset');
-const fCreacion = document.getElementById('f-creacion');
-const fRecommendedClientsDiv = document.getElementById('f-recommended-clients');
-const fNewRecommendationInput = document.getElementById('f-new-recommendation');
-const fAddRecommendationBtn = document.getElementById('f-add-recommendation-btn');
+const fCreacion = document.getElementById('f-creacion'); // Nuevo: Fecha de creación
 
 // FORM EDIT fields
-const eRecommendedClientsDiv = document.getElementById('e-recommended-clients');
-const eNewRecommendationInput = document.getElementById('e-new-recommendation');
-const eAddRecommendationBtn = document.getElementById('e-add-recommendation-btn');
 const eDispositivo = document.getElementById('e-dispositivo');
 
 // SEARCH
@@ -349,9 +269,6 @@ const formEdit = document.getElementById('form-edit');
 // NOTIFICATIONS
 const notificationsContainer = document.getElementById('notifications-container');
 
-// VARIABLE GLOBAL PARA GESTIONAR LAS RECOMENDACIONES EN EDICIÓN
-let currentRecommendations = [];
-
 
 // --- 1. SISTEMA DE NOTIFICACIONES ---
 function showNotification(title, message, type = 'success') {
@@ -361,10 +278,12 @@ function showNotification(title, message, type = 'success') {
   
   notificationsContainer.appendChild(toast);
   
+  // Mostrar
   setTimeout(() => {
     toast.classList.add('show');
   }, 10);
 
+  // Ocultar y eliminar después de 4 segundos
   setTimeout(() => {
     toast.classList.remove('show');
     toast.addEventListener('transitionend', () => toast.remove());
@@ -391,17 +310,18 @@ function isoForInput(d){
 }
 
 
-// --- FECHA POR DEFECTO ---
+// --- 2. FECHA POR DEFECTO ---
 function setDefaultCreationDate() {
   fCreacion.value = isoForInput(new Date());
 }
-setDefaultCreationDate();
+setDefaultCreationDate(); // Llama al inicio para establecer la fecha
 
 
 // --- LÓGICA DE NAVEGACIÓN ---
 function setActive(btn){
   document.querySelectorAll('.menu button').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  // Asegura que al cambiar de sección, se actualice la búsqueda.
   if (btn === navClientes) {
       filterClients(searchInput.value);
   }
@@ -426,7 +346,7 @@ navAdd.addEventListener('click', ()=>{
   secDashboard.style.display='none';
   secClientes.style.display='none';
   secAdd.style.display='block';
-  setDefaultCreationDate();
+  setDefaultCreationDate(); // Asegura la fecha actual al entrar
 });
 
 
@@ -434,77 +354,27 @@ navAdd.addEventListener('click', ()=>{
 const col = collection(db, "clientes");
 const q = query(col, orderBy("creacion", "desc"));
 
-let cachedList = []; // Lista de todos los clientes
-let cachedClientNames = new Set(); // Conjunto de nombres para validación rápida
+let cachedList = [];
 
 // STREAM FIRESTORE
 onSnapshot(q, snap => {
   cachedList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  cachedClientNames = new Set(cachedList.map(c => c.nombre.toLowerCase()));
-
+  // Al recibir nuevos datos, aplica el filtro si existe
   filterClients(searchInput.value);
   renderDashboard(cachedList);
   updateStats(cachedList);
 });
 
-
-// --- 2. FILTRO DE CLIENTES POR STAT DEL DASHBOARD ---
-function filterByStat(filterType) {
-    // 1. Cambiar a la vista de Clientes
-    setActive(navClientes);
-    secDashboard.style.display='none';
-    secClientes.style.display='block';
-    secAdd.style.display='none';
-    
-    // 2. Limpiar la barra de búsqueda (para que se vea que el filtro viene del dashboard)
-    searchInput.value = '';
-
-    // 3. Lógica de filtrado
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    const limit3Days = new Date(now);
-    limit3Days.setDate(limit3Days.getDate() + 3);
-    limit3Days.setHours(23, 59, 59, 999);
-    
-    let filteredList = [];
-
-    if (filterType === '3days') {
-        filteredList = cachedList.filter(i => {
-            if (!i.caducidad) return false;
-            const d = new Date(i.caducidad);
-            d.setHours(0, 0, 0, 0);
-            return d >= now && d <= limit3Days;
-        });
-        showNotification("Filtro Aplicado", `Mostrando ${filteredList.length} clientes que caducan en 3 días.`, 'success');
-
-    } else if (filterType === 'expired') {
-        filteredList = cachedList.filter(i => {
-            if (!i.caducidad) return false;
-            const d = new Date(i.caducidad);
-            d.setHours(0, 0, 0, 0);
-            return d < now;
-        });
-        showNotification("Filtro Aplicado", `Mostrando ${filteredList.length} clientes caducados.`, 'success');
-    }
-
-    // 4. Renderizar la lista filtrada
-    renderClients(filteredList);
-}
-
-// Event Listeners para los stats clicables
-stat3DaysLink.addEventListener('click', () => filterByStat('3days'));
-statExpiredLink.addEventListener('click', () => filterByStat('expired'));
-
-
-// --- BÚSQUEDA/FILTRADO GENERAL ---
+// --- 3. BÚSQUEDA/FILTRADO ---
 function filterClients(searchTerm = ""){
     const term = searchTerm.toLowerCase();
     
-    if (term === "" && cachedList.length) {
-        renderClients(cachedList); // Si no hay término, muestra toda la lista
+    // Si la lista está vacía, renderea una lista vacía
+    if (!cachedList.length) {
+        renderClients([]);
         return;
     }
-    
+
     const filteredList = cachedList.filter(item => 
         item.nombre.toLowerCase().includes(term) ||
         (item.usuario && item.usuario.toLowerCase().includes(term)) ||
@@ -520,12 +390,15 @@ searchInput.addEventListener('input', (e) => filterClients(e.target.value));
 // --- ESTADÍSTICAS ---
 function updateStats(list){
   statTotal.textContent = list.length;
-  // Lógica de 3 días y caducados permanece igual
+
   const today = new Date();
   today.setHours(0,0,0,0);
+
   const limit3Days = new Date(today);
   limit3Days.setDate(limit3Days.getDate() + 3);
   limit3Days.setHours(23,59,59,999);
+
+  // Clientes que caducan en los próximos 3 días (incluyendo hoy)
   const soonCount = list.filter(i => {
     if(!i.caducidad) return false;
     const d = new Date(i.caducidad);
@@ -533,6 +406,8 @@ function updateStats(list){
     return d >= today && d <= limit3Days;
   }).length;
   statToday3Days.textContent = soonCount;
+
+  // Clientes caducados (caducidad menor a hoy)
   const expiredCount = list.filter(i => {
     if(!i.caducidad) return false;
     const d = new Date(i.caducidad);
@@ -542,19 +417,23 @@ function updateStats(list){
   statExpired.textContent = expiredCount;
 }
 
-// ... (renderDashboard y toggleRenovara no necesitan cambios estructurales en su lógica)
+// --- DASHBOARD (Renderizado y Checkbox) ---
 function renderDashboard(list){
   const now = new Date();
   now.setHours(0,0,0,0);
+
   const limit = new Date(now);
   limit.setDate(limit.getDate() + 3);
   limit.setHours(23,59,59,999);
+
   const soon = list.filter(i => {
     if(!i.caducidad) return false;
     const d = new Date(i.caducidad);
+    // Solo clientes no caducados que están por caducar
     return d >= now && d <= limit;
   });
 
+  // Limpiar contenedor y añadir el título
   dashboardSoonExp.innerHTML = `<p class="meta" style="grid-column: 1 / -1; margin-bottom: 0;">Clientes que caducan en los próximos 3 días (${soon.length}):</p>`;
 
   if (soon.length === 0) {
@@ -562,16 +441,20 @@ function renderDashboard(list){
   }
 
   soon.forEach(item => {
+    // Determinar si el checkbox debe estar marcado
     const isRenewing = item.renovara === true ? 'checked' : '';
+    
     const card = document.createElement('div');
     card.className = "card exp-card";
     card.innerHTML = `
       <h4>${item.nombre}</h4>
       <div class="meta">Caduca: ${formatDate(item.caducidad)}</div>
+      
       <div class="flex-end">
         <label for="renew-${item.id}">Renovará</label>
         <input type="checkbox" id="renew-${item.id}" data-id="${item.id}" ${isRenewing} onclick="toggleRenovara(this)" />
       </div>
+
       <div class="btns">
         <button class="btn renew" onclick="renewItem('${item.id}')">Renovar</button>
         <button class="btn copy" onclick="copyPassword('${item.id}')">Copiar</button>
@@ -581,6 +464,7 @@ function renderDashboard(list){
   });
 }
 
+// --- 4. TOGGLE CHECKBOX (Renovará) ---
 window.toggleRenovara = async function(checkbox) {
     const id = checkbox.getAttribute('data-id');
     const newState = checkbox.checked;
@@ -610,11 +494,6 @@ function renderClients(list){
   clientsGrid.innerHTML = "";
 
   list.forEach(item => {
-    // Muestra las recomendaciones como un detalle adicional en la tarjeta
-    const recommendations = item.recomendaciones && item.recomendaciones.length > 0
-        ? `<div class="meta">Recomendado por: ${item.recomendaciones.join(', ')}</div>`
-        : '';
-
     const card = document.createElement('div');
     card.className = "card";
     card.innerHTML = `
@@ -623,7 +502,6 @@ function renderClients(list){
       <div class="meta">Dispositivo: ${item.dispositivo || "-"}</div>
       <div class="meta">Creación: ${formatDate(item.creacion)}</div>
       <div class="meta">Caduca: ${formatDate(item.caducidad)}</div>
-      ${recommendations}
 
       <div class="btns">
         <button class="btn edit" onclick="openEdit('${item.id}')">Editar</button>
@@ -636,174 +514,17 @@ function renderClients(list){
   });
 }
 
+// --- LÓGICA DE ACCIONES ---
 
-// --- 3. LÓGICA DE RECOMENDACIONES DINÁMICAS ---
-
-// RENDERIZA LAS ETIQUETAS DE RECOMENDACIÓN
-function renderRecommendedClients(recommendations, targetDiv) {
-    targetDiv.innerHTML = '';
-    recommendations.forEach((name, index) => {
-        const tag = document.createElement('div');
-        tag.className = 'recommendation-tag';
-        tag.innerHTML = `
-            ${name}
-            <button type="button" data-index="${index}" data-target-id="${targetDiv.id}">x</button>
-        `;
-        tag.querySelector('button').onclick = (e) => removeRecommendedClient(e.target);
-        targetDiv.appendChild(tag);
-    });
-}
-
-// AÑADE UN CLIENTE A LA LISTA
-function addRecommendedClient(inputElement, targetDiv, isEdit = false) {
-    const name = inputElement.value.trim();
-    if (name === "") return;
-
-    // Validación: Debe existir en la lista de clientes actual (case-insensitive)
-    if (!cachedClientNames.has(name.toLowerCase())) {
-        showNotification("Error de Recomendación", `El cliente "${name}" no existe en la base de datos.`, 'error');
-        return;
-    }
-
-    if (currentRecommendations.includes(name)) {
-        showNotification("Error de Recomendación", `El cliente "${name}" ya ha sido añadido.`, 'error');
-        return;
-    }
-    
-    currentRecommendations.push(name);
-    renderRecommendedClients(currentRecommendations, targetDiv);
-    inputElement.value = '';
-}
-
-// ELIMINA UN CLIENTE DE LA LISTA
-function removeRecommendedClient(button) {
-    const index = parseInt(button.getAttribute('data-index'));
-    const targetId = button.getAttribute('data-target-id');
-    
-    currentRecommendations.splice(index, 1);
-    
-    // Vuelve a renderizar la lista usando el div correcto (Add o Edit)
-    const targetDiv = document.getElementById(targetId);
-    renderRecommendedClients(currentRecommendations, targetDiv);
-}
-
-// Event Listeners para añadir recomendaciones
-fAddRecommendationBtn.addEventListener('click', () => addRecommendedClient(fNewRecommendationInput, fRecommendedClientsDiv));
-fNewRecommendationInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        addRecommendedClient(fNewRecommendationInput, fRecommendedClientsDiv);
-    }
-});
-
-eAddRecommendationBtn.addEventListener('click', () => addRecommendedClient(eNewRecommendationInput, eRecommendedClientsDiv, true));
-eNewRecommendationInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        addRecommendedClient(eNewRecommendationInput, eRecommendedClientsDiv, true);
-    }
-});
-
-
-// --- LÓGICA DE ACCIONES (Actualizada para manejar recomendaciones) ---
-
-window.openEdit = function(id){
-  const item = cachedList.find(i => i.id === id);
-  if(!item) return;
-
-  // Carga las recomendaciones del cliente en la variable global
-  currentRecommendations = item.recomendaciones || [];
-  
-  document.getElementById('e-nombre').value = item.nombre;
-  document.getElementById('e-creacion').value = isoForInput(item.creacion);
-  document.getElementById('e-caducidad').value = isoForInput(item.caducidad);
-  document.getElementById('e-usuario').value = item.usuario || "";
-  document.getElementById('e-contrasena').value = item.contrasena || "";
-  document.getElementById('e-dispositivo').value = item.dispositivo || "";
-  document.getElementById('e-aplicacion').value = item.aplicacion || ""; 
-  document.getElementById('e-recomendaciones').value = item.recomendaciones || "";
-
-  // Renderiza las etiquetas
-  renderRecommendedClients(currentRecommendations, eRecommendedClientsDiv);
-  eNewRecommendationInput.value = ''; // Limpia el input temporal
-
-  modal.setAttribute('data-id', id);
-  modal.classList.add('show');
-};
-
-formEdit.addEventListener('submit', async e=>{
-  e.preventDefault();
-  const id = modal.getAttribute('data-id');
-  if(!id) return;
-
-  const data = {
-    nombre: document.getElementById('e-nombre').value,
-    creacion: document.getElementById('e-creacion').value,
-    caducidad: document.getElementById('e-caducidad').value,
-    usuario: document.getElementById('e-usuario').value,
-    contrasena: document.getElementById('e-contrasena').value,
-    dispositivo: document.getElementById('e-dispositivo').value,
-    aplicacion: document.getElementById('e-aplicacion').value,
-    recomendaciones: currentRecommendations // Usa el array dinámico
-  };
-
-  try {
-      await updateDoc(doc(db, "clientes", id), data);
-      modal.classList.remove('show');
-      showNotification("Guardado", `Cambios en cliente ${data.nombre} guardados.`, 'success');
-      currentRecommendations = []; // Limpia la variable global después de guardar
-  } catch (error) {
-      showNotification("Error", "No se pudieron guardar los cambios.", 'error');
-      console.error("Error updating item:", error);
-  }
-});
-
-formAdd.addEventListener('submit', async e=>{
-  e.preventDefault();
-
-  const data = {
-    nombre: document.getElementById('f-nombre').value,
-    creacion: document.getElementById('f-creacion').value,
-    caducidad: document.getElementById('f-caducidad').value,
-    usuario: document.getElementById('f-usuario').value,
-    contrasena: document.getElementById('f-contrasena').value,
-    dispositivo: document.getElementById('f-dispositivo').value,
-    aplicacion: document.getElementById('f-aplicacion').value,
-    recomendaciones: currentRecommendations, // Usa el array dinámico
-    renovara: false
-  };
-
-  try {
-      await addDoc(col, data);
-      showNotification("Cliente Creado", `El cliente ${data.nombre} ha sido añadido con éxito.`, 'success');
-      
-      // Limpia la interfaz y la variable global
-      formAdd.reset();
-      setDefaultCreationDate();
-      currentRecommendations = [];
-      renderRecommendedClients(currentRecommendations, fRecommendedClientsDiv);
-  } catch (error) {
-      showNotification("Error de Creación", "No se pudo añadir el nuevo cliente. (Revisa si el nombre es único)", 'error');
-      console.error("Error adding item:", error);
-  }
-});
-
-// RESET FORM
-fReset.addEventListener('click', ()=> {
-    formAdd.reset();
-    setDefaultCreationDate();
-    currentRecommendations = [];
-    renderRecommendedClients(currentRecommendations, fRecommendedClientsDiv);
-});
-
-// ... (copyPassword, renewItem, deleteItem no necesitan más cambios)
 window.copyPassword = function(id){
   const item = cachedList.find(i => i.id === id);
   if(!item || !item.contrasena) {
     showNotification("Error de Copia", "No hay contraseña o datos completos para copiar.", 'error');
     return;
   }
+  
   const textToCopy = `Usuario: ${item.usuario || "-"}\nContraseña: ${item.contrasena || "-"}\nCaducidad: ${formatDate(item.caducidad)}\nAplicación: ${item.aplicacion || "-"}`;
+  
   navigator.clipboard.writeText(textToCopy);
   showNotification("Copiado", "Datos clave copiados al portapapeles.", 'success');
 }
@@ -813,7 +534,7 @@ window.renewItem = async function(id){
   if(!item) return;
 
   let date = new Date(item.caducidad || new Date());
-  date.setMonth(date.getMonth() + 3); 
+  date.setMonth(date.getMonth() + 3); // Suma 3 meses
 
   try {
       await updateDoc(doc(db, "clientes", id), {
@@ -837,6 +558,89 @@ window.deleteItem = async function(id){
       console.error("Error deleting item:", error);
   }
 }
+
+// ABRIR MODAL DE EDICIÓN
+window.openEdit = function(id){
+  const item = cachedList.find(i => i.id === id);
+  if(!item) return;
+
+  document.getElementById('e-nombre').value = item.nombre;
+  document.getElementById('e-creacion').value = isoForInput(item.creacion);
+  document.getElementById('e-caducidad').value = isoForInput(item.caducidad);
+  document.getElementById('e-usuario').value = item.usuario || "";
+  document.getElementById('e-contrasena').value = item.contrasena || "";
+  document.getElementById('e-dispositivo').value = item.dispositivo || ""; // Nuevo campo
+  document.getElementById('e-aplicacion').value = item.aplicacion || ""; 
+  document.getElementById('e-recomendaciones').value = item.recomendaciones || "";
+
+  modal.setAttribute('data-id', id);
+  modal.classList.add('show');
+};
+
+// CERRAR MODAL
+modalCancelBtn.addEventListener('click', ()=>{
+  modal.classList.remove('show');
+});
+
+// GUARDAR CAMBIOS EN MODAL
+formEdit.addEventListener('submit', async e=>{
+  e.preventDefault();
+  const id = modal.getAttribute('data-id');
+  if(!id) return;
+
+  const data = {
+    nombre: document.getElementById('e-nombre').value,
+    creacion: document.getElementById('e-creacion').value,
+    caducidad: document.getElementById('e-caducidad').value,
+    usuario: document.getElementById('e-usuario').value,
+    contrasena: document.getElementById('e-contrasena').value,
+    dispositivo: document.getElementById('e-dispositivo').value, // Nuevo campo
+    aplicacion: document.getElementById('e-aplicacion').value,
+    recomendaciones: document.getElementById('e-recomendaciones').value
+  };
+
+  try {
+      await updateDoc(doc(db, "clientes", id), data);
+      modal.classList.remove('show');
+      showNotification("Guardado", `Cambios en cliente ${data.nombre} guardados.`, 'success');
+  } catch (error) {
+      showNotification("Error", "No se pudieron guardar los cambios.", 'error');
+      console.error("Error updating item:", error);
+  }
+});
+
+// AÑADIR CLIENTE NUEVO
+formAdd.addEventListener('submit', async e=>{
+  e.preventDefault();
+
+  const data = {
+    nombre: document.getElementById('f-nombre').value,
+    creacion: document.getElementById('f-creacion').value,
+    caducidad: document.getElementById('f-caducidad').value,
+    usuario: document.getElementById('f-usuario').value,
+    contrasena: document.getElementById('f-contrasena').value,
+    dispositivo: document.getElementById('f-dispositivo').value, // Nuevo campo
+    aplicacion: document.getElementById('f-aplicacion').value,
+    recomendaciones: document.getElementById('f-recomendaciones').value,
+    renovara: false // Se inicializa con 'false'
+  };
+
+  try {
+      await addDoc(col, data);
+      showNotification("Cliente Creado", `El cliente ${data.nombre} ha sido añadido con éxito.`, 'success');
+      formAdd.reset();
+      setDefaultCreationDate(); // Restablece la fecha actual después del reset
+  } catch (error) {
+      showNotification("Error de Creación", "No se pudo añadir el nuevo cliente.", 'error');
+      console.error("Error adding item:", error);
+  }
+});
+
+// RESET FORM
+fReset.addEventListener('click', ()=> {
+    formAdd.reset();
+    setDefaultCreationDate();
+});
 
 </script>
 </body>
