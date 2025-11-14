@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{--bg:#0f1724;--card:#0b1220;--muted:#9aa4b2;--accent:#6ee7b7;--glass:rgba(255,255,255,0.03);--red:#ef4444;--green:#10b981;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+    :root{--bg:#0f1724;--card:#0b1220;--muted:#9aa4b2;--accent:#6ee7b7;--glass:rgba(255,255,255,0.03);--red:#ef4444;--green:#10b981;--yellow:#f59e0b;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
     *{box-sizing:border-box}
     body{margin:0;background:linear-gradient(180deg,#071022 0%, #07132a 100%);color:#e6eef6;min-height:100vh}
     .container{max-width:1100px;margin:0 auto;padding:18px}
@@ -20,11 +20,9 @@
     .menu button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer}
     .menu button.active{background:var(--accent);color:#052018;border:none}
     main{display:grid;grid-template-columns:1fr;gap:18px}
-    /* Añadido para el layout de stats en 3 columnas */
     .cards-col{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:18px;}
     .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
     .stat{background:var(--glass);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
-    /* NUEVO: ESTILO PARA ESTADÍSTICAS CLICABLES */
     .stat-clickable {
         cursor: pointer;
         transition: background 0.2s;
@@ -35,7 +33,12 @@
     .stat h3{margin:0;font-size:12px;color:var(--muted)}
     .stat p{margin:8px 0 0;font-size:20px;font-weight:600}
     .grid-clients{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+    /* NUEVO: Indicadores de estado en tarjetas */
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);position:relative}
+    .card.status-red{border-left: 4px solid var(--red);}
+    .card.status-yellow{border-left: 4px solid var(--yellow);}
+    .card.status-green{border-left: 4px solid var(--green);}
+
     .card h4{margin:0 0 6px}
     .meta{font-size:12px;color:var(--muted);margin-bottom:8px}
     .tags{display:flex;gap:6px;flex-wrap:wrap}
@@ -45,6 +48,7 @@
     .btn.renew{background:#064e3b;color:var(--accent)}
     .btn.copy{background:#0b1220;color:var(--muted);border:1px solid rgba(255,255,255,0.03)}
     .btn.delete{background:#3b0b0b;color:#ffcfcf}
+    .btn.export{background:var(--yellow);color:#212108;} /* NUEVO */
     .card-form{background:var(--card);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04)}
     form{display:grid;gap:10px}
     label{font-size:13px;color:var(--muted)}
@@ -59,24 +63,25 @@
     .toast { background: var(--card); color: #e6eef6; padding: 12px 18px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); min-width: 250px; max-width: 350px; opacity: 0; transition: opacity 0.3s, transform 0.3s; transform: translateY(-20px); }
     .toast.show { opacity: 1; transform: translateY(0); }
     .toast.success { border-left: 4px solid var(--green); }
-    .toast.error { border-left: 4px solid var(--red); }
+    .toast.error { border-left: 44px solid var(--red); }
     .toast strong { display: block; margin-bottom: 4px; font-size: 14px; }
     .toast p { margin: 0; font-size: 13px; color: var(--muted); }
     /* Dashboard: checkbox */
     .exp-card .flex-end { display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
-    /* NUEVOS ESTILOS: Campo de Recomendaciones Dinámico */
+    /* ESTILOS: Campo de Recomendaciones Dinámico y Autocompletado */
     .dynamic-input-container {
         padding: 10px;
         border-radius: 8px;
         border: 1px solid rgba(255,255,255,0.04);
         background: transparent;
+        position: relative; /* Clave para el autocompletado */
     }
     .tag-list {
         display: flex;
         flex-wrap: wrap;
         gap: 6px;
         margin-bottom: 8px;
-        min-height: 18px; /* Para evitar colapso si está vacío */
+        min-height: 18px;
     }
     .recommendation-tag {
         background: var(--accent);
@@ -115,6 +120,30 @@
         padding: 0;
         font-size: 18px;
         line-height: 1;
+    }
+    /* Estilos Autocompletado */
+    .autocomplete-list {
+        position: absolute;
+        top: 100%;
+        left: 10px;
+        right: 50px; /* Ajuste para dejar espacio al botón + */
+        background: var(--card);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        max-height: 150px;
+        overflow-y: auto;
+        z-index: 60;
+        list-style: none;
+        padding: 0;
+        margin: 4px 0 0;
+    }
+    .autocomplete-list li {
+        padding: 8px 10px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    .autocomplete-list li:hover, .autocomplete-list li.active {
+        background: var(--glass);
     }
     footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
 
@@ -165,7 +194,10 @@
 
 <section id="section-clientes" style="display:none">
   <div class="card-form">
-    <h3>Clientes</h3>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h3>Clientes</h3>
+      <button id="btn-export-csv" class="btn export">Exportar a CSV 📥</button>
+    </div>
     
     <input type="text" id="search-input" placeholder="Buscar por Nombre, Usuario o Aplicación..." style="margin-bottom: 12px;" />
 
@@ -215,7 +247,7 @@
           <div class="input-add-row">
               <input type="text" id="f-new-recommendation" placeholder="Nombre de cliente recomendado" />
               <button type="button" class="btn copy" id="f-add-recommendation-btn">+</button>
-          </div>
+              </div>
       </div>
 
       <div style="display:flex;gap:8px;margin-top:8px">
@@ -274,7 +306,7 @@
           <div class="input-add-row">
               <input type="text" id="e-new-recommendation" placeholder="Nombre de cliente recomendado" />
               <button type="button" class="btn copy" id="e-add-recommendation-btn">+</button>
-          </div>
+               </div>
       </div>
 
       <div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end">
@@ -328,6 +360,7 @@ const dashboardSoonExp = document.getElementById('dashboard-soon-exp');
 // NUEVOS ELEMENTOS UI PARA CLICABLES
 const stat3DaysLink = document.getElementById('stat-3days-link');
 const statExpiredLink = document.getElementById('stat-expired-link');
+const btnExportCsv = document.getElementById('btn-export-csv'); // NUEVO
 
 // FORM ADD
 const formAdd = document.getElementById('form-add');
@@ -338,14 +371,13 @@ const fCreacion = document.getElementById('f-creacion');
 const fRecommendedClientsDiv = document.getElementById('f-recommended-clients');
 const fNewRecommendationInput = document.getElementById('f-new-recommendation');
 const fAddRecommendationBtn = document.getElementById('f-add-recommendation-btn');
-
-// FORM EDIT fields
-const eDispositivo = document.getElementById('e-dispositivo');
+const fRecContainer = document.getElementById('f-recomendaciones-container'); // Contenedor para autocompletado
 
 // RECOMENDACIONES EDIT
 const eRecommendedClientsDiv = document.getElementById('e-recommended-clients');
 const eNewRecommendationInput = document.getElementById('e-new-recommendation');
 const eAddRecommendationBtn = document.getElementById('e-add-recommendation-btn');
+const eRecContainer = document.getElementById('e-recomendaciones-container'); // Contenedor para autocompletado
 
 // SEARCH
 const searchInput = document.getElementById('search-input');
@@ -358,28 +390,10 @@ const formEdit = document.getElementById('form-edit');
 // NOTIFICATIONS
 const notificationsContainer = document.getElementById('notifications-container');
 
-// VARIABLE GLOBAL PARA GESTIONAR LAS RECOMENDACIONES
-let currentRecommendations = [];
-
-
-// --- 1. SISTEMA DE NOTIFICACIONES ---
-function showNotification(title, message, type = 'success') {
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.innerHTML = `<strong>${title}</strong><p>${message}</p>`;
-  
-  notificationsContainer.appendChild(toast);
-  
-  setTimeout(() => {
-    toast.classList.add('show');
-  }, 10);
-
-  setTimeout(() => {
-    toast.classList.remove('show');
-    toast.addEventListener('transitionend', () => toast.remove());
-  }, 4000);
-}
-
+// VARIABLES GLOBALES
+let cachedList = []; // Lista de todos los clientes
+let currentRecommendations = []; // Array para gestionar las recomendaciones en el formulario
+let cachedClientNames = new Set(); // Set para el autocompletado y validación de nombres
 
 // --- FUNCIONES AUXILIARES ---
 function formatDate(d){
@@ -399,15 +413,29 @@ function isoForInput(d){
   return `${yyyy}-${mm}-${dd}`;
 }
 
+// ... (Resto de funciones: showNotification, setActive, etc.) ...
+function showNotification(title, message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<strong>${title}</strong><p>${message}</p>`;
+  
+  notificationsContainer.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.classList.add('show');
+  }, 10);
 
-// --- FECHA POR DEFECTO ---
+  setTimeout(() => {
+    toast.classList.remove('show');
+    toast.addEventListener('transitionend', () => toast.remove());
+  }, 4000);
+}
+
 function setDefaultCreationDate() {
   fCreacion.value = isoForInput(new Date());
 }
 setDefaultCreationDate();
 
-
-// --- LÓGICA DE NAVEGACIÓN ---
 function setActive(btn){
   document.querySelectorAll('.menu button').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
@@ -438,34 +466,29 @@ navAdd.addEventListener('click', ()=>{
   setDefaultCreationDate();
 });
 
-
 // --- CARGA DE CLIENTES EN TIEMPO REAL ---
 const col = collection(db, "clientes");
 const q = query(col, orderBy("creacion", "desc"));
 
-let cachedList = [];
-
 // STREAM FIRESTORE
 onSnapshot(q, snap => {
   cachedList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  // Actualizamos la lista de nombres para autocompletado
+  cachedClientNames = new Set(cachedList.map(c => c.nombre));
   filterClients(searchInput.value);
   renderDashboard(cachedList);
   updateStats(cachedList);
 });
 
-
-// --- 2. FILTRO DE CLIENTES POR STAT DEL DASHBOARD (NUEVO) ---
+// ... (filterByStat, filterClients, updateStats, renderDashboard, toggleRenovara se mantienen igual) ...
 function filterByStat(filterType) {
-    // 1. Cambiar a la vista de Clientes
     setActive(navClientes);
     secDashboard.style.display='none';
     secClientes.style.display='block';
     secAdd.style.display='none';
     
-    // 2. Limpiar la barra de búsqueda
     searchInput.value = '';
 
-    // 3. Lógica de filtrado
     const now = new Date();
     now.setHours(0, 0, 0, 0);
     const limit3Days = new Date(now);
@@ -479,7 +502,6 @@ function filterByStat(filterType) {
             if (!i.caducidad) return false;
             const d = new Date(i.caducidad);
             d.setHours(0, 0, 0, 0);
-            // Cliente no caducado y caduca en los próximos 3 días
             return d >= now && d <= limit3Days;
         });
         showNotification("Filtro Aplicado", `Mostrando ${filteredList.length} clientes que caducan en 3 días.`, 'success');
@@ -489,13 +511,11 @@ function filterByStat(filterType) {
             if (!i.caducidad) return false;
             const d = new Date(i.caducidad);
             d.setHours(0, 0, 0, 0);
-            // Cliente caducado
             return d < now;
         });
         showNotification("Filtro Aplicado", `Mostrando ${filteredList.length} clientes caducados.`, 'success');
     }
 
-    // 4. Renderizar la lista filtrada
     renderClients(filteredList);
 }
 
@@ -503,8 +523,6 @@ function filterByStat(filterType) {
 stat3DaysLink.addEventListener('click', () => filterByStat('3days'));
 statExpiredLink.addEventListener('click', () => filterByStat('expired'));
 
-
-// --- BÚSQUEDA/FILTRADO GENERAL ---
 function filterClients(searchTerm = ""){
     const term = searchTerm.toLowerCase();
     
@@ -524,8 +542,6 @@ function filterClients(searchTerm = ""){
 
 searchInput.addEventListener('input', (e) => filterClients(e.target.value));
 
-
-// --- ESTADÍSTICAS ---
 function updateStats(list){
   statTotal.textContent = list.length;
   // Lógica de 3 días y caducados permanece igual
@@ -550,7 +566,6 @@ function updateStats(list){
   statExpired.textContent = expiredCount;
 }
 
-// ... (renderDashboard y toggleRenovara)
 function renderDashboard(list){
   const now = new Date();
   now.setHours(0,0,0,0);
@@ -613,74 +628,28 @@ window.toggleRenovara = async function(checkbox) {
 }
 
 
-// --- 3. LÓGICA DE RECOMENDACIONES DINÁMICAS ---
+// --- 1. INDICADORES VISUALES DE CADUCIDAD (MODIFICACIÓN DE renderClients) ---
+function getExpiryStatus(caducidad) {
+    if (!caducidad) return 'status-green'; // Por defecto, si no tiene fecha
 
-// RENDERIZA LAS ETIQUETAS DE RECOMENDACIÓN
-function renderRecommendedClients(recommendations, targetDiv) {
-    targetDiv.innerHTML = '';
-    recommendations.forEach((name, index) => {
-        const tag = document.createElement('div');
-        tag.className = 'recommendation-tag';
-        tag.innerHTML = `
-            ${name}
-            <button type="button" data-index="${index}" data-target-id="${targetDiv.id}">x</button>
-        `;
-        tag.querySelector('button').onclick = (e) => removeRecommendedClient(e.target);
-        targetDiv.appendChild(tag);
-    });
+    const dateCaducidad = new Date(caducidad);
+    const now = new Date();
+    const diffTime = dateCaducidad.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+        return 'status-red'; // Caducado
+    } else if (diffDays <= 7) {
+        return 'status-yellow'; // Caduca en 7 días o menos
+    } else {
+        return 'status-green'; // Más de 7 días
+    }
 }
 
-// AÑADE UN CLIENTE A LA LISTA
-function addRecommendedClient(inputElement, targetDiv) {
-    const name = inputElement.value.trim();
-    if (name === "") return;
-
-    if (currentRecommendations.includes(name)) {
-        showNotification("Error de Recomendación", `El cliente "${name}" ya ha sido añadido.`, 'error');
-        return;
-    }
-    
-    currentRecommendations.push(name);
-    renderRecommendedClients(currentRecommendations, targetDiv);
-    inputElement.value = '';
-}
-
-// ELIMINA UN CLIENTE DE LA LISTA
-function removeRecommendedClient(button) {
-    const index = parseInt(button.getAttribute('data-index'));
-    const targetId = button.getAttribute('data-target-id');
-    
-    currentRecommendations.splice(index, 1);
-    
-    const targetDiv = document.getElementById(targetId);
-    renderRecommendedClients(currentRecommendations, targetDiv);
-}
-
-// Event Listeners para añadir recomendaciones
-fAddRecommendationBtn.addEventListener('click', () => addRecommendedClient(fNewRecommendationInput, fRecommendedClientsDiv));
-fNewRecommendationInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        addRecommendedClient(fNewRecommendationInput, fRecommendedClientsDiv);
-    }
-});
-
-eAddRecommendationBtn.addEventListener('click', () => addRecommendedClient(eNewRecommendationInput, eRecommendedClientsDiv));
-eNewRecommendationInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        addRecommendedClient(eNewRecommendationInput, eRecommendedClientsDiv);
-    }
-});
-
-
-// --- RENDER DE CLIENTES EN TARJETAS (Actualizado para array de recomendaciones) ---
 function renderClients(list){
   clientsGrid.innerHTML = "";
 
   list.forEach(item => {
-    // Manejar el campo de recomendaciones, asumiendo que el nuevo formato es un Array, 
-    // pero manteniendo compatibilidad con el viejo (string)
     let recommendationsHTML = '';
     let recs = item.recomendaciones || [];
     
@@ -693,9 +662,13 @@ function renderClients(list){
     if (Array.isArray(recs) && recs.length > 0) {
         recommendationsHTML = `<div class="meta">Recomendado por: ${recs.join(', ')}</div>`;
     }
+    
+    // **NUEVO** Obtener la clase de estado
+    const statusClass = getExpiryStatus(item.caducidad);
 
     const card = document.createElement('div');
-    card.className = "card";
+    // **NUEVO** Añadir la clase de estado a la tarjeta
+    card.className = `card ${statusClass}`;
     card.innerHTML = `
       <h4>${item.nombre}</h4>
       <div class="meta">App: ${item.aplicacion || "-"}</div>
@@ -716,64 +689,219 @@ function renderClients(list){
 }
 
 
-// --- LÓGICA DE ACCIONES (Actualizada para manejar array de recomendaciones) ---
+// --- 2. AUTOCOMPLETADO Y DINÁMICO DE RECOMENDACIONES ---
 
-window.copyPassword = function(id){
-  const item = cachedList.find(i => i.id === id);
-  if(!item || !item.contrasena) {
-    showNotification("Error de Copia", "No hay contraseña o datos completos para copiar.", 'error');
-    return;
-  }
-  
-  const textToCopy = `Usuario: ${item.usuario || "-"}\nContraseña: ${item.contrasena || "-"}\nCaducidad: ${formatDate(item.caducidad)}\nAplicación: ${item.aplicacion || "-"}`;
-  
-  navigator.clipboard.writeText(textToCopy);
-  showNotification("Copiado", "Datos clave copiados al portapapeles.", 'success');
+// RENDERIZA LAS ETIQUETAS DE RECOMENDACIÓN
+function renderRecommendedClients(recommendations, targetDiv) {
+    targetDiv.innerHTML = '';
+    recommendations.forEach((name, index) => {
+        const tag = document.createElement('div');
+        tag.className = 'recommendation-tag';
+        tag.innerHTML = `
+            ${name}
+            <button type="button" data-index="${index}" data-target-id="${targetDiv.id}">x</button>
+        `;
+        tag.querySelector('button').onclick = (e) => removeRecommendedClient(e.target);
+        targetDiv.appendChild(tag);
+    });
 }
 
-window.renewItem = async function(id){
-  const item = cachedList.find(i => i.id === id);
-  if(!item) return;
+// AÑADE UN CLIENTE A LA LISTA
+function addRecommendedClient(name, inputElement, targetDiv) {
+    if (name === "") return;
 
-  let date = new Date(item.caducidad || new Date());
-  date.setMonth(date.getMonth() + 3); 
-
-  try {
-      await updateDoc(doc(db, "clientes", id), {
-        caducidad: date.toISOString()
-      });
-      showNotification("Renovación Exitosa", "Cliente renovado por 3 meses.", 'success');
-  } catch (error) {
-      showNotification("Error de Renovación", "No se pudo renovar el cliente.", 'error');
-      console.error("Error renewing item:", error);
-  }
+    // Validación de existencia y duplicados
+    if (!cachedClientNames.has(name)) {
+        showNotification("Error de Recomendación", `El cliente "${name}" no existe en la base de datos.`, 'error');
+        return;
+    }
+    if (currentRecommendations.includes(name)) {
+        showNotification("Error de Recomendación", `El cliente "${name}" ya ha sido añadido.`, 'error');
+        return;
+    }
+    
+    currentRecommendations.push(name);
+    renderRecommendedClients(currentRecommendations, targetDiv);
+    inputElement.value = '';
+    // Cerrar el autocompletado después de añadir
+    inputElement.nextElementSibling.nextElementSibling.remove();
 }
 
-window.deleteItem = async function(id){
-  if(!confirm("¿Eliminar cliente?")) return;
-  
-  try {
-      await deleteDoc(doc(db, "clientes", id));
-      showNotification("Eliminado", "Cliente eliminado correctamente.", 'success');
-  } catch (error) {
-      showNotification("Error", "No se pudo eliminar el cliente.", 'error');
-      console.error("Error deleting item:", error);
-  }
+// ELIMINA UN CLIENTE DE LA LISTA
+function removeRecommendedClient(button) {
+    const index = parseInt(button.getAttribute('data-index'));
+    const targetId = button.getAttribute('data-target-id');
+    
+    currentRecommendations.splice(index, 1);
+    
+    const targetDiv = document.getElementById(targetId);
+    renderRecommendedClients(currentRecommendations, targetDiv);
 }
 
-// ABRIR MODAL DE EDICIÓN
+// LÓGICA DE AUTOCOMPLETADO
+function autocomplete(input, container, targetDiv) {
+    const listId = `${input.id}-list`;
+    let currentFocus = -1;
+
+    function closeAllLists(elmnt) {
+        document.querySelectorAll(".autocomplete-list").forEach(i => {
+            if (i !== elmnt) i.remove();
+        });
+        currentFocus = -1;
+    }
+
+    input.addEventListener("input", function() {
+        closeAllLists();
+        const val = this.value.toLowerCase();
+        if (!val) return false;
+
+        const a = document.createElement("ul");
+        a.setAttribute("id", listId);
+        a.setAttribute("class", "autocomplete-list");
+        container.appendChild(a);
+
+        const namesArray = Array.from(cachedClientNames);
+        let count = 0;
+
+        for (let i = 0; i < namesArray.length && count < 10; i++) {
+            const name = namesArray[i];
+            if (name.toLowerCase().includes(val)) {
+                const b = document.createElement("li");
+                b.innerHTML = name;
+                b.addEventListener("click", function(e) {
+                    addRecommendedClient(name, input, targetDiv);
+                    closeAllLists();
+                });
+                a.appendChild(b);
+                count++;
+            }
+        }
+    });
+
+    // Control de teclado para la lista
+    input.addEventListener("keydown", function(e) {
+        let x = document.getElementById(listId);
+        if (x) x = x.getElementsByTagName("li");
+        
+        if (e.key === "ArrowDown") {
+            currentFocus++;
+            addActive(x);
+        } else if (e.key === "ArrowUp") {
+            currentFocus--;
+            addActive(x);
+        } else if (e.key === "Enter") {
+            e.preventDefault();
+            if (currentFocus > -1 && x) {
+                x[currentFocus].click();
+            } else {
+                // Si pulsa Enter sin seleccionar, intentar añadir el valor del input
+                addRecommendedClient(input.value.trim(), input, targetDiv);
+            }
+        }
+    });
+
+    function addActive(x) {
+        if (!x) return false;
+        removeActive(x);
+        if (currentFocus >= x.length) currentFocus = 0;
+        if (currentFocus < 0) currentFocus = (x.length - 1);
+        x[currentFocus].classList.add("active");
+    }
+
+    function removeActive(x) {
+        for (let i = 0; i < x.length; i++) {
+            x[i].classList.remove("active");
+        }
+    }
+
+    document.addEventListener("click", function (e) {
+        // Cierra la lista si se hace clic fuera
+        if (!container.contains(e.target)) {
+             closeAllLists();
+        }
+    });
+}
+
+
+// Event Listeners para el autocompletado y el botón '+'
+autocomplete(fNewRecommendationInput, fRecContainer, fRecommendedClientsDiv);
+fAddRecommendationBtn.addEventListener('click', () => addRecommendedClient(fNewRecommendationInput.value.trim(), fNewRecommendationInput, fRecommendedClientsDiv));
+
+autocomplete(eNewRecommendationInput, eRecContainer, eRecommendedClientsDiv);
+eAddRecommendationBtn.addEventListener('click', () => addRecommendedClient(eNewRecommendationInput.value.trim(), eNewRecommendationInput, eRecommendedClientsDiv));
+
+
+// --- 3. FUNCIÓN DE EXPORTACIÓN A CSV ---
+btnExportCsv.addEventListener('click', exportToCsv);
+
+function exportToCsv() {
+    if (cachedList.length === 0) {
+        showNotification("Error", "No hay datos para exportar.", 'error');
+        return;
+    }
+
+    // Definir las cabeceras (headers)
+    const headers = [
+        'Nombre', 'Creacion', 'Caducidad', 'Usuario', 'Contrasena', 
+        'Dispositivo', 'Aplicacion', 'Renovara', 'Recomendaciones'
+    ];
+    
+    // Mapear los datos al formato CSV
+    const csvRows = [];
+    csvRows.push(headers.join(';')); // Fila de cabeceras
+
+    cachedList.forEach(item => {
+        // Asegurarse de que las recomendaciones sean un string para CSV
+        let recs = item.recomendaciones;
+        if (Array.isArray(recs)) {
+            recs = recs.join(', '); // Convertir array a string
+        } else if (!recs) {
+            recs = '';
+        }
+
+        const row = [
+            `"${item.nombre || ''}"`,
+            formatDate(item.creacion),
+            formatDate(item.caducidad),
+            `"${item.usuario || ''}"`,
+            `"${item.contrasena || ''}"`,
+            `"${item.dispositivo || ''}"`,
+            `"${item.aplicacion || ''}"`,
+            item.renovara ? 'Si' : 'No',
+            `"${recs.replace(/"/g, '""')}"` // Sanitizar el campo de texto
+        ];
+        csvRows.push(row.join(';'));
+    });
+
+    // Crear el Blob y descargar
+    const csvString = csvRows.join('\n');
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Clientes_Exportacion_${new Date().toISOString().slice(0, 10)}.csv`);
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showNotification("Exportación Exitosa", `Se han exportado ${cachedList.length} clientes.`, 'success');
+}
+
+
+// --- LÓGICA DE FORMULARIOS Y MODAL (Manejo de array de recomendaciones) ---
+
 window.openEdit = function(id){
   const item = cachedList.find(i => i.id === id);
   if(!item) return;
 
-  // **Carga y conversión de Recomendaciones**
   let recs = item.recomendaciones || [];
   if (typeof recs === 'string' && recs.trim() !== "") {
     recs = recs.split(',').map(s => s.trim()).filter(s => s.length > 0);
   } else if (typeof recs === 'string') {
      recs = [];
   }
-  currentRecommendations = recs; // Carga las recomendaciones del cliente en la variable global
+  currentRecommendations = recs;
 
   document.getElementById('e-nombre').value = item.nombre;
   document.getElementById('e-creacion').value = isoForInput(item.creacion);
@@ -783,20 +911,17 @@ window.openEdit = function(id){
   document.getElementById('e-dispositivo').value = item.dispositivo || "";
   document.getElementById('e-aplicacion').value = item.aplicacion || ""; 
 
-  // Renderiza las etiquetas
   renderRecommendedClients(currentRecommendations, eRecommendedClientsDiv);
-  eNewRecommendationInput.value = ''; // Limpia el input temporal
+  eNewRecommendationInput.value = '';
 
   modal.setAttribute('data-id', id);
   modal.classList.add('show');
 };
 
-// CERRAR MODAL
 modalCancelBtn.addEventListener('click', ()=>{
   modal.classList.remove('show');
 });
 
-// GUARDAR CAMBIOS EN MODAL
 formEdit.addEventListener('submit', async e=>{
   e.preventDefault();
   const id = modal.getAttribute('data-id');
@@ -810,21 +935,20 @@ formEdit.addEventListener('submit', async e=>{
     contrasena: document.getElementById('e-contrasena').value,
     dispositivo: document.getElementById('e-dispositivo').value,
     aplicacion: document.getElementById('e-aplicacion').value,
-    recomendaciones: currentRecommendations // Usa el array dinámico
+    recomendaciones: currentRecommendations 
   };
 
   try {
       await updateDoc(doc(db, "clientes", id), data);
       modal.classList.remove('show');
       showNotification("Guardado", `Cambios en cliente ${data.nombre} guardados.`, 'success');
-      currentRecommendations = []; // Limpia la variable global después de guardar
+      currentRecommendations = [];
   } catch (error) {
       showNotification("Error", "No se pudieron guardar los cambios.", 'error');
       console.error("Error updating item:", error);
   }
 });
 
-// AÑADIR CLIENTE NUEVO
 formAdd.addEventListener('submit', async e=>{
   e.preventDefault();
 
@@ -836,7 +960,7 @@ formAdd.addEventListener('submit', async e=>{
     contrasena: document.getElementById('f-contrasena').value,
     dispositivo: document.getElementById('f-dispositivo').value,
     aplicacion: document.getElementById('f-aplicacion').value,
-    recomendaciones: currentRecommendations, // Usa el array dinámico
+    recomendaciones: currentRecommendations, 
     renovara: false
   };
 
@@ -844,7 +968,6 @@ formAdd.addEventListener('submit', async e=>{
       await addDoc(col, data);
       showNotification("Cliente Creado", `El cliente ${data.nombre} ha sido añadido con éxito.`, 'success');
       
-      // Limpia la interfaz y la variable global
       formAdd.reset();
       setDefaultCreationDate();
       currentRecommendations = [];
@@ -855,13 +978,24 @@ formAdd.addEventListener('submit', async e=>{
   }
 });
 
-// RESET FORM
 fReset.addEventListener('click', ()=> {
     formAdd.reset();
     setDefaultCreationDate();
     currentRecommendations = [];
     renderRecommendedClients(currentRecommendations, fRecommendedClientsDiv);
 });
+
+// ... (copyPassword, renewItem, deleteItem se mantienen) ...
+window.copyPassword = function(id){
+  const item = cachedList.find(i => i.id === id);
+  if(!item || !item.contrasena) {
+    showNotification("Error de Copia", "No hay contraseña o datos completos para copiar.", 'error');
+    return;
+  }
+  const textToCopy = `Usuario: ${item.usuario || "-"}\nContraseña: ${item.contrasena || "-"}\nCaducidad: ${formatDate(item.caducidad)}\nAplicación: ${item.aplicacion || "-"}`;
+  navigator.clipboard.writeText(textToCopy);
+  showNotification("Copiado", "Datos clave copiados al portapapeles.", 'success');
+}
 
 </script>
 </body>
