@@ -17,7 +17,8 @@
     .logo{width:46px;height:46px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#013220;font-weight:700}
     nav{margin-left:auto}
     .menu{display:flex;gap:8px}
-    .menu button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer}
+    .menu button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer; transition: background 0.2s}
+    .menu button:hover { background: rgba(255,255,255,0.05); }
     .menu button.active{background:var(--accent);color:#052018;border:none}
     main{display:grid;grid-template-columns:1fr;gap:18px}
     .cards-col{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:18px;}
@@ -43,7 +44,8 @@
     .meta{font-size:12px;color:var(--muted);margin-bottom:8px}
     .tags{display:flex;gap:6px;flex-wrap:wrap}
     .btns{display:flex;gap:6px;margin-top:10px}
-    .btn{padding:8px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
+    .btn{padding:8px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:600; transition: opacity 0.2s}
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn.edit{background:#1f2937;color:#e6eef6}
     .btn.renew{background:#064e3b;color:var(--accent)}
     .btn.copy{background:#0b1220;color:var(--muted);border:1px solid rgba(255,255,255,0.03)}
@@ -52,7 +54,7 @@
     .card-form{background:var(--card);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04)}
     form{display:grid;gap:10px}
     label{font-size:13px;color:var(--muted)}
-    input[type=text],input[type=date],textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    input[type=text],input[type=date],textarea,select,input[type=email],input[type=password]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
     textarea{min-height:90px;resize:vertical}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,23,0.6),rgba(2,6,23,0.6));z-index:50}
@@ -66,6 +68,29 @@
     .toast.error { border-left: 4px solid var(--red); }
     .toast strong { display: block; margin-bottom: 4px; font-size: 14px; }
     .toast p { margin: 0; font-size: 13px; color: var(--muted); }
+    /* Login Screen Styles */
+    #section-login {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(180deg,#071022 0%, #07132a 100%);
+        align-items: center;
+        justify-content: center;
+        z-index: 90;
+    }
+    #section-login.show { display: flex; }
+    .login-box {
+        background: var(--card);
+        padding: 30px;
+        border-radius: 16px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    .login-box h2 { text-align: center; margin-top: 0; color: var(--accent); }
+    #login-error-message { color: var(--red); font-size: 13px; text-align: center; margin-top: 5px; height: 18px; }
+
     /* Dashboard: checkbox */
     .exp-card .flex-end { display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
     /* ESTILOS: Campo de Recomendaciones Dinámico y Autocompletado */
@@ -74,7 +99,7 @@
         border-radius: 8px;
         border: 1px solid rgba(255,255,255,0.04);
         background: transparent;
-        position: relative; /* Clave para el autocompletado */
+        position: relative; 
     }
     .tag-list {
         display: flex;
@@ -126,7 +151,7 @@
         position: absolute;
         top: 100%;
         left: 10px;
-        right: 50px; /* Ajuste para dejar espacio al botón + */
+        right: 50px; 
         background: var(--card);
         border: 1px solid rgba(255,255,255,0.1);
         border-radius: 8px;
@@ -157,7 +182,25 @@
 </head>
 
 <body>
-<div class="container">
+
+<section id="section-login" class="show">
+  <div class="login-box">
+    <h2>Gestor de Clientes</h2>
+    <form id="form-login">
+      <label for="login-email">Email</label>
+      <input type="email" id="login-email" required />
+
+      <label for="login-password" style="margin-top: 10px;">Contraseña</label>
+      <input type="password" id="login-password" required />
+
+      <div id="login-error-message"></div>
+
+      <button type="submit" class="btn edit" style="width: 100%; margin-top: 15px;">Iniciar Sesión</button>
+    </form>
+  </div>
+</section>
+
+<div class="container" id="app-container" style="display:none;">
 
 <header>
   <div class="brand">
@@ -169,6 +212,7 @@
       <button id="nav-dashboard" class="active">Dashboard</button>
       <button id="nav-clientes">Clientes</button>
       <button id="nav-add">Añadir cliente</button>
+      <button id="nav-logout" class="btn delete" style="margin-left: 12px;">Cerrar Sesión</button>
     </div>
   </nav>
 </header>
@@ -329,6 +373,12 @@ import {
   updateDoc, deleteDoc, query, orderBy
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
 
+// **NUEVO: Importar módulos de AUTH**
+import { 
+    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged 
+} from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
+
+
 // NOTA: Recuerda que debes reemplazar la configuración de Firebase con tus claves reales.
 const firebaseConfig = {
   apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
@@ -341,11 +391,14 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app); // **NUEVO: Inicializar Auth**
 
-// ELEMENTOS UI
+// --- ELEMENTOS UI DE LA APLICACIÓN ---
+const appContainer = document.getElementById('app-container'); // Contenedor principal
 const navDashboard = document.getElementById('nav-dashboard');
 const navClientes = document.getElementById('nav-clientes');
 const navAdd = document.getElementById('nav-add');
+const navLogout = document.getElementById('nav-logout'); // Botón Cerrar Sesión
 
 const secDashboard = document.getElementById('section-dashboard');
 const secClientes = document.getElementById('section-clientes');
@@ -360,7 +413,15 @@ const dashboardSoonExp = document.getElementById('dashboard-soon-exp');
 // NUEVOS ELEMENTOS UI PARA CLICABLES
 const stat3DaysLink = document.getElementById('stat-3days-link');
 const statExpiredLink = document.getElementById('stat-expired-link');
-const btnExportCsv = document.getElementById('btn-export-csv'); // NUEVO
+const btnExportCsv = document.getElementById('btn-export-csv'); 
+
+// --- ELEMENTOS UI DE LOGIN ---
+const sectionLogin = document.getElementById('section-login');
+const formLogin = document.getElementById('form-login');
+const loginEmailInput = document.getElementById('login-email');
+const loginPasswordInput = document.getElementById('login-password');
+const loginErrorMsg = document.getElementById('login-error-message');
+
 
 // FORM ADD
 const formAdd = document.getElementById('form-add');
@@ -371,13 +432,13 @@ const fCreacion = document.getElementById('f-creacion');
 const fRecommendedClientsDiv = document.getElementById('f-recommended-clients');
 const fNewRecommendationInput = document.getElementById('f-new-recommendation');
 const fAddRecommendationBtn = document.getElementById('f-add-recommendation-btn');
-const fRecContainer = document.getElementById('f-recomendaciones-container'); // Contenedor para autocompletado
+const fRecContainer = document.getElementById('f-recomendaciones-container'); 
 
 // RECOMENDACIONES EDIT
 const eRecommendedClientsDiv = document.getElementById('e-recommended-clients');
 const eNewRecommendationInput = document.getElementById('e-new-recommendation');
 const eAddRecommendationBtn = document.getElementById('e-add-recommendation-btn');
-const eRecContainer = document.getElementById('e-recomendaciones-container'); // Contenedor para autocompletado
+const eRecContainer = document.getElementById('e-recomendaciones-container'); 
 
 // SEARCH
 const searchInput = document.getElementById('search-input');
@@ -394,6 +455,9 @@ const notificationsContainer = document.getElementById('notifications-container'
 let cachedList = []; // Lista de todos los clientes
 let currentRecommendations = []; // Array para gestionar las recomendaciones en el formulario
 let cachedClientNames = new Set(); // Set para el autocompletado y validación de nombres
+
+// REFERENCIA A LA COLECCIÓN (Fuera de onAuthStateChanged para ser global)
+const col = collection(db, "clientes");
 
 // --- FUNCIONES AUXILIARES ---
 function formatDate(d){
@@ -433,7 +497,7 @@ function showNotification(title, message, type = 'success') {
 function setDefaultCreationDate() {
   fCreacion.value = isoForInput(new Date());
 }
-setDefaultCreationDate();
+setDefaultCreationDate(); // Llama esto solo una vez al cargar
 
 function setActive(btn){
   document.querySelectorAll('.menu button').forEach(b=>b.classList.remove('active'));
@@ -465,21 +529,86 @@ navAdd.addEventListener('click', ()=>{
   setDefaultCreationDate();
 });
 
-// --- CARGA DE CLIENTES EN TIEMPO REAL ---
-const col = collection(db, "clientes");
-const q = query(col, orderBy("creacion", "desc"));
+// --- AUTENTICACIÓN Y GESTIÓN DE ESTADO ---
 
-// STREAM FIRESTORE
-onSnapshot(q, snap => {
-  cachedList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  // Actualizamos la lista de nombres para autocompletado
-  cachedClientNames = new Set(cachedList.map(c => c.nombre));
-  filterClients(searchInput.value);
-  renderDashboard(cachedList);
-  updateStats(cachedList);
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // Usuario logueado
+        sectionLogin.classList.remove('show');
+        appContainer.style.display = 'block';
+        showNotification("Bienvenido", `Sesión iniciada con ${user.email}.`, 'success');
+        
+        // Iniciar la carga de datos solo después del login
+        startDataListener();
+
+    } else {
+        // Usuario NO logueado
+        sectionLogin.classList.add('show');
+        appContainer.style.display = 'none';
+        // Limpiar datos y notificar si no fue un logout manual
+        if (cachedList.length > 0) {
+            showNotification("Sesión Cerrada", "Por favor, inicia sesión para continuar.", 'error');
+        }
+        cachedList = [];
+        clientsGrid.innerHTML = "";
+    }
 });
 
-// --- FILTRO DE CLIENTES POR STAT DEL DASHBOARD ---
+
+// **NUEVO: FUNCIÓN PARA INICIAR SESIÓN**
+formLogin.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = loginEmailInput.value;
+    const password = loginPasswordInput.value;
+    
+    loginErrorMsg.textContent = ''; // Limpiar mensaje de error previo
+
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        // onAuthStateChanged se encargará de ocultar el login y mostrar la app
+    } catch (error) {
+        let message = "Error de inicio de sesión.";
+        
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+            message = "Email o contraseña incorrectos.";
+        } else if (error.code === 'auth/invalid-email') {
+            message = "El formato del email es inválido.";
+        }
+        
+        loginErrorMsg.textContent = message;
+        console.error("Error de Login:", error);
+    }
+});
+
+// **NUEVO: FUNCIÓN PARA CERRAR SESIÓN**
+navLogout.addEventListener('click', async () => {
+    try {
+        await signOut(auth);
+        showNotification("Sesión Cerrada", "Has cerrado sesión correctamente.", 'success');
+    } catch (error) {
+        showNotification("Error", "No se pudo cerrar la sesión.", 'error');
+        console.error("Error de Logout:", error);
+    }
+});
+
+
+// --- CARGA DE CLIENTES EN TIEMPO REAL (AHORA DENTRO DE UNA FUNCIÓN) ---
+function startDataListener() {
+    const q = query(col, orderBy("creacion", "desc"));
+
+    onSnapshot(q, snap => {
+        cachedList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        // Actualizamos la lista de nombres para autocompletado
+        cachedClientNames = new Set(cachedList.map(c => c.nombre));
+        filterClients(searchInput.value);
+        renderDashboard(cachedList);
+        updateStats(cachedList);
+    });
+}
+
+
+// --- RESTO DE LÓGICA DE FILTRO Y RENDERING (SIN CAMBIOS FUNCIONALES) ---
+
 function filterByStat(filterType) {
     setActive(navClientes);
     secDashboard.style.display='none';
@@ -620,7 +749,7 @@ window.toggleRenovara = async function(checkbox) {
     } catch (error) {
         showNotification(
             "Error", 
-            "No se pudo actualizar el estado de renovación.",
+            "No se pudo actualizar el estado de renovación. (Revisa reglas de Firestore)",
             'error'
         );
         console.error("Error updating renovara:", error);
@@ -687,7 +816,7 @@ function renderClients(list){
 }
 
 
-// --- LÓGICA DE RECOMENDACIONES DINÁMICAS Y AUTOCOMPLETADO ---
+// --- LÓGICA DE RECOMENDACIONES DINÁMICAS Y AUTOCOMPLETADO (sin cambios funcionales) ---
 
 function renderRecommendedClients(recommendations, targetDiv) {
     targetDiv.innerHTML = '';
@@ -824,7 +953,7 @@ autocomplete(eNewRecommendationInput, eRecContainer, eRecommendedClientsDiv);
 eAddRecommendationBtn.addEventListener('click', () => addRecommendedClient(eNewRecommendationInput.value.trim(), eNewRecommendationInput, eRecommendedClientsDiv));
 
 
-// --- FUNCIÓN DE EXPORTACIÓN A CSV ---
+// --- FUNCIÓN DE EXPORTACIÓN A CSV (sin cambios funcionales) ---
 btnExportCsv.addEventListener('click', exportToCsv);
 
 function exportToCsv() {
@@ -884,7 +1013,7 @@ function exportToCsv() {
 }
 
 
-// --- LÓGICA DE ACCIONES (DEFINIDAS EN EL ÁMBITO GLOBAL 'WINDOW') ---
+// --- LÓGICA DE ACCIONES (DEFINIDAS EN EL ÁMBITO GLOBAL 'WINDOW') (sin cambios funcionales) ---
 
 window.copyPassword = function(id){
   const item = cachedList.find(i => i.id === id);
@@ -910,12 +1039,11 @@ window.renewItem = async function(id){
       });
       showNotification("Renovación Exitosa", "Cliente renovado por 3 meses.", 'success');
   } catch (error) {
-      showNotification("Error de Renovación", "No se pudo renovar el cliente.", 'error');
+      showNotification("Error de Renovación", "No se pudo renovar el cliente. (Revisa reglas de Firestore)", 'error');
       console.error("Error renewing item:", error);
   }
 }
 
-// *** FUNCIÓN CORREGIDA QUE RESUELVE EL ERROR 'is not defined' ***
 window.deleteItem = async function(id){
   if(!confirm("¿Estás seguro de que quieres eliminar este cliente? Esta acción no se puede deshacer.")) return;
   
@@ -923,8 +1051,7 @@ window.deleteItem = async function(id){
       await deleteDoc(doc(db, "clientes", id)); 
       showNotification("Eliminado", "Cliente eliminado correctamente.", 'success');
   } catch (error) {
-      // Si el error persiste, revisar las Reglas de Firebase, ya que el problema de JavaScript está resuelto.
-      showNotification("Error", "No se pudo eliminar el cliente. Revisa la consola para el error detallado.", 'error');
+      showNotification("Error", "No se pudo eliminar el cliente. (Revisa reglas de Firestore)", 'error');
       console.error("Error deleting item:", error);
   }
 }
@@ -985,7 +1112,7 @@ formEdit.addEventListener('submit', async e=>{
       showNotification("Guardado", `Cambios en cliente ${data.nombre} guardados.`, 'success');
       currentRecommendations = [];
   } catch (error) {
-      showNotification("Error", "No se pudieron guardar los cambios.", 'error');
+      showNotification("Error", "No se pudieron guardar los cambios. (Revisa reglas de Firestore)", 'error');
       console.error("Error updating item:", error);
   }
 });
@@ -1015,7 +1142,7 @@ formAdd.addEventListener('submit', async e=>{
       currentRecommendations = [];
       renderRecommendedClients(currentRecommendations, fRecommendedClientsDiv);
   } catch (error) {
-      showNotification("Error de Creación", "No se pudo añadir el nuevo cliente.", 'error');
+      showNotification("Error de Creación", "No se pudo añadir el nuevo cliente. (Revisa reglas de Firestore)", 'error');
       console.error("Error adding item:", error);
   }
 });
