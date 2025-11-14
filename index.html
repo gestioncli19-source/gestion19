@@ -20,6 +20,8 @@
     .menu button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer}
     .menu button.active{background:var(--accent);color:#052018;border:none}
     main{display:grid;grid-template-columns:1fr;gap:18px}
+    /* MODIFICACIÓN: cards para mostrar en columna en el dashboard */
+    .cards-col{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:18px;}
     .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
     .stat{background:var(--glass);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
     .stat h3{margin:0;font-size:12px;color:var(--muted)}
@@ -44,7 +46,13 @@
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,23,0.6),rgba(2,6,23,0.6));z-index:50}
     .modal.show{display:flex}
     .modal-inner{width:96%;max-width:720px;background:var(--card);padding:16px;border-radius:12px}
-    footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
+    /* ELIMINADO: footer styles ya que la nota se quita */
+    @media (min-width: 701px) {
+        /* Fuerza la columna para el dashboard en pantallas grandes */
+        .cards-col {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
     @media (max-width:700px){.row{grid-template-columns:1fr}.menu{display:flex;gap:6px}}
   </style>
 </head>
@@ -69,15 +77,15 @@
 <main>
 
 <section id="section-dashboard">
-  <div class="cards">
+  <div class="cards-col">
     <div class="stat">
       <h3>Total clientes</h3><p id="stat-total">—</p>
     </div>
     <div class="stat">
-      <h3>Caducan hoy</h3><p id="stat-today">—</p>
+      <h3>Caducan en 3 días</h3><p id="stat-today-3days">—</p>
     </div>
     <div class="stat">
-      <h3>Próxima renovación</h3><p id="stat-next">—</p>
+      <h3>Cliente caducado</h3><p id="stat-expired">—</p>
     </div>
   </div>
   <div id="dashboard-soon-exp" class="cards" style="margin-top: 18px">
@@ -88,7 +96,6 @@
 <section id="section-clientes" style="display:none">
   <div class="card-form">
     <h3>Clientes</h3>
-    <p class="meta">Lista en tarjetas...</p>
     <div id="clients-grid" class="grid-clients" style="margin-top:10px"></div>
   </div>
 </section>
@@ -139,9 +146,7 @@
 </section>
 </main>
 
-<footer>
-  Nota: este código asume Firestore (Cloud Firestore). Reemplaza la configuración de Firebase en el script con tus claves.
-</footer>
+<footer></footer>
 
 </div>
 
@@ -194,10 +199,11 @@
 // --- CONFIG FIREBASE ---
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
 import {
-  getFirestore, collection, addDoc, doc, getDocs, onSnapshot,
+  getFirestore, collection, addDoc, doc, onSnapshot,
   updateDoc, deleteDoc, query, orderBy
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
 
+// NOTA: Deja las claves de Firebase tal cual, ya que se espera que el usuario las reemplace
 const firebaseConfig = {
   apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
   authDomain: "gestioncandy-b9356.firebaseapp.com",
@@ -221,9 +227,11 @@ const secAdd = document.getElementById('section-add');
 
 const clientsGrid = document.getElementById('clients-grid');
 const statTotal = document.getElementById('stat-total');
-const statToday = document.getElementById('stat-today');
-const statNext = document.getElementById('stat-next');
-const dashboardSoonExp = document.getElementById('dashboard-soon-exp'); // Nuevo contenedor para tarjetas en Dashboard
+// CAMBIO ID: para el nuevo stat de "Caducan en 3 días"
+const statToday3Days = document.getElementById('stat-today-3days');
+// CAMBIO ID: para el nuevo stat de "Cliente caducado"
+const statExpired = document.getElementById('stat-expired');
+const dashboardSoonExp = document.getElementById('dashboard-soon-exp');
 
 // FORM ADD
 const formAdd = document.getElementById('form-add');
@@ -299,16 +307,27 @@ function updateStats(list){
   const today = new Date();
   today.setHours(0,0,0,0);
 
-  const todayCount = list.filter(i => {
+  const limit3Days = new Date(today);
+  limit3Days.setDate(limit3Days.getDate() + 3);
+  limit3Days.setHours(23,59,59,999);
+
+  // Calcula clientes que caducan en los próximos 3 días (incluyendo hoy)
+  const soonCount = list.filter(i => {
     if(!i.caducidad) return false;
     const d = new Date(i.caducidad);
     d.setHours(0,0,0,0);
-    return d.getTime() === today.getTime();
+    return d >= today && d <= limit3Days;
   }).length;
-  statToday.textContent = todayCount;
+  statToday3Days.textContent = soonCount;
 
-  const sorted = [...list].filter(i=>i.caducidad).sort((a,b)=> new Date(a.caducidad) - new Date(b.caducidad));
-  statNext.textContent = sorted.length ? formatDate(sorted[0].caducidad) : "-";
+  // Calcula clientes caducados (caducidad menor a hoy)
+  const expiredCount = list.filter(i => {
+    if(!i.caducidad) return false;
+    const d = new Date(i.caducidad);
+    d.setHours(0,0,0,0);
+    return d < today;
+  }).length;
+  statExpired.textContent = expiredCount;
 }
 
 // DASHBOARD — SOLO CLIENTES QUE CADUCAN EN 3 DÍAS
@@ -323,10 +342,11 @@ function renderDashboard(list){
   const soon = list.filter(i => {
     if(!i.caducidad) return false;
     const d = new Date(i.caducidad);
+    // Solo clientes no caducados que están por caducar
     return d >= now && d <= limit;
   });
 
-  // Limpiar contenedor y añadir el título si hay clientes
+  // Limpiar contenedor y añadir el título
   dashboardSoonExp.innerHTML = `<p class="meta" style="grid-column: 1 / -1; margin-bottom: 0;">Clientes que caducan en los próximos 3 días (${soon.length}):</p>`;
 
   if (soon.length === 0) {
@@ -372,27 +392,31 @@ function renderClients(list){
   });
 }
 
-// COPIAR CONTRASEÑA
+// COPIAR DATOS - COPIA USUARIO, CONTRASENA, CADUCIDAD Y APLICACION
 window.copyPassword = function(id){
   const item = cachedList.find(i => i.id === id);
-  if(!item || !item.contrasena) return alert("No hay contraseña");
-  navigator.clipboard.writeText(item.contrasena);
-  alert("Contraseña copiada");
+  if(!item || !item.contrasena) return alert("No hay contraseña o datos completos");
+  
+  const textToCopy = `Usuario: ${item.usuario || "-"}\nContraseña: ${item.contrasena || "-"}\nCaducidad: ${formatDate(item.caducidad)}\nAplicación: ${item.aplicacion || "-"}`;
+  
+  navigator.clipboard.writeText(textToCopy);
+  alert("Datos (Usuario, Contraseña, Caducidad, App) copiados al portapapeles.");
 }
 
-// RENOVAR — SUMA 1 AÑO A CADUCIDAD
+// RENOVAR — SUMA 3 MESES A CADUCIDAD
 window.renewItem = async function(id){
   const item = cachedList.find(i => i.id === id);
   if(!item) return;
 
   let date = new Date(item.caducidad || new Date());
-  date.setFullYear(date.getFullYear() + 1);
+  // CAMBIO: Se suman 3 meses
+  date.setMonth(date.getMonth() + 3);
 
   await updateDoc(doc(db, "clientes", id), {
     caducidad: date.toISOString()
   });
 
-  alert("Renovado correctamente");
+  alert("Renovado por 3 meses correctamente");
 }
 
 // ELIMINAR
@@ -411,7 +435,7 @@ window.openEdit = function(id){
   document.getElementById('e-caducidad').value = isoForInput(item.caducidad);
   document.getElementById('e-usuario').value = item.usuario || "";
   document.getElementById('e-contrasena').value = item.contrasena || "";
-  document.getElementById('e-aplicacion').value = item.aplicacion || ""; // Establece el valor del select
+  document.getElementById('e-aplicacion').value = item.aplicacion || ""; 
   document.getElementById('e-recomendaciones').value = item.recomendaciones || "";
 
   modal.setAttribute('data-id', id);
@@ -435,7 +459,7 @@ formEdit.addEventListener('submit', async e=>{
     caducidad: document.getElementById('e-caducidad').value,
     usuario: document.getElementById('e-usuario').value,
     contrasena: document.getElementById('e-contrasena').value,
-    aplicacion: document.getElementById('e-aplicacion').value, // El valor es tomado del select
+    aplicacion: document.getElementById('e-aplicacion').value,
     recomendaciones: document.getElementById('e-recomendaciones').value
   };
 
