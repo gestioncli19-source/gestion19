@@ -1,439 +1,315 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Gestión Candy 🍃</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🗂️ Gestión Candy</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 <style>
-:root{
-  --bg:#0f1216; --panel:#111318; --muted:#9aa4ad;
-  --accent:#00b4ff; --accent2:#0077aa; --success:#23c552; --danger:#ff6b6b;
-  --touch:48px;
-}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;font-family:Montserrat,system-ui,Arial;background:var(--bg);color:#e9f0f7;
-  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
-}
-
-/* APP LAYOUT */
-.app { display:flex; min-height:100vh; overflow-x:hidden; }
-
-/* SIDEBAR */
-.sidebar {
-  width:260px; background:linear-gradient(180deg,var(--panel),#0b0d11);
-  padding:20px 18px; box-shadow:4px 0 30px rgba(0,0,0,0.6);
-  position:fixed; left:0; top:0; bottom:0; transform:translateX(-320px);
-  transition:transform .38s cubic-bezier(.2,.9,.2,1); z-index:240;
-}
-.sidebar.open { transform:translateX(0); }
-.brand{display:flex;gap:12px;align-items:center;margin-bottom:18px}
-.logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800}
-.nav{display:flex;flex-direction:column;gap:6px}
-.nav a{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;text-decoration:none;color:#cfe6ff;font-weight:700}
-.nav a.active,.nav a:hover{background:rgba(255,255,255,0.03);color:#fff}
-
-/* MENU BUTTON (DERECHA) */
-.menu-btn {
-  position:fixed; right:14px; top:14px;
-  background:linear-gradient(90deg,var(--accent),var(--accent2));
-  border:none; color:#fff; padding:10px 12px; border-radius:10px; cursor:pointer; z-index:260;
-  box-shadow:0 10px 30px rgba(0,0,0,0.35);
-}
-
-/* MAIN */
-main { flex:1; margin-left:20px; padding:20px 20px 80px 20px; transition:margin .3s; }
-header { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:6px 6px; }
-.header-left { display:flex; align-items:center; gap:12px; }
-.header-title { font-weight:800; font-size:20px; display:flex; align-items:center; gap:8px; }
-.icon-btn { background:transparent; border:1px solid rgba(255,255,255,0.04); padding:10px; border-radius:10px; color:inherit; cursor:pointer }
-
-/* DASHBOARD */
-.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-top:14px; }
-.box { background:linear-gradient(145deg,#121417,#181a1f); padding:20px; border-radius:16px; box-shadow:0 12px 32px rgba(0,0,0,0.65); text-align:center; transition:transform .18s; }
-.box:hover{ transform:translateY(-6px); }
-.num { font-size:28px; font-weight:800; color:var(--accent); }
-.label { font-size:14px; color:var(--muted); margin-top:6px; }
-
-/* CARDS */
-.card-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin-top:18px; }
-.card { background:linear-gradient(180deg,#0f1418,#15181c); border-radius:12px; padding:14px; box-shadow:0 10px 30px rgba(0,0,0,0.6); transition:transform .18s; }
-.card:hover{ transform:translateY(-6px); }
-
-/* info rows */
-.info-row { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
-.info-row .row { display:flex; justify-content:space-between; gap:8px; align-items:center; font-size:14px; }
-
-/* actions */
-.actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
-.btn { padding:10px 12px; border-radius:10px; border:none; cursor:pointer; font-weight:800; font-size:13px; display:inline-flex; gap:8px; align-items:center; }
-.btn.touch { min-height:var(--touch); } /* touch targets */
-.edit { background:linear-gradient(90deg,#3b82f6,#2563eb); color:#fff; }
-.renew { background:linear-gradient(90deg,#ffb86b,#ff8a00); color:#fff; }
-.copy { background:linear-gradient(90deg,#9b6bff,#7c3aed); color:#fff; }
-.del { background:linear-gradient(90deg,#ff7b7b,#ff3b3b); color:#fff; }
-
-/* FORM PANEL */
-.panel { background:linear-gradient(180deg,#0f1316,#13161a); padding:14px; border-radius:12px; margin-top:14px; }
-.row { display:flex; gap:10px; flex-wrap:wrap; }
-.field { flex:1; display:flex; flex-direction:column; min-width:140px; }
-label{ font-size:12px; color:var(--muted); margin-bottom:6px; }
-input, textarea, select { padding:10px; border-radius:10px; border:none; background:#161819; color:#fff; outline:none; }
-textarea{ min-height:80px; resize:vertical; }
-.form-footer{ display:flex; gap:10px; justify-content:flex-end; margin-top:10px; }
-
-/* pagination */
-.pagination { display:flex; gap:8px; justify-content:center; margin-top:16px; }
-.page-btn { padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); background:transparent; color:inherit; cursor:pointer; }
-.page-btn.active { background:var(--accent); color:#fff; }
-
-/* login modal */
-#loginScreen { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg,rgba(0,0,0,0.5),rgba(0,0,0,0.6)); z-index:500; }
-.login-card { background:#0f1418; padding:20px; border-radius:12px; min-width:320px; box-shadow:0 20px 60px rgba(0,0,0,0.7); }
-.login-card h2{ margin:0 0 8px 0; }
-.login-card input{ width:100%; padding:12px; border-radius:10px; border:none; margin-top:10px; background:#15181b; color:#fff; }
-
-/* toast */
-#toast { position:fixed; left:50%; transform:translateX(-50%); bottom:24px; padding:10px 14px; border-radius:10px; background:#222; color:#fff; display:none; z-index:600; }
-
-/* MOBILE ADJUST */
-@media (max-width:900px){
-  .sidebar{width:220px}
-  .menu-btn{right:10px}
-  main{padding:14px}
-  .btn{padding:10px; font-size:13px}
-}
-
-/* VERY SMALL */
-@media (max-width:420px){
-  .card { padding:12px; }
-  .actions{gap:6px}
-  .btn { font-size:12px; padding:9px 10px; }
-}
+body{margin:0;font-family:'Montserrat',sans-serif;background:#0f121d;color:#e0e0e0;transition:0.3s;}
+body.light{background:#f5f5f5;color:#222;}
+header{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#1a1f2b;}
+body.light header{background:#ddd;color:#222;}
+header h1{font-size:1.5em;margin:0;transition:0.3s;}
+#menuBtn{font-size:1.3em;cursor:pointer;transition:0.3s;}
+.sidebar{position:fixed;right:-220px;top:0;width:220px;height:100%;background:#222;padding:20px;transition:0.5s;display:flex;flex-direction:column;gap:15px;z-index:100;}
+.sidebar a{color:#fff;text-decoration:none;padding:10px;border-radius:8px;transition:0.3s;}
+.sidebar a:hover,.sidebar a.active{background:#444;}
+body.light .sidebar{background:#ccc;}
+body.light .sidebar a{color:#222;}
+main{margin-left:0;padding:20px;transition:0.3s;}
+.view{opacity:0;transform:translateY(20px);transition:0.4s;}
+.view.active{opacity:1;transform:translateY(0);}
+.dashboard{display:flex;flex-wrap:wrap;gap:15px;margin-bottom:25px;justify-content:center;}
+.dashboard .box{flex:1 1 120px;padding:15px;border-radius:12px;text-align:center;cursor:pointer;transition:0.3s;box-shadow:0 0 10px rgba(0,0,0,0.3);}
+.dashboard .box h3{margin:0;font-size:14px;font-weight:600;}
+.dashboard .box p{margin:5px 0 0;font-size:18px;font-weight:700;}
+.box.total{background:rgba(0,180,255,0.15);color:#00b4ff;}
+.box.vigente{background:rgba(0,200,0,0.15);color:#00c800;}
+.box.alerta{background:rgba(255,165,0,0.15);color:#ff9900;}
+.box.caducado{background:rgba(255,50,50,0.15);color:#ff4d4d;}
+#clientsView{display:none;}
+.card{background:#1a1f2b;color:#e0e0e0;border-radius:15px;padding:15px;margin-bottom:15px;box-shadow:0 6px 15px rgba(0,0,0,0.5);transition:0.3s;}
+body.light .card{background:#eaeaea;color:#222;box-shadow:0 4px 10px rgba(0,0,0,0.15);}
+.card:hover{transform:translateY(-3px);box-shadow:0 10px 20px rgba(0,0,0,0.6);}
+.card .info-row{margin-bottom:10px;}
+.card .info-row .row{display:flex;justify-content:space-between;margin-bottom:4px;}
+.card .actions{display:flex;gap:6px;flex-wrap:wrap;}
+.card .btn{padding:6px 10px;border:none;border-radius:6px;cursor:pointer;font-weight:600;transition:0.3s;}
+.card .btn.edit{background:#2196F3;color:#fff;}
+.card .btn.copy{background:#9C27B0;color:#fff;}
+.card .btn.del{background:#f44336;color:#fff;}
+.card .btn:hover{opacity:0.85;}
+#addClientView{display:none;}
+.form-group{margin-bottom:10px;display:flex;flex-direction:column;}
+.form-group label{margin-bottom:4px;}
+.form-group input,.form-group select,.form-group textarea{padding:10px;border-radius:8px;border:1px solid #444;font-size:14px;}
+body.light .form-group input,body.light .form-group select,body.light .form-group textarea{background:#fff;color:#222;border:1px solid #ccc;}
+#saveBtn,#clearBtn{padding:10px 15px;margin-right:6px;border:none;border-radius:8px;cursor:pointer;font-weight:600;}
+#saveBtn{background:#00b4ff;color:#fff;}
+#clearBtn{background:#ccc;color:#222;}
+#toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px;border-radius:8px;display:none;z-index:300;}
+@media(max-width:700px){.dashboard{flex-direction:column;}.card{width:100%;}.sidebar{width:180px;}}
 </style>
 </head>
-<body>
+<body class="dark">
 
-<!-- Menu button -->
-<button class="menu-btn" id="menuBtn" title="Menú"><i class="fa-solid fa-bars"></i></button>
+<header>
+  <h1>🗂️ Gestión Candy</h1>
+  <i id="menuBtn" class="fa-solid fa-bars"></i>
+</header>
 
-<!-- Sidebar -->
-<aside class="sidebar" id="sidebar" aria-hidden="true">
-  <div class="brand">
-    <div class="logo">GC</div>
-    <div>
-      <div style="font-weight:800; font-size:16px">Gestión Candy 🍃</div>
-    </div>
-  </div>
-
-  <nav class="nav" role="navigation">
-    <a href="#" data-view="dashboard" class="active"><i class="fa-solid fa-chart-simple"></i> Dashboard</a>
-    <a href="#" data-view="clientes"><i class="fa-solid fa-users"></i> Clientes</a>
-    <a href="#" data-view="nuevo"><i class="fa-solid fa-plus"></i> Añadir cliente</a>
-    <a href="#" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión</a>
-  </nav>
-</aside>
-
-<!-- Main -->
-<main>
-  <header>
-    <div class="header-left">
-      <div class="header-title">Gestión Candy 🍃</div>
-    </div>
-    <div class="header-right">
-      <button id="refreshBtn" class="icon-btn" title="Refrescar"><i class="fa-solid fa-arrows-rotate"></i></button>
-    </div>
-  </header>
-
-  <!-- DASHBOARD VIEW -->
-  <section id="view-dashboard" class="view">
-    <div class="grid">
-      <div class="box"><div class="num" id="totalCount">0</div><div class="label">Total clientes</div></div>
-      <div class="box"><div class="num" id="vigentesCount">0</div><div class="label">Vigentes</div></div>
-      <div class="box"><div class="num" id="alertCount">0</div><div class="label">En alerta (7 días)</div></div>
-      <div class="box"><div class="num" id="expCount">0</div><div class="label">Caducados</div></div>
-    </div>
-  </section>
-
-  <!-- CLIENTS VIEW -->
-  <section id="view-clientes" class="view" style="display:none">
-    <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
-      <input id="search" placeholder="Buscar por nombre o usuario" style="flex:1;padding:12px;border-radius:10px;border:none;background:#15181b;color:#fff" aria-label="Buscar clientes" />
-      <button id="filterBtn" class="btn" style="background:#222;color:#fff">Filtro</button>
-      <button id="exportBtn" class="btn" style="background:#222;color:#fff">Exportar CSV</button>
-    </div>
-
-    <div id="clientsList" class="card-list" aria-live="polite"></div>
-    <div id="pagination" class="pagination" role="navigation" aria-label="Paginación"></div>
-  </section>
-
-  <!-- NEW / EDIT VIEW -->
-  <section id="view-nuevo" class="view" style="display:none">
-    <div class="panel" role="form" aria-labelledby="form-title">
-      <div id="form-title" style="font-weight:800;margin-bottom:8px">Añadir / Editar cliente</div>
-
-      <div class="row">
-        <div class="field">
-          <label>Nombre</label>
-          <input id="n_nombre" placeholder="Nombre completo" />
-        </div>
-        <div class="field">
-          <label>Aplicación</label>
-          <select id="n_aplicacion">
-            <option value="">-- Selecciona aplicación --</option>
-            <option>Spinning TV</option>
-            <option>Spinning IBO</option>
-            <option>Spinning MATE</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="row" style="margin-top:10px">
-        <div class="field">
-          <label>Precio</label>
-          <input id="n_precio" placeholder="12,50" inputmode="decimal" />
-        </div>
-        <div class="field">
-          <label>Caducidad (fecha)</label>
-          <input id="n_caducidad" type="date" />
-        </div>
-      </div>
-
-      <div style="margin-top:10px" class="row">
-        <div class="field">
-          <label>Usuario</label>
-          <input id="n_usuario" placeholder="usuario" />
-        </div>
-        <div class="field">
-          <label>Contraseña</label>
-          <input id="n_contrasena" placeholder="contraseña" />
-        </div>
-      </div>
-
-      <div style="margin-top:10px">
-        <label>Recomendaciones</label>
-        <textarea id="n_recomendaciones" placeholder="Notas..."></textarea>
-      </div>
-
-      <div style="margin-top:10px; display:flex; gap:10px; align-items:center">
-        <div style="flex:1">
-          <label>Fecha de creación</label>
-          <input id="n_fechaCreacion" type="date" />
-          <div style="font-size:12px;color:var(--muted);margin-top:6px">Se autogenera si dejas vacío.</div>
-        </div>
-        <div style="width:160px; align-self:flex-end">
-          <button id="saveBtn" class="btn edit touch" style="width:100%">Guardar</button>
-        </div>
-      </div>
-
-      <div class="form-footer">
-        <button class="btn" id="clearBtn">Limpiar</button>
-      </div>
-    </div>
-  </section>
-
-</main>
-
-<!-- LOGIN SCREEN -->
-<div id="loginScreen">
-  <div class="login-card" role="dialog" aria-modal="true" aria-labelledby="login-title">
-    <h2 id="login-title">Inicia sesión</h2>
-    <input id="email" placeholder="Correo electrónico" type="email" />
-    <input id="password" type="password" placeholder="Contraseña" />
-    <button id="btnLogin" class="btn edit" style="width:100%; margin-top:12px">Entrar</button>
-  </div>
+<div class="sidebar" id="sidebar">
+  <a href="#" data-view="dashboard" class="active">Dashboard</a>
+  <a href="#" data-view="clientes">Clientes</a>
+  <a href="#" data-view="nuevo">Añadir Cliente</a>
 </div>
 
-<!-- TOAST -->
-<div id="toast" role="status" aria-live="polite"></div>
+<main>
+  <div id="dashboardView" class="view active">
+    <div class="dashboard">
+      <div class="box total"><h3>Total Clientes</h3><p id="totalCount">0</p></div>
+      <div class="box vigente"><h3>Vigentes</h3><p id="vigentesCount">0</p></div>
+      <div class="box alerta" onclick="mostrarAlertas()"><h3>En Alerta</h3><p id="alertCount">0</p></div>
+      <div class="box caducado" onclick="mostrarCaducados()"><h3>Caducados</h3><p id="expCount">0</p></div>
+    </div>
+  </div>
 
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-  import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  <div id="clientsView" class="view">
+    <button id="filterBtn">Orden caducidad ↑/↓</button>
+    <div id="clientsList"></div>
+  </div>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
-    authDomain: "gestioncandy-b9356.firebaseapp.com",
-    projectId: "gestioncandy-b9356",
-    storageBucket: "gestioncandy-b9356.firebasestorage.app",
-    messagingSenderId: "869982852654",
-    appId: "1:869982852654:web:ac450321a746e62365f1bf"
+  <div id="addClientView" class="view">
+    <div class="form-group"><label>Nombre</label><input id="n_nombre" type="text"></div>
+    <div class="form-group"><label>Precio</label><input id="n_precio" type="text" oninput="this.value=this.value.replace(/[^\d.,]/g,'')+' €';"></div>
+    <div class="form-group"><label>Caducidad</label><input id="n_caducidad" type="date"></div>
+    <div class="form-group"><label>Usuario</label><input id="n_usuario" type="text"></div>
+    <div class="form-group"><label>Contraseña</label><input id="n_contrasena" type="text"></div>
+    <div class="form-group"><label>Aplicación</label>
+      <select id="n_aplicacion">
+        <option value="Spinning TV">Spinning TV</option>
+        <option value="Spinning IBO">Spinning IBO</option>
+        <option value="Spinning MATE">Spinning MATE</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Recomendaciones</label><textarea id="n_recomendaciones"></textarea></div>
+    <div class="form-group"><label>Fecha de creación</label><input id="n_fechaCreacion" type="date"></div>
+    <button id="saveBtn">Guardar Cliente</button>
+    <button id="clearBtn">Limpiar</button>
+  </div>
+</main>
+
+<div id="toast"></div>
+
+<script>
+let registros = JSON.parse(localStorage.getItem('registros')) || [];
+
+const views = {
+  dashboard: document.getElementById('dashboardView'),
+  clientes: document.getElementById('clientsView'),
+  nuevo: document.getElementById('addClientView')
+};
+
+function switchView(view){
+  for(let v in views){ views[v].classList.remove('active'); document.querySelector('.sidebar a[data-view="'+v+'"]').classList.remove('active'); }
+  views[view].classList.add('active');
+  document.querySelector('.sidebar a[data-view="'+view+'"]').classList.add('active');
+  if(view==='clientes') mostrarRegistros();
+}
+
+document.querySelectorAll('.sidebar a[data-view]').forEach(el=>{
+  el.addEventListener('click',()=>switchView(el.dataset.view));
+});
+
+const menuBtn = document.getElementById('menuBtn'); 
+const sidebar = document.getElementById('sidebar');
+menuBtn.addEventListener('click',()=>{sidebar.style.right = sidebar.style.right==='0px'?'-220px':'0px';});
+
+function guardarLocal(){ localStorage.setItem('registros', JSON.stringify(registros)); }
+function mostrarToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2500); }
+
+function mostrarRegistros(filtro=''){
+  const container=document.getElementById('clientsList'); container.innerHTML='';
+  let lista = registros.slice();
+  lista.sort((a,b)=>new Date(a.caducidad)-new Date(b.caducidad));
+  lista = lista.filter(r=> r.nombre.toLowerCase().includes(filtro.toLowerCase()) || r.usuario.toLowerCase().includes(filtro.toLowerCase()));
+  lista.forEach((r,index)=>{
+    const card=document.createElement('div'); card.className='card';
+    const diffDias=Math.ceil((new Date(r.caducidad)-new Date())/(1000*60*60*24));
+    card.innerHTML=`
+      <div class="info-row"><div class="row"><strong>Nombre:</strong> <span>${r.nombre}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Precio:</strong> <span>${r.precio}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Usuario:</strong> <span>${r.usuario}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Contraseña:</strong> <span>${r.contrasena}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Aplicación:</strong> <span>${r.aplicacion}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Caducidad:</strong> <span>${r.caducidad} (${diffDias>=0?diffDias:0} días)</span></div></div>
+      <div class="info-row"><div class="row"><strong>Fecha Creación:</strong> <span>${r.fechaCreacion||'-'}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Recomendaciones:</strong> <span>${r.recomendaciones||'-'}</span></div></div>
+      <div class="actions">
+        <button class="btn edit" onclick="editarRegistro(${index})">Editar</button>
+        <button class="btn copy" onclick="copiarCliente(${index})">Copiar datos</button>
+        <button class="btn del" onclick="eliminarRegistro(${index})">Eliminar</button>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+  actualizarDashboard();
+}
+
+function actualizarDashboard(){
+  const total=document.getElementById('totalCount');
+  const vigentes=document.getElementById('vigentesCount');
+  const alerta=document.getElementById('alertCount');
+  const caducado=document.getElementById('expCount');
+  const hoy=new Date();
+  total.textContent=registros.length;
+  vigentes.textContent=registros.filter(r=>new Date(r.caducidad)>=hoy).length;
+  alerta.textContent=registros.filter(r=>{ const diff=Math.ceil((new Date(r.caducidad)-hoy)/(1000*60*60*24)); return diff>0 && diff<=3; }).length;
+  caducado.textContent=registros.filter(r=>new Date(r.caducidad)<hoy).length;
+}
+
+function mostrarAlertas(){
+  const hoy=new Date();
+  const alerta = registros.filter(r=>{ const diff=Math.ceil((new Date(r.caducidad)-hoy)/(1000*60*60*24)); return diff>0 && diff<=3; });
+  mostrarRegistrosPorLista(alerta);
+  switchView('clientes');
+}
+
+function mostrarCaducados(){
+  const hoy=new Date();
+  const caducados = registros.filter(r=>new Date(r.caducidad)<hoy);
+  mostrarRegistrosPorLista(caducados);
+  switchView('clientes');
+}
+
+function mostrarRegistrosPorLista(lista){
+  const container=document.getElementById('clientsList'); container.innerHTML='';
+  lista.forEach((r,index)=>{
+    const card=document.createElement('div'); card.className='card';
+    const diffDias=Math.ceil((new Date(r.caducidad)-new Date())/(1000*60*60*24));
+    card.innerHTML=`
+      <div class="info-row"><div class="row"><strong>Nombre:</strong> <span>${r.nombre}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Precio:</strong> <span>${r.precio}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Usuario:</strong> <span>${r.usuario}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Contraseña:</strong> <span>${r.contrasena}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Aplicación:</strong> <span>${r.aplicacion}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Caducidad:</strong> <span>${r.caducidad} (${diffDias>=0?diffDias:0} días)</span></div></div>
+      <div class="info-row"><div class="row"><strong>Fecha Creación:</strong> <span>${r.fechaCreacion||'-'}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Recomendaciones:</strong> <span>${r.recomendaciones||'-'}</span></div></div>
+      <div class="actions">
+        <button class="btn edit" onclick="editarRegistro(${index})">Editar</button>
+        <button class="btn copy" onclick="copiarCliente(${index})">Copiar datos</button>
+        <button class="btn del" onclick="eliminarRegistro(${index})">Eliminar</button>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+// Añadir nuevo cliente
+document.getElementById('saveBtn').addEventListener('click',()=>{
+  const cliente={
+    nombre: document.getElementById('n_nombre').value,
+    precio: document.getElementById('n_precio').value,
+    caducidad: document.getElementById('n_caducidad').value,
+    usuario: document.getElementById('n_usuario').value,
+    contrasena: document.getElementById('n_contrasena').value,
+    aplicacion: document.getElementById('n_aplicacion').value,
+    recomendaciones: document.getElementById('n_recomendaciones').value,
+    fechaCreacion: document.getElementById('n_fechaCreacion').value
   };
+  registros.push(cliente);
+  guardarLocal();
+  mostrarToast('Cliente agregado');
+  limpiarFormulario();
+  mostrarRegistros();
+  switchView('clientes');
+});
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+function limpiarFormulario(){
+  document.getElementById('n_nombre').value='';
+  document.getElementById('n_precio').value='';
+  document.getElementById('n_caducidad').value='';
+  document.getElementById('n_usuario').value='';
+  document.getElementById('n_contrasena').value='';
+  document.getElementById('n_aplicacion').value='Spinning TV';
+  document.getElementById('n_recomendaciones').value='';
+  document.getElementById('n_fechaCreacion').value='';
+}
 
-  // UI
-  const sidebar = document.getElementById('sidebar');
-  const menuBtn = document.getElementById('menuBtn');
-  const links = document.querySelectorAll('.nav a');
-  const views = document.querySelectorAll('.view');
-  const loginScreen = document.getElementById('loginScreen');
-  const btnLogin = document.getElementById('btnLogin');
-  const emailInput = document.getElementById('email');
-  const passInput = document.getElementById('password');
-  const toast = document.getElementById('toast');
+function editarRegistro(index){
+  const r = registros[index];
+  document.getElementById('n_nombre').value=r.nombre;
+  document.getElementById('n_precio').value=r.precio;
+  document.getElementById('n_caducidad').value=r.caducidad;
+  document.getElementById('n_usuario').value=r.usuario;
+  document.getElementById('n_contrasena').value=r.contrasena;
+  document.getElementById('n_aplicacion').value=r.aplicacion;
+  document.getElementById('n_recomendaciones').value=r.recomendaciones;
+  document.getElementById('n_fechaCreacion').value=r.fechaCreacion;
+  switchView('nuevo');
+  document.getElementById('saveBtn').onclick = ()=>{
+    registros[index]={
+      nombre: document.getElementById('n_nombre').value,
+      precio: document.getElementById('n_precio').value,
+      caducidad: document.getElementById('n_caducidad').value,
+      usuario: document.getElementById('n_usuario').value,
+      contrasena: document.getElementById('n_contrasena').value,
+      aplicacion: document.getElementById('n_aplicacion').value,
+      recomendaciones: document.getElementById('n_recomendaciones').value,
+      fechaCreacion: document.getElementById('n_fechaCreacion').value
+    };
+    guardarLocal();
+    mostrarToast('Cliente actualizado');
+    mostrarRegistros();
+    switchView('clientes');
+    document.getElementById('saveBtn').onclick = null; // reset al comportamiento normal
+  };
+}
 
-  let clients = [], currentPage = 1, perPage = 6, editingId = null, sortAsc = true;
+function eliminarRegistro(index){
+  if(confirm('¿Eliminar cliente?')){
+    registros.splice(index,1);
+    guardarLocal();
+    mostrarToast('Cliente eliminado');
+    mostrarRegistros();
+  }
+}
 
-  function showToast(msg,t=2200){ toast.textContent=msg; toast.style.display='block'; setTimeout(()=>toast.style.display='none',t); }
+function copiarCliente(index){
+  const c = registros[index];
+  const texto = `Usuario: ${c.usuario}\nContraseña: ${c.contrasena}\nAplicación: ${c.aplicacion}\nCaducidad: ${c.caducidad}`;
+  navigator.clipboard.writeText(texto).then(()=>mostrarToast('Datos copiados'));
+}
 
-  menuBtn.addEventListener('click', ()=> sidebar.classList.toggle('open'));
-  links.forEach(a=>a.addEventListener('click',(e)=>{
-    e.preventDefault();
-    links.forEach(x=>x.classList.remove('active')); a.classList.add('active');
-    const view = document.getElementById('view-'+a.dataset.view);
-    views.forEach(v=>v.style.display='none'); view.style.display='block';
-    if(window.innerWidth<900) sidebar.classList.remove('open');
-  }));
-
-  btnLogin.addEventListener('click',async()=>{
-    const email = emailInput.value.trim(), pass = passInput
-    = passInput.value.trim();
-    if(!email || !pass){ showToast("Completa correo y contraseña"); return; }
-    try{
-      await signInWithEmailAndPassword(auth,email,pass);
-      loginScreen.style.display='none';
-      showToast("Bienvenido");
-      loadClients();
-    }catch(e){ showToast("Error: "+e.message); }
+// Filtro ascendente/descendente por caducidad
+let ascendente=true;
+document.getElementById('filterBtn').addEventListener('click',()=>{
+  registros.sort((a,b)=>{
+    const da=new Date(a.caducidad), db_=new Date(b.caducidad);
+    return ascendente ? da-db_ : db_-da;
   });
+  ascendente=!ascendente;
+  mostrarRegistros();
+});
 
-  document.getElementById('logoutBtn').addEventListener('click',async()=>{
-    await signOut(auth);
-    loginScreen.style.display='flex';
+// Inicialización con cliente de prueba si no hay registros
+if(registros.length===0){
+  registros.push({
+    nombre:'Cliente Prueba',
+    precio:'10 €',
+    caducidad:new Date(new Date().setDate(new Date().getDate()+7)).toISOString().split('T')[0],
+    usuario:'userprueba',
+    contrasena:'pass123',
+    aplicacion:'Spinning TV',
+    recomendaciones:'Prueba inicial',
+    fechaCreacion:new Date().toISOString().split('T')[0]
   });
+  guardarLocal();
+}
 
-  onAuthStateChanged(auth,user=>{
-    if(user) loginScreen.style.display='none';
-    else loginScreen.style.display='flex';
-  });
-
-  async function loadClients(){
-    const q = query(collection(db,"clientes"),orderBy("caducidad","asc"));
-    const snapshot = await getDocs(q);
-    clients = [];
-    snapshot.forEach(doc=>clients.push({id:doc.id,...doc.data()}));
-    renderDashboard();
-    renderClients();
-  }
-
-  function renderDashboard(){
-    document.getElementById('totalCount').textContent = clients.length;
-    const hoy = new Date();
-    document.getElementById('vigentesCount').textContent = clients.filter(c=>new Date(c.caducidad)>=hoy).length;
-    document.getElementById('alertCount').textContent = clients.filter(c=>{
-      const d = new Date(c.caducidad);
-      const diff=Math.ceil((d-hoy)/(1000*60*60*24));
-      return diff>0 && diff<=7;
-    }).length;
-    document.getElementById('expCount').textContent = clients.filter(c=>new Date(c.caducidad)<hoy).length;
-  }
-
-  function renderClients(){
-    const list = document.getElementById('clientsList');
-    list.innerHTML='';
-    let sorted = [...clients];
-    sorted.sort((a,b)=>sortAsc?new Date(a.caducidad)-new Date(b.caducidad):new Date(b.caducidad)-new Date(a.caducidad));
-    sorted.forEach(c=>{
-      const card = document.createElement('div'); card.className='card';
-      const cad = new Date(c.caducidad);
-      card.innerHTML=`
-        <div style="font-weight:700;font-size:16px;margin-bottom:6px">${c.nombre}</div>
-        <div class="info-row">
-          <div class="row"><span>Usuario:</span><span>${c.usuario}</span></div>
-          <div class="row"><span>Contraseña:</span><span>${c.contrasena}</span></div>
-          <div class="row"><span>Aplicación:</span><span>${c.aplicacion}</span></div>
-          <div class="row"><span>Caducidad:</span><span>${c.caducidad}</span></div>
-        </div>
-        <div class="actions">
-          <button class="btn edit touch" onclick="editClient('${c.id}')"><i class="fa-solid fa-pen"></i> Editar</button>
-          <button class="btn copy touch" onclick="copyClient('${c.id}')"><i class="fa-solid fa-copy"></i> Copiar</button>
-          <button class="btn del touch" onclick="deleteClient('${c.id}')"><i class="fa-solid fa-trash"></i> Eliminar</button>
-        </div>
-      `;
-      list.appendChild(card);
-    });
-  }
-
-  window.editClient = async function(id){
-    const c = clients.find(x=>x.id===id);
-    if(!c) return;
-    editingId = id;
-    links.forEach(a=>a.classList.remove('active'));
-    document.querySelector('[data-view=nuevo]').classList.add('active');
-    views.forEach(v=>v.style.display='none');
-    document.getElementById('view-nuevo').style.display='block';
-
-    document.getElementById('n_nombre').value = c.nombre;
-    document.getElementById('n_precio').value = c.precio;
-    document.getElementById('n_caducidad').value = c.caducidad;
-    document.getElementById('n_usuario').value = c.usuario;
-    document.getElementById('n_contrasena').value = c.contrasena;
-    document.getElementById('n_aplicacion').value = c.aplicacion;
-    document.getElementById('n_recomendaciones').value = c.recomendaciones;
-    document.getElementById('n_fechaCreacion').value = c.fechaCreacion || '';
-  }
-
-  window.copyClient = function(id){
-    const c = clients.find(x=>x.id===id);
-    const text = `Usuario: ${c.usuario}\nContraseña: ${c.contrasena}\nAplicación: ${c.aplicacion}\nCaducidad: ${c.caducidad}`;
-    navigator.clipboard.writeText(text).then(()=>showToast('Copiado al portapapeles'));
-  }
-
-  window.deleteClient = async function(id){
-    if(!confirm("¿Eliminar cliente?")) return;
-    await deleteDoc(doc(db,"clientes",id));
-    showToast("Cliente eliminado");
-    loadClients();
-  }
-
-  document.getElementById('saveBtn').addEventListener('click',async()=>{
-    const nombre = document.getElementById('n_nombre').value.trim();
-    const precio = document.getElementById('n_precio').value.trim();
-    const cad = document.getElementById('n_caducidad').value;
-    const usuario = document.getElementById('n_usuario').value.trim();
-    const contrasena = document.getElementById('n_contrasena').value.trim();
-    const aplicacion = document.getElementById('n_aplicacion').value;
-    const recomendaciones = document.getElementById('n_recomendaciones').value;
-    let fechaCreacion = document.getElementById('n_fechaCreacion').value;
-    if(!fechaCreacion) fechaCreacion = new Date().toISOString().split('T')[0];
-    if(!nombre || !usuario){ showToast("Nombre y usuario son obligatorios"); return; }
-
-    const data = {nombre, precio: precio?precio+" €":'', caducidad: cad || new Date().toISOString().split('T')[0], usuario, contrasena, aplicacion, recomendaciones, fechaCreacion};
-
-    if(editingId){
-      await updateDoc(doc(db,"clientes",editingId), data);
-      editingId=null;
-      showToast("Cliente actualizado");
-    } else {
-      await addDoc(collection(db,"clientes"), data);
-      showToast("Cliente agregado");
-    }
-    clearForm();
-    loadClients();
-  });
-
-  document.getElementById('clearBtn').addEventListener('click',clearForm);
-  function clearForm(){
-    ['n_nombre','n_precio','n_caducidad','n_usuario','n_contrasena','n_aplicacion','n_recomendaciones','n_fechaCreacion'].forEach(id=>document.getElementById(id).value='');
-    editingId=null;
-  }
-
-  document.getElementById('filterBtn').addEventListener('click',()=>{
-    sortAsc = !sortAsc;
-    renderClients();
-  });
-
-  emailInput.value=""; passInput.value="";
+mostrarRegistros();
 </script>
-
 </body>
 </html>
