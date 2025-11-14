@@ -101,6 +101,7 @@ body.light .form-group input,body.light .form-group select,body.light .form-grou
   <input id="emailInput" type="email" placeholder="Correo electrónico" style="margin-bottom:10px;padding:10px;border-radius:8px;border:none;">
   <input id="passInput" type="password" placeholder="Contraseña" style="margin-bottom:10px;padding:10px;border-radius:8px;border:none;">
   <button id="loginBtn" style="padding:10px 15px;border:none;border-radius:8px;background:#00b4ff;color:#fff;">Iniciar sesión</button>
+  <p style="margin-top:10px;color:#ccc;">Usuario de prueba: <b>test@candy.com</b> / Contraseña: <b>123456</b></p>
 </div>
 
 <div id="toast" style="position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px;border-radius:8px;display:none;"></div>
@@ -108,8 +109,9 @@ body.light .form-group input,body.light .form-group select,body.light .form-grou
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
 
+// Configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
   authDomain: "gestioncandy-b9356.firebaseapp.com",
@@ -123,227 +125,26 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-let clients=[], editingId=null, sortAsc=true;
+// Crear usuario de prueba automáticamente si no existe
+const testEmail = "test@candy.com";
+const testPass = "123456";
+createUserWithEmailAndPassword(auth,testEmail,testPass).catch(()=>{}); // ignora si ya existe
 
 const loginScreen=document.getElementById('loginScreen');
 const emailInput=document.getElementById('emailInput');
 const passInput=document.getElementById('passInput');
-
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>{t.style.display='none';},2500); }
 
 document.getElementById('loginBtn').addEventListener('click', async ()=>{
-  const email=emailInput.value.trim(), pass=passInput.value.trim();
-  if(!email||!pass){ showToast("Completa correo y contraseña"); return; }
-  try{ await signInWithEmailAndPassword(auth,email,pass); loginScreen.style.display='none'; showToast("Bienvenido"); loadClients(); }
-  catch(e){ showToast("Error: "+e.message); }
+  try{
+    await signInWithEmailAndPassword(auth,emailInput.value.trim(),passInput.value.trim());
+    loginScreen.style.display='none';
+    showToast("Bienvenido");
+  }catch(e){ showToast("Error: "+e.message); }
 });
-
-document.getElementById('logoutBtn').addEventListener('click', async()=>{ await signOut(auth); loginScreen.style.display='flex'; });
 
 onAuthStateChanged(auth,user=>{ if(user) loginScreen.style.display='none'; else loginScreen.style.display='flex'; });
-
-const sidebar=document.getElementById('sidebar'), menuBtn=document.getElementById('menuBtn');
-menuBtn.addEventListener('click',()=>{ sidebar.style.right=(sidebar.style.right==='0px')?'-220px':'0px'; });
-
-const links=document.querySelectorAll('.sidebar a'), views=[document.getElementById('dashboardView'),document.getElementById('clientsView'),document.getElementById('addClientView')];
-links.forEach(a=>{ a.addEventListener('click',(e)=>{ e.preventDefault(); links.forEach(l=>l.classList.remove('active')); a.classList.add('active'); const view=document.getElementById(a.dataset.view+'View'); views.forEach(v=>v.style.display='none'); view.style.display='block'; }); });
-
-const clientsList=document.getElementById('clientsList');
-const saveBtn=document.getElementById('saveBtn');
-const filterBtn=document.getElementById('filterBtn');
-
-// Cargar clientes
-async function loadClients(){
-  clients=[];
-  const q=query(collection(db,"clientes"));
-  const snapshot=await getDocs(q);
-  snapshot.forEach(docu=>{ clients.push({...docu.data(),id:docu.id}); });
-  renderDashboard();
-  renderClients();
-}
-
-// Dashboard
-function renderDashboard(){
-  const hoy=new Date();
-  const total=clients.length;
-  const vigentes=clients.filter(c=>new Date(c.caducidad)>=hoy).length;
-  const alerta=clients.filter(c=>{ const diff=Math.ceil((new Date(c.caducidad)-hoy)/(1000*60*60*24)); return diff>0 && diff<=3; }).length;
-  const caducados=clients.filter(c=>new Date(c.caducidad)<hoy).length;
-  document.getElementById('totalCount').textContent=total;
-  document.getElementById('vigentesCount').textContent=vigentes;
-  document.getElementById('alertCount').textContent=alerta;
-  document.getElementById('expCount').textContent=caducados;
-}
-
-// Render clientes
-function renderClients(){
-  let list=[...clients];
-  if(sortAsc) list.sort((a,b)=>new Date(a.caducidad)-new Date(b.caducidad));
-  else list.sort((a,b)=>new Date(b.caducidad)-new Date(a.caducidad));
-  clientsList.innerHTML='';
-  list.forEach(c=>{
-    const card=document.createElement('div'); card.className='card';
-    const fechaCad=new Date(c.caducidad); 
-    const diff=Math.ceil((fechaCad-new Date())/(1000*60*60*24));
-    if(diff<=0) card.style.borderLeft='4px solid #ff4d4d';
-    else if(diff<=3) card.style.borderLeft='4px solid #ff9900';
-    else card.style.borderLeft='4px solid #00c800';
-
-    card.innerHTML=`
-      <div class="info-row"><div class="row"><strong>Nombre:</strong> <span>${c.nombre}</span></div></div>
-      <div class="info-row"><div class="row"><strong>Precio:</strong> <span>${c.precio}</span></div></div>
-      <div class="info-row"><div class="row"><strong>Usuario:</strong> <span>${c.usuario}</span></div></div>
-      <div class="info-row"><div class="row"><strong>Contraseña:</strong> <span>${c.contrasena}</span></div></div>
-      <div class="info-row"><div class="row"><strong>Aplicación:</strong> <span>${c.aplicacion}</span></div></div>
-      <div class="info-row"><div class="row"><strong>Caducidad:</strong> <span>${c.caducidad} (${diff>=0?diff:0} días)</span></div></div>
-      <div class="info-row"><div class="row"><strong>Fecha Creación:</strong> <span>${c.fechaCreacion||'-'}</span></div></div>
-      <div class="info-row"><div class="row"><strong>Recomendaciones:</strong> <span>${c.recomendaciones||'-'}</span></div></div>
-      <div class="actions">
-        <button class="btn edit" onclick="editClient('${c.id}')">Editar</button>
-        <button class="btn copy" onclick="copyClient('${c.id}')">Copiar datos</button>
-        <button class="btn del" onclick="deleteClient('${c.id}')">Eliminar</button>
-      </div>
-    `;
-    clientsList.appendChild(card);
-  });
-}
-
-// Editar cliente
-function editClient(id){
-  const c=clients.find(x=>x.id===id);
-  document.getElementById('n_nombre').value=c.nombre;
-  document.getElementById('n_precio').value=c.precio;
-  document.getElementById('n_caducidad').value=c.caducidad;
-  document.getElementById('n_usuario').value=c.usuario;
-  document.getElementById('n_contrasena').value=c.contrasena;
-  document.getElementById('n_aplicacion').value=c.aplicacion;
-  document.getElementById('n_recomendaciones').value=c.recomendaciones;
-  document.getElementById('n_fechaCreacion').value=c.fechaCreacion;
-  editingId=id;
-  links.forEach(a=>a.classList.remove('active'));
-  document.querySelector('[data-view=nuevo]').classList.add('active');
-  views.forEach(v=>v.style.display='none');
-  document.getElementById('addClientView').style.display='block';
-}
-
-// Copiar datos seleccionados
-function copyClient(id){
-  const c=clients.find(x=>x.id===id);
-  const text=`Usuario: ${c.usuario}\nContraseña: ${c.contrasena}\nAplicación: ${c.aplicacion}\nCaducidad: ${c.caducidad}`;
-  navigator.clipboard.writeText(text).then(()=>showToast('Datos copiados'));
-}
-
-// Eliminar cliente
-async function deleteClient(id){
-  if(confirm("Eliminar cliente?")){
-    await deleteDoc(doc(db,"clientes",id));
-    showToast("Cliente eliminado");
-    loadClients();
-  }
-}
-
-// Guardar cliente
-saveBtn.addEventListener('click', async ()=>{
-  const data={
-    nombre: document.getElementById('n_nombre').value.trim(),
-    precio: document.getElementById('n_precio').value.trim(),
-    caducidad: document.getElementById('n_caducidad').value,
-    usuario: document.getElementById('n_usuario').value.trim(),
-    contrasena: document.getElementById('n_contrasena').value.trim(),
-    aplicacion: document.getElementById('n_aplicacion').value,
-    recomendaciones: document.getElementById('n_recomendaciones').value.trim(),
-    fechaCreacion: document.getElementById('n_fechaCreacion').value
-  };
-  if(!data.nombre||!data.usuario){ showToast("Nombre y usuario obligatorios"); return; }
-  if(editingId){
-    await updateDoc(doc(db,"clientes",editingId),data);
-    showToast("Cliente actualizado");
-    editingId=null;
-  } else {
-    await addDoc(collection(db,"clientes"),data);
-    showToast("Cliente añadido");
-  }
-  // Limpiar y volver a vista clientes
-  document.getElementById('n_nombre').value='';
-  document.getElementById('n_precio').value='';
-  document.getElementById('n_caducidad').value='';
-  document.getElementById('n_usuario').value='';
-  document.getElementById('n_contrasena').value='';
-  document.getElementById('n_aplicacion').value='Spinning TV';
-  document.getElementById('n_recomendaciones').value='';
-  document.getElementById('n_fechaCreacion').value='';
-  links.forEach(a => a.classList.remove('active'));
-  document.querySelector('[data-view=clientes]').classList.add('active');
-  views.forEach(v => v.style.display = 'none');
-  document.getElementById('clientsView').style.display = 'block';
-  loadClients();
-});
-
-// Limpiar formulario
-document.getElementById('clearBtn').addEventListener('click', () => {
-  document.getElementById('n_nombre').value='';
-  document.getElementById('n_precio').value='';
-  document.getElementById('n_caducidad').value='';
-  document.getElementById('n_usuario').value='';
-  document.getElementById('n_contrasena').value='';
-  document.getElementById('n_aplicacion').value='Spinning TV';
-  document.getElementById('n_recomendaciones').value='';
-  document.getElementById('n_fechaCreacion').value='';
-});
-
-// Filtro asc/desc caducidad
-let sortAsc = true;
-filterBtn.addEventListener('click', () => {
-  sortAsc = !sortAsc;
-  renderClients();
-});
-
-// Dashboard click filtros
-document.querySelector('.box.alerta').addEventListener('click', () => {
-  let hoy = new Date();
-  const list = clients.filter(c => {
-    const diff = Math.ceil((new Date(c.caducidad)-hoy)/(1000*60*60*24));
-    return diff>0 && diff<=3;
-  });
-  renderFilteredClients(list);
-});
-
-document.querySelector('.box.caducado').addEventListener('click', () => {
-  let hoy = new Date();
-  const list = clients.filter(c => new Date(c.caducidad) < hoy);
-  renderFilteredClients(list);
-});
-
-function renderFilteredClients(list){
-  clientsList.innerHTML='';
-  list.forEach(c=>{
-    const card = document.createElement('div'); card.className='card';
-    const fechaCad = new Date(c.caducidad);
-    const diff = Math.ceil((fechaCad-new Date())/(1000*60*60*24));
-    if(diff<=0) card.style.borderLeft='4px solid #ff4d4d';
-    else if(diff<=3) card.style.borderLeft='4px solid #ff9900';
-    else card.style.borderLeft='4px solid #00c800';
-    card.innerHTML=`
-      <div class="info-row"><div class="row"><strong>Nombre:</strong> <span>${c.nombre}</span></div></div>
-      <div class="info-row"><div class="row"><strong>Precio:</strong> <span>${c.precio}</span></div></div>
-      <div class="info-row"><div class="row"><strong>Usuario:</strong> <span>${c.usuario}</span></div></div>
-      <div class="info-row"><div class="row"><strong>Contraseña:</strong> <span>${c.contrasena}</span></div></div>
-      <div class="info-row"><div class="row"><strong>Aplicación:</strong> <span>${c.aplicacion}</span></div></div>
-      <div class="info-row"><div class="row"><strong>Caducidad:</strong> <span>${c.caducidad} (${diff>=0?diff:0} días)</span></div></div>
-      <div class="info-row"><div class="row"><strong>Fecha Creación:</strong> <span>${c.fechaCreacion||'-'}</span></div></div>
-      <div class="info-row"><div class="row"><strong>Recomendaciones:</strong> <span>${c.recomendaciones||'-'}</span></div></div>
-      <div class="actions">
-        <button class="btn edit" onclick="editClient('${c.id}')">Editar</button>
-        <button class="btn copy" onclick="copyClient('${c.id}')">Copiar datos</button>
-        <button class="btn del" onclick="deleteClient('${c.id}')">Eliminar</button>
-      </div>
-    `;
-    clientsList.appendChild(card);
-  });
-}
-
-// Cargar clientes inicial
-onAuthStateChanged(auth, user => { if(user) loadClients(); });
+document.getElementById('logoutBtn').addEventListener('click',async()=>{await signOut(auth);});
 
 </script>
 </body>
