@@ -70,33 +70,25 @@
 
 <!-- DASHBOARD -->
 <section id="section-dashboard">
-  <div class="flex justify-between items-center">
-    <div class="flex items-center gap-3">
-  </div>
-    <!-- BLOQUES DE ESTADÍSTICAS -->
-  <div class="grid grid-cols-1 gap-4 mb-8 mt-4">
-    <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
-      <h3 class="text-sm text-slate-400">Total clientes</h3>
-      <p id="stat-total" class="text-2xl font-bold mt-1">—</p>
+  <div class="cards">
+    <div class="stat">
+      <h3>Total clientes</h3><p id="stat-total">—</p>
     </div>
-
-    <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
-      <h3 class="text-sm text-slate-400">Caducan en 3 días</h3>
-      <p id="stat-today" class="text-2xl font-bold mt-1">—</p>
+    <div class="stat">
+      <h3>Caducan hoy</h3><p id="stat-today">—</p>
     </div>
-
-    <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
-      <h3 class="text-sm text-slate-400">Clientes caducados</h3>
-      <p id="stat-next" class="text-2xl font-bold mt-1">—</p>
+    <div class="stat">
+      <h3>Próxima renovación</h3><p id="stat-next">—</p>
     </div>
   </div>
-
 </section>
 
 <!-- CLIENTES -->
 <section id="section-clientes" style="display:none">
   <div class="card-form">
     <h3>Clientes</h3>
+    <p class="meta">Lista en tarjetas...</p>
+    <div id="clients-grid" class="grid-clients" style="margin-top:10px"></div>
   </div>
 </section>
 
@@ -147,6 +139,11 @@
   </div>
 </section>
 </main>
+
+<footer>
+  Nota: este código asume Firestore (Cloud Firestore). Reemplaza la configuración de Firebase en el script con tus claves.
+</footer>
+
 </div>
 
 <!-- MODAL EDITAR -->
@@ -314,88 +311,39 @@ function updateStats(list){
 
 // DASHBOARD — SOLO CLIENTES QUE CADUCAN EN 3 DÍAS
 function renderDashboard(list){
-
-  // === ACTUALIZAR ESTADÍSTICAS ===
-
-  // Total clientes
-  document.getElementById("stat-total").textContent = list.length;
-
-  // Caducan en 3 días
-  const nowStats = new Date();
-  nowStats.setHours(0,0,0,0);
-
-  const limitStats = new Date();
-  limitStats.setDate(limitStats.getDate() + 3);
-  limitStats.setHours(23,59,59,999);
-
-  const soonStats = list.filter(i => {
-    if (!i.caducidad) return false;
-    const d = new Date(i.caducidad);
-    return d >= nowStats && d <= limitStats;
-  });
-
-  document.getElementById("stat-today").textContent = soonStats.length;
-
-  // Clientes caducados
-  const expiredStats = list.filter(i => {
-    if (!i.caducidad) return false;
-    const d = new Date(i.caducidad);
-    return d < nowStats;
-  });
-
-  document.getElementById("stat-next").textContent = expiredStats.length;
-
-
-
-  // === RENDER DEL DASHBOARD (TARJETAS) ===
-
   const now = new Date();
   now.setHours(0,0,0,0);
 
-  const limit = new Date();
-  limit.setDate(limit.getDate()+3);
+  const limit = new Date(now);
+  limit.setDate(limit.getDate() + 3);
   limit.setHours(23,59,59,999);
 
-  const soon = list.filter(i=>{
+  const soon = list.filter(i => {
     if(!i.caducidad) return false;
     const d = new Date(i.caducidad);
     return d >= now && d <= limit;
   });
 
-  dashboardList.innerHTML = '';
+  const box = document.getElementById('section-dashboard');
+  if(!box) return;
 
-  // si no hay nada
-  if(soon.length === 0){
-    dashboardList.innerHTML =
-      '<div class="text-slate-400">No hay caducidades próximas.</div>';
-    return;
-  }
+  // Limpia tarjetas previas
+  const old = document.querySelectorAll('.exp-card');
+  old.forEach(e => e.remove());
 
-  // pintar tarjetas del dashboard
-  soon.forEach(it=>{
-    const el = document.createElement('div');
-    el.className = 'bg-slate-900 p-4 rounded-xl border border-slate-800';
-    el.innerHTML = `
-      <div class="flex justify-between items-start">
-        <div>
-          <h3 class="font-bold">${escapeHtml(it.nombre)}</h3>
-          <div class="text-sm text-slate-400">Caduca: ${fmt(it.caducidad)}</div>
-        </div>
-        <div class="flex flex-col gap-2">
-          <button data-id="${it.id}" class="px-3 py-1 bg-emerald-600 text-black rounded renew-btn">Renovar</button>
-          <button data-id="${it.id}" class="px-3 py-1 bg-slate-700 rounded copy-btn">Copiar</button>
-        </div>
+  soon.forEach(item => {
+    const card = document.createElement('div');
+    card.className = "card exp-card";
+    card.innerHTML = `
+      <h4>${item.nombre}</h4>
+      <div class="meta">Caduca: ${formatDate(item.caducidad)}</div>
+      <div class="btns">
+        <button class="btn renew" onclick="renewItem('${item.id}')">Renovar</button>
+        <button class="btn copy" onclick="copyPassword('${item.id}')">Copiar</button>
       </div>
     `;
-
-    el.querySelector('.renew-btn')?.addEventListener('click', ()=>renewItem(it));
-    el.querySelector('.copy-btn')?.addEventListener('click', ()=>copyPasswordById(it.id));
-
-    dashboardList.appendChild(el);
+    box.appendChild(card);
   });
-
-  // notificaciones locales
-  if(soon.length > 0) scheduleNotifications(soon);
 }
 
 // RENDER DE CLIENTES EN TARJETAS
