@@ -1,381 +1,402 @@
 <!doctype html>
+
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Gestión Candy 🍃</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-<style>
-/* FULL CSS */
-:root{ --bg:#0f1216; --panel:#111318; --muted:#9aa4ad; --accent:#00b4ff; --accent2:#0077aa; --success:#23c552; --danger:#ff6b6b; --touch:48px; }
-*{box-sizing:border-box}
-html,body{height:100%}
-body{ margin:0;font-family:Montserrat,system-ui,Arial;background:var(--bg);color:#e9f0f7; }
-.app { display:flex; min-height:100vh; overflow-x:hidden; }
-.sidebar { width:260px;background:linear-gradient(180deg,var(--panel),#0b0d11);padding:20px 18px;position:fixed;left:0;top:0;bottom:0;transform:translateX(-320px);transition:transform .38s;z-index:240; }
-.sidebar.open { transform:translateX(0); }
-.brand{display:flex;gap:12px;align-items:center;margin-bottom:18px}
-.logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800}
-.nav{display:flex;flex-direction:column;gap:6px}
-.nav a{display:flex;align-items:center;gap:12px;padding:10px;border-radius:10px;color:#cfe6ff;font-weight:700;text-decoration:none}
-.nav a.active,.nav a:hover{background:rgba(255,255,255,0.03);color:#fff}
-.menu-btn { position:fixed; right:14px; top:14px; background:linear-gradient(90deg,var(--accent),var(--accent2)); border:none; color:#fff; padding:10px 12px; border-radius:10px; cursor:pointer; z-index:260; }
-main { flex:1; margin-left:20px; padding:20px 20px 80px 20px; }
-header { display:flex; justify-content:space-between; align-items:center; }
-.header-title { font-weight:800; font-size:20px; display:flex; align-items:center; gap:8px; }
-.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-top:14px; }
-.box { background:linear-gradient(145deg,#121417,#181a1f); padding:20px; border-radius:16px; text-align:center; }
-.num { font-size:28px; font-weight:800; color:var(--accent); }
-.label { font-size:14px; color:var(--muted); margin-top:6px; }
-.card-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin-top:18px; }
-.card { background:linear-gradient(180deg,#0f1418,#15181c); border-radius:12px; padding:14px; box-shadow:0 10px 30px rgba(0,0,0,0.6); }
-.info-row { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
-.actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
-.btn { padding:10px 12px; border-radius:10px; border:none; cursor:pointer; font-weight:800; font-size:13px; display:flex; gap:8px; align-items:center; }
-.edit { background:linear-gradient(90deg,#3b82f6,#2563eb); color:#fff; }
-.copy { background:linear-gradient(90deg,#9b6bff,#7c3aed); color:#fff; }
-.del { background:linear-gradient(90deg,#ff7b7b,#ff3b3b); color:#fff; }
-.panel { background:linear-gradient(180deg,#0f1316,#13161a); padding:14px; border-radius:12px; margin-top:14px; }
-.row { display:flex; gap:10px; flex-wrap:wrap; }
-.field { flex:1; display:flex; flex-direction:column; min-width:140px; }
-label{ font-size:12px; color:var(--muted); margin-bottom:6px; }
-input, textarea, select { padding:10px; border-radius:10px; border:none; background:#161819; color:#fff; }
-textarea{ min-height:80px; resize:vertical; }
-.pagination { display:flex; gap:8px; justify-content:center; margin-top:16px; }
-.page-btn { padding:8px 12px; border-radius:8px; background:transparent; border:1px solid rgba(255,255,255,0.1); color:#fff; }
-.page-btn.active { background:var(--accent); }
-#toast { position:fixed; left:50%; transform:translateX(-50%); bottom:24px; padding:10px 14px; border-radius:10px; background:#222; color:#fff; display:none; z-index:600; }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gestor de Clientes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--muted:#9aa4b2;--accent:#6ee7b7;--glass:rgba(255,255,255,0.03);font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#071022 0%, #07132a 100%);color:#e6eef6;min-height:100vh}
+    .container{max-width:1100px;margin:0 auto;padding:18px}
+    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:46px;height:46px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#013220;font-weight:700}
+    nav{margin-left:auto}
+    .menu{display:flex;gap:8px}
+    .menu button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer}
+    .menu button.active{background:var(--accent);color:#052018;border:none}
+    main{display:grid;grid-template-columns:1fr;gap:18px}/* dashboard */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.stat{background:var(--glass);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+.stat h3{margin:0;font-size:12px;color:var(--muted)}
+.stat p{margin:8px 0 0;font-size:20px;font-weight:600}
 
-/* Overlay for menu */
-#overlay { position:fixed; inset:0; background:rgba(0,0,0,0.35); opacity:0; pointer-events:none; transition:opacity .25s; z-index:235; }
-#overlay.show { opacity:1; pointer-events:auto; }
+/* client list */
+.grid-clients{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+.card h4{margin:0 0 6px}
+.meta{font-size:12px;color:var(--muted);margin-bottom:8px}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.btns{display:flex;gap:6px;margin-top:10px}
+.btn{padding:8px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
+.btn.edit{background:#1f2937;color:#e6eef6}
+.btn.renew{background:#064e3b;color:var(--accent)}
+.btn.copy{background:#0b1220;color:var(--muted);border:1px solid rgba(255,255,255,0.03)}
+.btn.delete{background:#3b0b0b;color:#ffcfcf}
 
-/* prevent scroll when menu open */
-body.no-scroll { overflow: hidden; }
-</style>
+/* form */
+.card-form{background:var(--card);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04)}
+form{display:grid;gap:10px}
+label{font-size:13px;color:var(--muted)}
+input[type=text],input[type=date],textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+textarea{min-height:90px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* modal small */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,23,0.6),rgba(2,6,23,0.6));z-index:50}
+.modal.show{display:flex}
+.modal-inner{width:96%;max-width:720px;background:var(--card);padding:16px;border-radius:12px}
+
+footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
+
+@media (max-width:700px){.row{grid-template-columns:1fr}.menu{display:flex;gap:6px}}
+
+  </style>
 </head>
-<body class="app">
-<div id="overlay"></div>
-<button class="menu-btn" id="menuBtn"><i class="fa-solid fa-bars"></i></button>
-<aside class="sidebar" id="sidebar" aria-hidden="true">
-  <div class="brand"><div class="logo">GC</div><div><div style="font-weight:800;font-size:16px">Gestión Candy 🍃</div></div></div>
-  <nav class="nav" role="navigation" aria-label="Principal">
-    <a href="#" data-view="dashboard" class="active"><i class="fa-solid fa-chart-simple"></i> Dashboard</a>
-    <a href="#" data-view="clientes"><i class="fa-solid fa-users"></i> Clientes</a>
-    <a href="#" data-view="nuevo"><i class="fa-solid fa-plus"></i> Añadir cliente</a>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">GC</div>
+        <div>
+          <div style="font-weight:700">Gestor Clientes</div>
+          <div style="font-size:12px;color:var(--muted)">App ligera — Mobile first</div>
+        </div>
+      </div><nav>
+    <div class="menu">
+      <button id="nav-dashboard" class="active">Dashboard</button>
+      <button id="nav-clientes">Clientes</button>
+      <button id="nav-add">Añadir cliente</button>
+    </div>
   </nav>
-</aside>
-<main>
-<header>
-  <div class="header-title">Gestión Candy 🍃</div>
-  <button id="refreshBtn" class="icon-btn" title="Refrescar"><i class="fa-solid fa-arrows-rotate"></i></button>
 </header>
 
-<section id="view-dashboard" class="view">
-  <div class="grid">
-    <div class="box" id="box-total"><div class="num" id="totalCount">0</div><div class="label">Total clientes</div></div>
-    <div class="box" id="box-vigentes"><div class="num" id="vigentesCount">0</div><div class="label">Vigentes</div></div>
-    <div class="box" id="box-alert"><div class="num" id="alertCount">0</div><div class="label">En alerta (3 días)</div></div>
-    <div class="box" id="box-exp"><div class="num" id="expCount">0</div><div class="label">Caducados</div></div>
-  </div>
-</section>
-
-<section id="view-clientes" class="view" style="display:none">
-  <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
-    <input id="search" placeholder="Buscar por nombre o usuario" style="flex:1;padding:12px;border-radius:10px;border:none;background:#15181b;color:#fff" aria-label="Buscar clientes" />
-    <button id="filterBtn" class="btn" style="background:#222;color:#fff">Orden caducidad ↑/↓</button>
-    <button id="exportBtn" class="btn" style="background:#222;color:#fff">Exportar CSV</button>
-  </div>
-  <div id="clientsList" class="card-list" aria-live="polite"></div>
-  <div id="pagination" class="pagination" role="navigation" aria-label="Paginación"></div>
-</section>
-
-<section id="view-nuevo" class="view" style="display:none">
-  <div class="panel" role="form" aria-labelledby="form-title">
-    <div id="form-title" style="font-weight:800;margin-bottom:8px">Añadir / Editar cliente</div>
-
-    <div class="row">
-      <div class="field"><label>Nombre</label><input id="n_nombre" /></div>
-      <div class="field">
-        <label>Aplicación</label>
-        <select id="n_aplicacion" aria-label="Aplicación">
-          <option value="Spinning TV">Spinning TV</option>
-          <option value="Spinning IBO">Spinning IBO</option>
-          <option value="Spinning MATE">Spinning MATE</option>
-        </select>
+<main>
+  <!-- DASHBOARD -->
+  <section id="section-dashboard">
+    <div class="cards">
+      <div class="stat">
+        <h3>Total clientes</h3>
+        <p id="stat-total">—</p>
+      </div>
+      <div class="stat">
+        <h3>Caducan hoy</h3>
+        <p id="stat-today">—</p>
+      </div>
+      <div class="stat">
+        <h3>Próxima renovación</h3>
+        <p id="stat-next">—</p>
       </div>
     </div>
+  </section>
 
-    <div class="row" style="margin-top:10px">
-      <div class="field"><label>Precio</label><input id="n_precio" inputmode="decimal" placeholder="12,50" /></div>
-      <div class="field"><label>Caducidad</label><input id="n_caducidad" type="date" /></div>
-    </div>
-
-    <div class="row" style="margin-top:10px">
-      <div class="field"><label>Usuario</label><input id="n_usuario" /></div>
-      <div class="field"><label>Contraseña</label><input id="n_contrasena" /></div>
-    </div>
-
-    <div style="margin-top:10px">
-      <label>Recomendaciones</label>
-      <textarea id="n_recomendaciones" placeholder="Notas..."></textarea>
-    </div>
-
-    <div style="margin-top:10px;display:flex;gap:10px;align-items:center">
-      <div style="flex:1">
-        <label>Fecha de creación</label>
-        <input id="n_fechaCreacion" type="date" />
-        <div style="font-size:12px;color:var(--muted);margin-top:6px">Se autogenera si dejas vacío.</div>
-      </div>
-      <div style="width:160px;align-self:flex-end">
-        <button id="saveBtn" class="btn edit touch" style="width:100%">Guardar</button>
+  <!-- CLIENTES -->
+  <section id="section-clientes" style="display:none">
+    <div class="card-form">
+      <h3>Clientes</h3>
+      <p class="meta">Lista en tarjetas. Usa los botones para editar, renovar, copiar o eliminar.</p>
+      <div id="clients-grid" class="grid-clients" style="margin-top:10px">
+        <!-- tarjetas generadas aquí -->
       </div>
     </div>
+  </section>
 
-    <div class="form-footer" style="margin-top:12px;display:flex;justify-content:flex-end;gap:8px">
-      <button class="btn" id="clearBtn">Limpiar</button>
+  <!-- AÑADIR CLIENTE -->
+  <section id="section-add" style="display:none">
+    <div class="card-form">
+      <h3>Añadir cliente</h3>
+      <form id="form-add">
+        <label>Nombre</label>
+        <input type="text" id="f-nombre" required />
+
+        <div class="row">
+          <div>
+            <label>Fecha de creación</label>
+            <input type="date" id="f-creacion" required />
+          </div>
+          <div>
+            <label>Caducidad</label>
+            <input type="date" id="f-caducidad" required />
+          </div>
+        </div>
+
+        <label>Usuario</label>
+        <input type="text" id="f-usuario" />
+
+        <label>Contraseña</label>
+        <input type="text" id="f-contrasena" />
+
+        <label>Aplicacion</label>
+        <input type="text" id="f-aplicacion" />
+
+        <label>Recomendaciones</label>
+        <textarea id="f-recomendaciones"></textarea>
+
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button type="submit" class="btn edit">Guardar</button>
+          <button type="button" id="f-reset" class="btn copy">Reset</button>
+        </div>
+      </form>
     </div>
-  </div>
-</section>
+  </section>
+
 </main>
 
-<div id="toast" role="status" aria-live="polite"></div>
+<footer>
+  Nota: este código asume Firestore (Cloud Firestore). Reemplaza la configuración de Firebase en el script con tus claves.
+</footer>
 
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  </div>  <!-- Modal editar -->  <div id="modal" class="modal">
+    <div class="modal-inner">
+      <h3 id="modal-title">Editar cliente</h3>
+      <form id="form-edit">
+        <label>Nombre</label>
+        <input type="text" id="e-nombre" required />
+        <div class="row">
+          <div>
+            <label>Fecha de creación</label>
+            <input type="date" id="e-creacion" required />
+          </div>
+          <div>
+            <label>Caducidad</label>
+            <input type="date" id="e-caducidad" required />
+          </div>
+        </div>
+        <label>Usuario</label>
+        <input type="text" id="e-usuario" />
+        <label>Contraseña</label>
+        <input type="text" id="e-contrasena" />
+        <label>Aplicacion</label>
+        <input type="text" id="e-aplicacion" />
+        <label>Recomendaciones</label>
+        <textarea id="e-recomendaciones"></textarea><div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end">
+      <button type="button" id="modal-cancel" class="btn copy">Cancelar</button>
+      <button type="submit" class="btn edit">Guardar cambios</button>
+    </div>
+  </form>
+</div>
 
-const firebaseConfig={ apiKey:"AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8", authDomain:"gestioncandy-b9356.firebaseapp.com", projectId:"gestioncandy-b9356", storageBucket:"gestioncandy-b9356.firebasestorage.app", messagingSenderId:"869982852654", appId:"1:869982852654:web:ac450321a746e62365f1bf" };
+  </div>  <!-- Firebase + App logic -->  <script type="module">
+    // --- REEMPLAZA ESTA CONFIG CON LA TUYA ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
+      authDomain: "gestioncandy-b9356.firebaseapp.com",
+      projectId: "gestioncandy-b9356",
+      storageBucket: "gestioncandy-b9356.firebasestorage.app",
+      messagingSenderId: "869982852654",
+      appId: "1:869982852654:web:ac450321a746e62365f1bf"
+    };
+    // -----------------------------------------
 
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
+    // Import modular Firebase (CDN) - versión relativamente reciente
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
+    import { getFirestore, collection, addDoc, doc, getDocs, onSnapshot, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
 
-// DOM refs
-const sidebar = document.getElementById('sidebar');
-const menuBtn = document.getElementById('menuBtn');
-const overlay = document.getElementById('overlay');
-const links = document.querySelectorAll('.nav a');
-const views = document.querySelectorAll('.view');
-const toast = document.getElementById('toast');
-const clientsList = document.getElementById('clientsList');
-const paginationEl = document.getElementById('pagination');
-const searchEl = document.getElementById('search');
-const filterBtn = document.getElementById('filterBtn');
-const exportBtn = document.getElementById('exportBtn');
-const refreshBtn = document.getElementById('refreshBtn');
-const saveBtn = document.getElementById('saveBtn');
-const clearBtn = document.getElementById('clearBtn');
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-// form fields
-const f_nombre = document.getElementById('n_nombre');
-const f_precio = document.getElementById('n_precio');
-const f_caducidad = document.getElementById('n_caducidad');
-const f_usuario = document.getElementById('n_usuario');
-const f_contrasena = document.getElementById('n_contrasena');
-const f_aplicacion = document.getElementById('n_aplicacion');
-const f_recomendaciones = document.getElementById('n_recomendaciones');
-const f_fechaCreacion = document.getElementById('n_fechaCreacion');
+    // Elementos UI
+    const navDashboard = document.getElementById('nav-dashboard');
+    const navClientes = document.getElementById('nav-clientes');
+    const navAdd = document.getElementById('nav-add');
 
-let registros = []; let editingId = null; let sortAsc = true; const perPage = 9; let currentPage = 1;
+    const secDashboard = document.getElementById('section-dashboard');
+    const secClientes = document.getElementById('section-clientes');
+    const secAdd = document.getElementById('section-add');
 
-function showToast(msg, t=2200){ toast.textContent = msg; toast.style.display = 'block'; setTimeout(()=> toast.style.display = 'none', t); }
+    const clientsGrid = document.getElementById('clients-grid');
+    const statTotal = document.getElementById('stat-total');
+    const statToday = document.getElementById('stat-today');
+    const statNext = document.getElementById('stat-next');
 
-// menu open/close + overlay + prevent scroll
-menuBtn.addEventListener('click', ()=>{
-  sidebar.classList.toggle('open');
-  overlay.classList.toggle('show');
-  document.body.classList.toggle('no-scroll');
-});
+    // form add
+    const formAdd = document.getElementById('form-add');
+    const fReset = document.getElementById('f-reset');
 
-// close when clicking overlay
-overlay.addEventListener('click', ()=>{
-  sidebar.classList.remove('open');
-  overlay.classList.remove('show');
-  document.body.classList.remove('no-scroll');
-});
+    // modal edit
+    const modal = document.getElementById('modal');
+    const modalCancel = document.getElementById('modal-cancel');
+    const formEdit = document.getElementById('form-edit');
 
-// close when clicking menu links and navigate views
-links.forEach(a=> a.addEventListener('click', (e)=>{
-  e.preventDefault();
-  links.forEach(x=> x.classList.remove('active'));
-  a.classList.add('active');
-  const view = document.getElementById('view-' + a.dataset.view);
-  document.querySelectorAll('.view').forEach(v=> v.style.display = 'none');
-  if(view) view.style.display = 'block';
-  sidebar.classList.remove('open');
-  overlay.classList.remove('show');
-  document.body.classList.remove('no-scroll');
-  if(a.dataset.view === 'clientes') renderClients();
-}));
-
-// simple drag-to-close for sidebar on touch devices
-let startX = 0; let dragging = false;
-sidebar.addEventListener('pointerdown', (e)=>{
-  if(window.innerWidth > 900) return; // only on mobile
-  dragging = true; startX = e.clientX;
-  sidebar.classList.add('dragging');
-  sidebar.setPointerCapture(e.pointerId);
-});
-sidebar.addEventListener('pointermove', (e)=>{
-  if(!dragging) return;
-  const dx = e.clientX - startX;
-  if(dx < -30){
-    sidebar.style.transform = `translateX(${Math.min(0, dx)}px)`;
-  }
-});
-sidebar.addEventListener('pointerup', (e)=>{
-  if(!dragging) return;
-  dragging = false;
-  sidebar.classList.remove('dragging');
-  const dx = e.clientX - startX;
-  sidebar.style.transform = '';
-  if(dx < -80){
-    // close
-    sidebar.classList.remove('open');
-    overlay.classList.remove('show');
-    document.body.classList.remove('no-scroll');
-  }
-  try{ sidebar.releasePointerCapture(e.pointerId); }catch(e){}
-});
-
-// Firestore loader
-async function loadClientsFromFirestore(){
-  try{
-    const q = query(collection(db, 'clientes'), orderBy('caducidad'));
-    const snap = await getDocs(q);
-    registros = [];
-    snap.forEach(d => registros.push({ id: d.id, ...d.data() }));
-    // seed test client if empty
-    if(registros.length === 0){
-      const test = { nombre:'Cliente Prueba', precio:'10 €', caducidad:new Date(new Date().setDate(new Date().getDate()+7)).toISOString().split('T')[0], usuario:'userprueba', contrasena:'pass123', aplicacion:'Spinning TV', recomendaciones:'Prueba inicial', fechaCreacion:new Date().toISOString().split('T')[0] };
-      await addDoc(collection(db,'clientes'), test);
-      return loadClientsFromFirestore();
+    // navegación sencilla
+    function setActive(button){
+      document.querySelectorAll('.menu button').forEach(b=>b.classList.remove('active'));
+      button.classList.add('active');
     }
-    renderDashboard(); renderClients();
-  }catch(err){
-    console.error(err); showToast('Error cargando datos');
-  }
-}
+    navDashboard.addEventListener('click', ()=>{setActive(navDashboard); secDashboard.style.display='block'; secClientes.style.display='none'; secAdd.style.display='none'});
+    navClientes.addEventListener('click', ()=>{setActive(navClientes); secDashboard.style.display='none'; secClientes.style.display='block'; secAdd.style.display='none'});
+    navAdd.addEventListener('click', ()=>{setActive(navAdd); secDashboard.style.display='none'; secClientes.style.display='none'; secAdd.style.display='block'});
 
-function renderDashboard(){
-  const hoy = new Date();
-  document.getElementById('totalCount').textContent = registros.length;
-  document.getElementById('vigentesCount').textContent = registros.filter(r=> new Date(r.caducidad) >= hoy).length;
-  document.getElementById('alertCount').textContent = registros.filter(r=>{ const diff = Math.ceil((new Date(r.caducidad)-hoy)/(1000*60*60*24)); return diff>0 && diff<=3; }).length;
-  document.getElementById('expCount').textContent = registros.filter(r=> new Date(r.caducidad) < hoy).length;
-}
+    // UTIL
+    function formatDate(d){ if(!d) return '-'; const dt = new Date(d); if(isNaN(dt)) return d; return dt.toLocaleDateString(); }
+    function isoDateForInput(d){ if(!d) return ''; const dt = new Date(d); if(isNaN(dt)) return ''; const yyyy = dt.getFullYear(); const mm = String(dt.getMonth()+1).padStart(2,'0'); const dd = String(dt.getDate()).padStart(2,'0'); return `${yyyy}-${mm}-${dd}`; }
 
-function escapeHtml(s){ if(s===0) return '0'; if(!s) return ''; return String(s).replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]; }); }
+    // ========== Firestore interactions ==========
+    const clientesCol = collection(db, 'clientes');
 
-function renderClients(page=1, search=''){
-  currentPage = page;
-  clientsList.innerHTML = '';
-  let list = registros.slice();
-  if(search) list = list.filter(r=> (r.nombre||'').toLowerCase().includes(search.toLowerCase()) || (r.usuario||'').toLowerCase().includes(search.toLowerCase()));
-  list.sort((a,b)=> sortAsc ? new Date(a.caducidad) - new Date(b.caducidad) : new Date(b.caducidad) - new Date(a.caducidad));
-  const total = list.length; const pages = Math.max(1, Math.ceil(total / perPage)); if(page>pages) page = pages;
-  const start = (page-1)*perPage; const pageItems = list.slice(start, start+perPage);
+    // realtime listener
+    const q = query(clientesCol, orderBy('creacion', 'desc'));
+    onSnapshot(q, snapshot => {
+      const docs = [];
+      snapshot.forEach(d=>docs.push({id:d.id,...d.data()}));
+      renderClients(docs);
+      updateStats(docs);
+    }, err => console.error('snapshot error', err));
 
-  pageItems.forEach(c=>{
-    const diff = Math.ceil((new Date(c.caducidad) - new Date())/(1000*60*60*24));
-    const card = document.createElement('div'); card.className = 'card';
-    let leftStyle = '';
-    if(isNaN(diff)) leftStyle = 'border-left:4px solid #666;'; else if(diff<0) leftStyle = 'border-left:4px solid #ff6b6b;'; else if(diff<=3) leftStyle = 'border-left:4px solid #ffb86b;'; else leftStyle = 'border-left:4px solid #23c552;';
-    card.setAttribute('style', leftStyle);
-    card.innerHTML = `
-      <div style="font-weight:700;font-size:16px;margin-bottom:6px">${escapeHtml(c.nombre||'')}</div>
-      <div class="info-row">
-        <div class="row"><span>Precio:</span><span>${escapeHtml(c.precio||'')}</span></div>
-        <div class="row"><span>Usuario:</span><span>${escapeHtml(c.usuario||'')}</span></div>
-        <div class="row"><span>Contraseña:</span><span>${escapeHtml(c.contrasena||'')}</span></div>
-        <div class="row"><span>Aplicación:</span><span>${escapeHtml(c.aplicacion||'')}</span></div>
-        <div class="row"><span>Caducidad:</span><span>${escapeHtml(c.caducidad||'')}</span></div>
-      </div>
-      <div class="actions">
-        <button class="btn edit" data-id="${c.id}"><i class="fa-solid fa-pen"></i> Editar</button>
-        <button class="btn copy" data-id="${c.id}"><i class="fa-solid fa-copy"></i> Copiar</button>
-        <button class="btn del" data-id="${c.id}"><i class="fa-solid fa-trash"></i> Eliminar</button>
-      </div>
-    `;
-    clientsList.appendChild(card);
-  });
+    async function addClient(data){
+      try{
+        await addDoc(clientesCol, data);
+      }catch(e){console.error(e); alert('Error guardando cliente: '+e.message)}
+    }
 
-  // attach handlers
-  clientsList.querySelectorAll('.btn.edit').forEach(b=> b.addEventListener('click', ()=> editarFirestoreClient(b.dataset.id)));
-  clientsList.querySelectorAll('.btn.copy').forEach(b=> b.addEventListener('click', ()=> copiarFirestoreClient(b.dataset.id)));
-  clientsList.querySelectorAll('.btn.del').forEach(b=> b.addEventListener('click', ()=> eliminarFirestoreClient(b.dataset.id)));
+    async function updateClient(id, data){
+      try{ const d = doc(db,'clientes',id); await updateDoc(d,data); }
+      catch(e){console.error(e); alert('Error actualizando: '+e.message)}
+    }
 
-  // pagination
-  paginationEl.innerHTML = '';
-  for(let p=1;p<=pages;p++){ const btn = document.createElement('button'); btn.className = 'page-btn' + (p===page? ' active':''); btn.textContent = p; btn.addEventListener('click', ()=> renderClients(p, searchEl.value)); paginationEl.appendChild(btn); }
-  renderDashboard();
-}
+    async function deleteClient(id){
+      if(!confirm('¿Eliminar cliente? Esta acción no se puede deshacer.')) return;
+      try{ await deleteDoc(doc(db,'clientes',id)); }
+      catch(e){console.error(e); alert('Error al eliminar: '+e.message)}
+    }
 
-async function editarFirestoreClient(id){
-  const c = registros.find(x=>x.id===id); if(!c) return;
-  editingId = id;
-  links.forEach(x=>x.classList.remove('active'));
-  document.querySelector('[data-view="nuevo"]').classList.add('active');
-  document.querySelectorAll('.view').forEach(v=>v.style.display='none');
-  document.getElementById('view-nuevo').style.display='block';
-  f_nombre.value = c.nombre||'';
-  f_precio.value = c.precio?c.precio.replace(' €',''):'';
-  f_caducidad.value = c.caducidad||'';
-  f_usuario.value = c.usuario||'';
-  f_contrasena.value = c.contrasena||'';
-  f_aplicacion.value = c.aplicacion||'';
-  f_recomendaciones.value = c.recomendaciones||'';
-  f_fechaCreacion.value = c.fechaCreacion||'';
-}
+    // ========== Render UI ==========
+    function renderClients(items){
+      clientsGrid.innerHTML = '';
+      if(items.length===0){ clientsGrid.innerHTML = '<div style="color:var(--muted)">No hay clientes aún.</div>'; return }
 
-async function eliminarFirestoreClient(id){ if(!confirm('¿Eliminar cliente?')) return; await deleteDoc(doc(db,'clientes',id)); showToast('Cliente eliminado'); await loadClientsFromFirestore(); }
+      items.forEach(it=>{
+        const card = document.createElement('div'); card.className='card';
+        const creacion = it.creacion ? formatDate(it.creacion) : '-';
+        const caducidad = it.caducidad ? formatDate(it.caducidad) : '-';
 
-function copiarFirestoreClient(id){ const c = registros.find(x=>x.id===id); const text = `Usuario: ${c.usuario}\\nContraseña: ${c.contrasena}\\nAplicación: ${c.aplicacion}\\nCaducidad: ${c.caducidad}`; navigator.clipboard.writeText(text).then(()=>showToast('Copiado al portapapeles')); }
+        card.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h4>${escapeHtml(it.nombre||'Sin nombre')}</h4>
+            <div class="meta">${escapeHtml(it.aplicacion||'')}</div>
+          </div>
+          <div class="meta">Creado: ${creacion} · Caduca: ${caducidad}</div>
+          <div class="meta">Usuario: ${escapeHtml(it.usuario||'—')}</div>
+          <div class="meta">Recomendaciones: ${escapeHtml(it.recomendaciones||'—')}</div>
+          <div class="btns">
+            <button class="btn edit" data-id="${it.id}" data-action="edit">Editar</button>
+            <button class="btn renew" data-id="${it.id}" data-action="renew">Renovar</button>
+            <button class="btn copy" data-id="${it.id}" data-action="copy">Copiar</button>
+            <button class="btn delete" data-id="${it.id}" data-action="delete">Eliminar</button>
+          </div>
+        `;
+        // attach listeners
+        card.querySelectorAll('button').forEach(b=>{
+          b.addEventListener('click', (ev)=>{
+            const id = b.getAttribute('data-id');
+            const action = b.getAttribute('data-action');
+            if(action==='edit') openEditModal(it);
+            if(action==='renew') handleRenew(it);
+            if(action==='copy') handleCopy(it);
+            if(action==='delete') deleteClient(id);
+          });
+        });
 
-saveBtn.addEventListener('click', async ()=>{
-  const nombre = f_nombre.value.trim(); const usuario = f_usuario.value.trim();
-  if(!nombre || !usuario){ showToast('Nombre y usuario son obligatorios'); return; }
-  const data = { nombre, precio: f_precio.value.trim() ? f_precio.value.trim().replace(/[^\\d,\\.]/g,'').replace(/,/g,'.') + ' €' : '', caducidad: f_caducidad.value || new Date().toISOString().split('T')[0], usuario, contrasena: f_contrasena.value.trim(), aplicacion: f_aplicacion.value, recomendaciones: f_recomendaciones.value.trim(), fechaCreacion: f_fechaCreacion.value || new Date().toISOString().split('T')[0] };
-  if(editingId){ await updateDoc(doc(db,'clientes',editingId), data); showToast('Cliente actualizado'); editingId = null; } else { await addDoc(collection(db,'clientes'), data); showToast('Cliente agregado'); }
-  clearForm(); await loadClientsFromFirestore();
-  links.forEach(x=>x.classList.remove('active'));
-  document.querySelector('[data-view=\"clientes\"]').classList.add('active');
-  document.querySelectorAll('.view').forEach(v=>v.style.display='none');
-  document.getElementById('view-clientes').style.display='block';
-});
+        clientsGrid.appendChild(card);
+      });
+    }
 
-clearBtn.addEventListener('click', ()=>{ clearForm(); });
+    // stats
+    function updateStats(items){
+      statTotal.textContent = items.length;
+      const today = new Date(); today.setHours(0,0,0,0);
+      const todayCount = items.filter(i=>{
+        if(!i.caducidad) return false;
+        const d = new Date(i.caducidad); d.setHours(0,0,0,0);
+        return d.getTime()===today.getTime();
+      }).length;
+      statToday.textContent = todayCount;
 
-filterBtn.addEventListener('click', ()=>{ sortAsc = !sortAsc; renderClients(currentPage, searchEl.value); });
-searchEl.addEventListener('input', ()=> renderClients(1, searchEl.value));
-refreshBtn.addEventListener('click', ()=> loadClientsFromFirestore());
+      // next expiring
+      const withDates = items.filter(i=>i.caducidad).map(i=>({id:i.id, nombre:i.nombre, cad:new Date(i.caducidad)})).filter(x=>!isNaN(x.cad));
+      withDates.sort((a,b)=>a.cad - b.cad);
+      statNext.textContent = withDates.length? `${withDates[0].nombre || '—'} (${formatDate(withDates[0].cad)})` : '—';
+    }
 
-function clearForm(){ [f_nombre,f_precio,f_caducidad,f_usuario,f_contrasena,f_aplicacion,f_recomendaciones,f_fechaCreacion].forEach(el=> el.value=''); editingId=null; }
+    // ========== Actions ==========
+    formAdd.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const data = {
+        nombre: document.getElementById('f-nombre').value.trim(),
+        creacion: document.getElementById('f-creacion').value || null,
+        caducidad: document.getElementById('f-caducidad').value || null,
+        usuario: document.getElementById('f-usuario').value || '',
+        contrasena: document.getElementById('f-contrasena').value || '',
+        aplicacion: document.getElementById('f-aplicacion').value || '',
+        recomendaciones: document.getElementById('f-recomendaciones').value || '',
+        createdAt: new Date().toISOString()
+      };
+      await addClient(data);
+      formAdd.reset();
+      alert('Cliente añadido');
+    });
 
-function mostrarAlertas(){
-  const hoy=new Date();
-  const lista = registros.filter(r=>{ const d=new Date(r.caducidad); const diff=Math.ceil((d-hoy)/(1000*60*60*24)); return diff>0 && diff<=3; });
-  clientsList.innerHTML=''; lista.forEach(c=>{ const card=document.createElement('div'); card.className='card'; card.setAttribute('style', isNaN(Math.ceil((new Date(c.caducidad)-new Date())/(1000*60*60*24))) ? 'border-left:4px solid #666;' : (new Date(c.caducidad) < new Date() ? 'border-left:4px solid #ff6b6b;' : (Math.ceil((new Date(c.caducidad)-new Date())/(1000*60*60*24))<=3 ? 'border-left:4px solid #ffb86b;' : 'border-left:4px solid #23c552;'))); card.innerHTML = `<div style="font-weight:700;font-size:16px;margin-bottom:6px">${escapeHtml(c.nombre||'')}</div><div class="info-row"><div class="row"><span>Precio:</span><span>${escapeHtml(c.precio||'')}</span></div><div class="row"><span>Caducidad:</span><span>${escapeHtml(c.caducidad||'')}</span></div></div><div class="actions"><button class="btn edit" onclick="editarFirestoreClient('${c.id}')">Editar</button><button class="btn copy" onclick="copiarFirestoreCliente('${c.id}')">Copiar</button><button class="btn del" onclick="eliminarFirestoreClient('${c.id}')">Eliminar</button></div>`; clientsList.appendChild(card); });
-  links.forEach(x=>x.classList.remove('active')); document.querySelector('[data-view=\"clientes\"]').classList.add('active'); document.querySelectorAll('.view').forEach(v=>v.style.display='none'); document.getElementById('view-clientes').style.display='block';
-}
+    fReset.addEventListener('click', ()=>formAdd.reset());
 
-function mostrarCaducados(){
-  const hoy=new Date();
-  const lista = registros.filter(r=> new Date(r.caducidad) < hoy );
-  clientsList.innerHTML='';
-  lista.forEach(c=>{ const card=document.createElement('div'); card.className='card'; card.setAttribute('style','border-left:4px solid #ff6b6b;'); card.innerHTML = `<div style="font-weight:700;font-size:16px;margin-bottom:6px">${escapeHtml(c.nombre||'')}</div><div class="info-row"><div class="row"><span>Precio:</span><span>${escapeHtml(c.precio||'')}</span></div><div class="row"><span>Caducidad:</span><span>${escapeHtml(c.caducidad||'')}</span></div></div><div class="actions"><button class="btn edit" onclick="editarFirestoreClient('${c.id}')">Editar</button><button class="btn copy" onclick="copiarFirestoreClient('${c.id}')">Copiar</button><button class="btn del" onclick="eliminarFirestoreClient('${c.id}')">Eliminar</button></div>`; clientsList.appendChild(card); });
-  links.forEach(x=>x.classList.remove('active')); document.querySelector('[data-view=\"clientes\"]').classList.add('active'); document.querySelectorAll('.view').forEach(v=>v.style.display='none'); document.getElementById('view-clientes').style.display='block';
-}
+    // Edit modal
+    let editingId = null;
+    function openEditModal(item){
+      editingId = item.id;
+      document.getElementById('e-nombre').value = item.nombre || '';
+      document.getElementById('e-creacion').value = isoDateForInput(item.creacion);
+      document.getElementById('e-caducidad').value = isoDateForInput(item.caducidad);
+      document.getElementById('e-usuario').value = item.usuario || '';
+      document.getElementById('e-contrasena').value = item.contrasena || '';
+      document.getElementById('e-aplicacion').value = item.aplicacion || '';
+      document.getElementById('e-recomendaciones').value = item.recomendaciones || '';
+      modal.classList.add('show');
+    }
+    modalCancel.addEventListener('click', ()=>{ modal.classList.remove('show'); editingId = null; });
 
-// expose some globals for inline handlers fallback
-window.editarFirestoreClient = editarFirestoreClient;
-window.eliminarFirestoreClient = eliminarFirestoreClient;
-window.copiarFirestoreClient = copiarFirestoreClient;
-window.mostrarAlertas = mostrarAlertas;
-window.mostrarCaducados = mostrarCaducados;
+    formEdit.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      if(!editingId) return;
+      const data = {
+        nombre: document.getElementById('e-nombre').value.trim(),
+        creacion: document.getElementById('e-creacion').value || null,
+        caducidad: document.getElementById('e-caducidad').value || null,
+        usuario: document.getElementById('e-usuario').value || '',
+        contrasena: document.getElementById('e-contrasena').value || '',
+        aplicacion: document.getElementById('e-aplicacion').value || '',
+        recomendaciones: document.getElementById('e-recomendaciones').value || '',
+        updatedAt: new Date().toISOString()
+      };
+      await updateClient(editingId, data);
+      modal.classList.remove('show'); editingId = null;
+    });
 
-loadClientsFromFirestore().catch(e=>{ console.error(e); showToast('Error al iniciar'); });
-</script>
-</body>
+    // Renew: añade 1 año a la caducidad actual (si no tiene, lo pone a hoy + 1 año)
+    async function handleRenew(item){
+      let base = item.caducidad ? new Date(item.caducidad) : new Date();
+      if(isNaN(base)) base = new Date();
+      const newDate = new Date(base);
+      newDate.setFullYear(newDate.getFullYear()+1);
+      await updateClient(item.id, { caducidad: newDate.toISOString(), updatedAt: new Date().toISOString() });
+      alert('Caducidad renovada a ' + formatDate(newDate));
+    }
+
+    // Copy password to clipboard
+    async function handleCopy(item){
+      try{
+        if(!item.contrasena) { alert('No hay contraseña para copiar'); return }
+        await navigator.clipboard.writeText(item.contrasena);
+        alert('Contraseña copiada al portapapeles');
+      }catch(e){ console.error(e); alert('No se pudo copiar: ' + e.message) }
+    }
+
+    // small helper to escape HTML
+    function escapeHtml(str){ if(!str) return ''; return String(str).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
+
+    // If your Firebase uses Realtime Database instead of Firestore, you'll need to change the logic.
+    // --- Fin script ---
+  </script></body>
 </html>
