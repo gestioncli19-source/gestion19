@@ -10,14 +10,16 @@ body{margin:0;font-family:'Montserrat',sans-serif;background:#0f121d;color:#e0e0
 body.light{background:#f5f5f5;color:#222;}
 header{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#1a1f2b;}
 body.light header{background:#ddd;color:#222;}
-header h1{font-size:1.5em;margin:0;}
-#menuBtn{font-size:1.3em;cursor:pointer;}
-.sidebar{position:fixed;right:-220px;top:0;width:200px;height:100%;background:#222;padding:20px;transition:0.3s;display:flex;flex-direction:column;gap:15px;z-index:100;}
+header h1{font-size:1.5em;margin:0;transition:0.3s;}
+#menuBtn{font-size:1.3em;cursor:pointer;transition:0.3s;}
+.sidebar{position:fixed;right:-220px;top:0;width:220px;height:100%;background:#222;padding:20px;transition:0.5s;display:flex;flex-direction:column;gap:15px;z-index:100;}
 .sidebar a{color:#fff;text-decoration:none;padding:10px;border-radius:8px;transition:0.3s;}
 .sidebar a:hover,.sidebar a.active{background:#444;}
 body.light .sidebar{background:#ccc;}
 body.light .sidebar a{color:#222;}
 main{margin-left:0;padding:20px;transition:0.3s;}
+.view{opacity:0;transform:translateY(20px);transition:0.4s;}
+.view.active{opacity:1;transform:translateY(0);}
 .dashboard{display:flex;flex-wrap:wrap;gap:15px;margin-bottom:25px;justify-content:center;}
 .dashboard .box{flex:1 1 120px;padding:15px;border-radius:12px;text-align:center;cursor:pointer;transition:0.3s;box-shadow:0 0 10px rgba(0,0,0,0.3);}
 .dashboard .box h3{margin:0;font-size:14px;font-weight:600;}
@@ -27,8 +29,9 @@ main{margin-left:0;padding:20px;transition:0.3s;}
 .box.alerta{background:rgba(255,165,0,0.15);color:#ff9900;}
 .box.caducado{background:rgba(255,50,50,0.15);color:#ff4d4d;}
 #clientsView{display:none;}
-.card{background:#1a1f2b;color:#e0e0e0;border-radius:15px;padding:15px;margin-bottom:15px;box-shadow:0 6px 15px rgba(0,0,0,0.5);}
+.card{background:#1a1f2b;color:#e0e0e0;border-radius:15px;padding:15px;margin-bottom:15px;box-shadow:0 6px 15px rgba(0,0,0,0.5);transition:0.3s;}
 body.light .card{background:#eaeaea;color:#222;box-shadow:0 4px 10px rgba(0,0,0,0.15);}
+.card:hover{transform:translateY(-3px);box-shadow:0 10px 20px rgba(0,0,0,0.6);}
 .card .info-row{margin-bottom:10px;}
 .card .info-row .row{display:flex;justify-content:space-between;margin-bottom:4px;}
 .card .actions{display:flex;gap:6px;flex-wrap:wrap;}
@@ -45,6 +48,10 @@ body.light .form-group input,body.light .form-group select,body.light .form-grou
 #saveBtn,#clearBtn{padding:10px 15px;margin-right:6px;border:none;border-radius:8px;cursor:pointer;font-weight:600;}
 #saveBtn{background:#00b4ff;color:#fff;}
 #clearBtn{background:#ccc;color:#222;}
+#loginScreen{position:fixed;top:0;left:0;width:100%;height:100%;background:#1a1f2b;color:#fff;display:flex;justify-content:center;align-items:center;flex-direction:column;z-index:200;transition:0.3s;}
+#loginScreen input{margin-bottom:10px;padding:10px;border-radius:8px;border:none;width:200px;}
+#loginScreen button{padding:10px 15px;border:none;border-radius:8px;background:#00b4ff;color:#fff;cursor:pointer;}
+#toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px;border-radius:8px;display:none;z-index:300;}
 @media(max-width:700px){.dashboard{flex-direction:column;}.card{width:100%;}.sidebar{width:180px;}}
 </style>
 </head>
@@ -63,7 +70,7 @@ body.light .form-group input,body.light .form-group select,body.light .form-grou
 </div>
 
 <main>
-  <div id="dashboardView">
+  <div id="dashboardView" class="view active">
     <div class="dashboard">
       <div class="box total"><h3>Total Clientes</h3><p id="totalCount">0</p></div>
       <div class="box vigente"><h3>Vigentes</h3><p id="vigentesCount">0</p></div>
@@ -72,12 +79,12 @@ body.light .form-group input,body.light .form-group select,body.light .form-grou
     </div>
   </div>
 
-  <div id="clientsView">
+  <div id="clientsView" class="view">
     <button id="filterBtn">Orden caducidad ↑/↓</button>
     <div id="clientsList"></div>
   </div>
 
-  <div id="addClientView">
+  <div id="addClientView" class="view">
     <div class="form-group"><label>Nombre</label><input id="n_nombre" type="text"></div>
     <div class="form-group"><label>Precio</label><input id="n_precio" type="text" oninput="this.value=this.value.replace(/[^\d.,]/g,'')+' €';"></div>
     <div class="form-group"><label>Caducidad</label><input id="n_caducidad" type="date"></div>
@@ -97,21 +104,20 @@ body.light .form-group input,body.light .form-group select,body.light .form-grou
   </div>
 </main>
 
-<div id="loginScreen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#1a1f2b;color:#fff;display:flex;justify-content:center;align-items:center;flex-direction:column;">
-  <input id="emailInput" type="email" placeholder="Correo electrónico" style="margin-bottom:10px;padding:10px;border-radius:8px;border:none;">
-  <input id="passInput" type="password" placeholder="Contraseña" style="margin-bottom:10px;padding:10px;border-radius:8px;border:none;">
-  <button id="loginBtn" style="padding:10px 15px;border:none;border-radius:8px;background:#00b4ff;color:#fff;">Iniciar sesión</button>
+<div id="loginScreen">
+  <input id="emailInput" type="email" placeholder="Correo electrónico">
+  <input id="passInput" type="password" placeholder="Contraseña">
+  <button id="loginBtn">Iniciar sesión</button>
   <p style="margin-top:10px;color:#ccc;">Usuario de prueba: <b>test@candy.com</b> / Contraseña: <b>123456</b></p>
 </div>
 
-<div id="toast" style="position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px;border-radius:8px;display:none;"></div>
+<div id="toast"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc, query } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
 
-// Configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
   authDomain: "gestioncandy-b9356.firebaseapp.com",
@@ -125,27 +131,228 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// Crear usuario de prueba automáticamente si no existe
-const testEmail = "test@candy.com";
-const testPass = "123456";
-createUserWithEmailAndPassword(auth,testEmail,testPass).catch(()=>{}); // ignora si ya existe
-
 const loginScreen=document.getElementById('loginScreen');
 const emailInput=document.getElementById('emailInput');
 const passInput=document.getElementById('passInput');
+const clientsList=document.getElementById('clientsList');
+
 function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>{t.style.display='none';},2500); }
+
+async function ensureTestUser(){ try{ await createUserWithEmailAndPassword(auth,'test@candy.com','123456'); } catch{} }
+ensureTestUser();
+
+const testClient = {
+  nombre:'Cliente Prueba',
+  precio:'10 €',
+  caducidad:new Date(new Date().setDate(new Date().getDate()+7)).toISOString().split('T')[0],
+  usuario:'userprueba',
+  contrasena:'pass123',
+  aplicacion:'Spinning TV',
+  recomendaciones:'Prueba inicial',
+  fechaCreacion:new Date().toISOString().split('T')[0]
+};
+
+async function addTestClient(){
+  const col = collection(db,'clientes');
+  const snapshot = await getDocs(col);
+  if(snapshot.empty){ await addDoc(col,testClient); }
+}
+addTestClient();
 
 document.getElementById('loginBtn').addEventListener('click', async ()=>{
   try{
     await signInWithEmailAndPassword(auth,emailInput.value.trim(),passInput.value.trim());
     loginScreen.style.display='none';
     showToast("Bienvenido");
+    switchView('dashboard');
+    loadClients();
   }catch(e){ showToast("Error: "+e.message); }
 });
 
-onAuthStateChanged(auth,user=>{ if(user) loginScreen.style.display='none'; else loginScreen.style.display='flex'; });
-document.getElementById('logoutBtn').addEventListener('click',async()=>{await signOut(auth);});
+document.getElementById('logoutBtn').addEventListener('click',async()=>{await signOut(auth);loginScreen.style.display='flex';});
 
+onAuthStateChanged(auth,user=>{ if(user){ loginScreen.style.display='none'; loadClients(); } else loginScreen.style.display='flex'; });
+
+// SPA navigation
+const views = {dashboard: document.getElementById('dashboardView'), clientes: document.getElementById('clientsView'), nuevo: document.getElementById('addClientView')};
+document.querySelectorAll('.sidebar a[data-view]').forEach(el=>{
+  el.addEventListener('click',()=>{ switchView(el.dataset.view); });
+});
+function switchView(view){
+  for(let v in views){ views[v].classList.remove('active'); document.querySelector('.sidebar a[data-view="'+v+'"]').classList.remove('active'); }
+  views[view].classList.add('active'); document.querySelector('.sidebar a[data-view="'+view+'"]').classList.add('active');
+}
+
+// Menu toggle animation
+const menuBtn = document.getElementById('menuBtn'); const sidebar = document.getElementById('sidebar');
+menuBtn.addEventListener('click',()=>{sidebar.style.right = sidebar.style.right==='0px'?' -220px':'0px';});
+
+// Clientes
+async function loadClients(){
+  const col = collection(db,'clientes');
+  const snapshot = await getDocs(col);
+  clientsList.innerHTML='';
+  let total=0,vigentes=0,alerta=0,caducado=0;
+  snapshot.forEach(docSnap=>{
+    const c = {...docSnap.data(),id:docSnap.id};
+    total++;
+    const diff = Math.ceil((new Date(c.caducidad)-new Date())/(1000*60*60*24));
+    if(diff>3)vigentes++;
+    else if(diff>0 && diff<=3)alerta++;
+    else caducado++;
+    const card = document.createElement('div'); card.className='card';
+    card.innerHTML=`
+      <div class="info-row"><div class="row"><strong>Nombre:</strong> <span>${c.nombre}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Precio:</strong> <span>${c.precio}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Usuario:</strong> <span>${c.usuario}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Contraseña:</strong> <span>${c.contrasena}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Aplicación:</strong> <span>${c.aplicacion}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Caducidad:</strong> <span>${c.caducidad} (${diff>=0?diff:0} días)</span></div></div>
+      <div class="info-row"><div class="row"><strong>Fecha Creación:</strong> <span>${c.fechaCreacion||'-'}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Recomendaciones:</strong> <span>${c.recomendaciones||'-'}</span></div></div>
+      <div class="actions">
+        <button class="btn edit" onclick="editClient('${c.id}')">Editar</button>
+        <button class="btn copy" onclick="copyClient('${c.id}')">Copiar datos</button>
+        <button class="btn del" onclick="deleteClient('${c.id}')">Eliminar</button>
+      </div>
+    `;
+    clientsList.appendChild(card);
+  });
+  document.getElementById('totalCount').textContent=total;
+  document.getElementById('vigentesCount').textContent=vigentes;
+  document.getElementById('alertCount').textContent=alerta;
+  document.getElementById('expCount').textContent=caducado;
+}
+
+// Copiar, eliminar, editar
+window.copyClient = async function(id){ const d = await (await getDocs(collection(db,'clientes'))).docs.find(x=>x.id===id).data(); navigator.clipboard.writeText(`Usuario: ${d.usuario}\nContraseña: ${d.contrasena}\nAplicación: ${d.aplicacion}\nCaducidad: ${d.caducidad}`).then(()=>showToast("Datos copiados")); }
+window.deleteClient = async function(id){ if(confirm('Eliminar cliente?')){ await deleteDoc(doc(db,'clientes',id)); showToast('Cliente eliminado'); loadClients(); } }
+window.editClient = async function(id){ const d = await getDocs(collection(db,'clientes')); const docData=d.docs.find(x=>x.id===id).data();
+document.getElementById('n_nombre').value=docData.nombre; document.getElementById('n_precio').value=docData.precio; document.getElementById('n_caducidad').value=docData.caducidad; document.getElementById('n_usuario').value=docData.usuario;
+document.getElementById('n_contrasena').value=docData.contrasena; document.getElementById('n_aplicacion').value=docData.aplicacion; document.getElementById('n_recomendaciones').value=docData.recomendaciones; document.getElementById('n_fechaCreacion').value=docData.fechaCreacion;
+document.getElementById('saveBtn').onclick = async ()=>{ await updateDoc(doc(db,'clientes',id),{
+nombre:document.getElementById('n_nombre').value, precio:document.getElementById('n_precio').value, caducidad:document.getElementById('n_caducidad').value, usuario:document.getElementById('n_usuario').value,
+contrasena:document.getElementById('n_contrasena').value, aplicacion:document.getElementById('n_aplicacion').value, recomendaciones:document.getElementById('n_recomendaciones').value, fechaCreacion:document.getElementById('n_fechaCreacion').value
+}); showToast('Cliente actualizado'); loadClients(); switchView('clientes'); }}
+
+// Guardar nuevo cliente
+document.getElementById('saveBtn').addEventListener('click', async ()=>{
+const nuevo = {
+  nombre:document.getElementById('n_nombre').value,
+  precio:document.getElementById('n_precio').value,
+  caducidad:document.getElementById('n_caducidad').value,
+  usuario:document.getElementById('n_usuario').value,
+  contrasena:document.getElementById('n_contrasena').value,
+  aplicacion:document.getElementById('n_aplicacion').value,
+  recomendaciones:document.getElementById('n_recomendaciones').value,
+  fechaCreacion:document.getElementById('n_fechaCreacion').value
+};
+
+try {
+  await addDoc(collection(db,'clientes'),nuevo);
+  showToast('Cliente agregado');
+  switchView('clientes'); // Lleva automáticamente a la vista de clientes
+  loadClients();
+  limpiarFormulario();
+} catch(e){
+  showToast('Error al guardar cliente: '+e.message);
+}
+});
+
+document.getElementById('clearBtn').addEventListener('click',limpiarFormulario);
+
+function limpiarFormulario(){
+  document.getElementById('n_nombre').value='';
+  document.getElementById('n_precio').value='';
+  document.getElementById('n_caducidad').value='';
+  document.getElementById('n_usuario').value='';
+  document.getElementById('n_contrasena').value='';
+  document.getElementById('n_aplicacion').value='Spinning TV';
+  document.getElementById('n_recomendaciones').value='';
+  document.getElementById('n_fechaCreacion').value='';
+}
+
+// Filtro de caducidad ascendente/descendente
+let ascendente=true;
+document.getElementById('filterBtn').addEventListener('click', async ()=>{
+  const col = collection(db,'clientes');
+  const snapshot = await getDocs(col);
+  const clientes = snapshot.docs.map(d=>({...d.data(),id:d.id}));
+  clientes.sort((a,b)=>{
+    const da = new Date(a.caducidad), db_ = new Date(b.caducidad);
+    return ascendente? da-db_: db_-da;
+  });
+  ascendente=!ascendente;
+  clientsList.innerHTML='';
+  clientes.forEach(c=>{
+    const diff = Math.ceil((new Date(c.caducidad)-new Date())/(1000*60*60*24));
+    const card = document.createElement('div'); card.className='card';
+    card.innerHTML=`
+      <div class="info-row"><div class="row"><strong>Nombre:</strong> <span>${c.nombre}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Precio:</strong> <span>${c.precio}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Usuario:</strong> <span>${c.usuario}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Contraseña:</strong> <span>${c.contrasena}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Aplicación:</strong> <span>${c.aplicacion}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Caducidad:</strong> <span>${c.caducidad} (${diff>=0?diff:0} días)</span></div></div>
+      <div class="info-row"><div class="row"><strong>Fecha Creación:</strong> <span>${c.fechaCreacion||'-'}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Recomendaciones:</strong> <span>${c.recomendaciones||'-'}</span></div></div>
+      <div class="actions">
+        <button class="btn edit" onclick="editClient('${c.id}')">Editar</button>
+        <button class="btn copy" onclick="copyClient('${c.id}')">Copiar datos</button>
+        <button class="btn del" onclick="deleteClient('${c.id}')">Eliminar</button>
+      </div>
+    `;
+    clientsList.appendChild(card);
+  });
+});
+
+// Dashboard alertas: mostrar solo 3 días y caducados
+document.querySelector('.box.alerta').addEventListener('click',async()=>{
+  switchView('clientes');
+  const col = collection(db,'clientes');
+  const snapshot = await getDocs(col);
+  const clientes = snapshot.docs.map(d=>({...d.data(),id:d.id}));
+  clientsList.innerHTML='';
+  clientes.filter(c=>{ const diff = Math.ceil((new Date(c.caducidad)-new Date())/(1000*60*60*24)); return diff>0 && diff<=3; })
+  .forEach(c=>{
+    const diff = Math.ceil((new Date(c.caducidad)-new Date())/(1000*60*60*24));
+    const card = document.createElement('div'); card.className='card';
+    card.innerHTML=`
+      <div class="info-row"><div class="row"><strong>Nombre:</strong> <span>${c.nombre}</span></div></div>
+      <div class="info-row"><div class="row"><strong>Caducidad:</strong> <span>${c.caducidad} (${diff} días)</span></div></div>
+      <div class="actions">
+        <button class="btn edit" onclick="editClient('${c.id}')">Editar</button>
+        <button class="btn copy" onclick="copyClient('${c.id}')">Copiar datos</button>
+        <button class="btn del" onclick="deleteClient('${c.id}')">Eliminar</button>
+      </div>
+    `;
+    clientsList.appendChild(card);
+  });
+});
+
+document.querySelector('.box.caducado').addEventListener('click',async()=>{
+  switchView('clientes');
+  const col = collection(db,'clientes');
+  const snapshot = await getDocs(col);
+  clientsList.innerHTML='';
+  snapshot.docs.forEach(d=>{
+    const c = {...d.data(),id:d.id};
+    const diff = Math.ceil((new Date(c.caducidad)-new Date())/(1000*60*60*24));
+    if(diff<0){
+      const card = document.createElement('div'); card.className='card';
+      card.innerHTML=`
+        <div class="info-row"><div class="row"><strong>Nombre:</strong> <span>${c.nombre}</span></div></div>
+        <div class="info-row"><div class="row"><strong>Caducidad:</strong> <span>${c.caducidad} (${0} días)</span></div></div>
+        <div class="actions">
+          <button class="btn edit" onclick="editClient('${c.id}')">Editar</button>
+          <button class="btn copy" onclick="copyClient('${c.id}')">Copiar datos</button>
+          <button class="btn del" onclick="deleteClient('${c.id}')">Eliminar</button>
+        </div>
+      `;
+      clientsList.appendChild(card);
+    }
+  });
+});
 </script>
 </body>
 </html>
