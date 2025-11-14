@@ -4,184 +4,181 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Gestor de Clientes</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <title>Gestor Clientes — Modern</title>
+  <meta name="theme-color" content="#0f172a">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            base: '#0f172a',
+            card: '#0f172a',
+            surface: '#0b1220',
+            accent: '#38bdf8'
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SheetJS for Excel export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <!-- jsPDF + html2canvas for PDF export -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <style>
-    :root{--bg:#0f1724;--card:#0b1220;--muted:#9aa4b2;--accent:#6ee7b7;--glass:rgba(255,255,255,0.03);font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
-    *{box-sizing:border-box}
-    body{margin:0;background:linear-gradient(180deg,#071022 0%, #07132a 100%);color:#e6eef6;min-height:100vh}
-    .container{max-width:1100px;margin:0 auto;padding:18px}
-    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:46px;height:46px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#013220;font-weight:700}
-    nav{margin-left:auto}
-    .menu{display:flex;gap:8px}
-    .menu button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer}
-    .menu button.active{background:var(--accent);color:#052018;border:none}
-    main{display:grid;grid-template-columns:1fr;gap:18px}/* dashboard */
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-.stat{background:var(--glass);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
-.stat h3{margin:0;font-size:12px;color:var(--muted)}
-.stat p{margin:8px 0 0;font-size:20px;font-weight:600}
-
-/* client list */
-.grid-clients{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
-.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
-.card h4{margin:0 0 6px}
-.meta{font-size:12px;color:var(--muted);margin-bottom:8px}
-.tags{display:flex;gap:6px;flex-wrap:wrap}
-.btns{display:flex;gap:6px;margin-top:10px}
-.btn{padding:8px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:600}
-.btn.edit{background:#1f2937;color:#e6eef6}
-.btn.renew{background:#064e3b;color:var(--accent)}
-.btn.copy{background:#0b1220;color:var(--muted);border:1px solid rgba(255,255,255,0.03)}
-.btn.delete{background:#3b0b0b;color:#ffcfcf}
-
-/* form */
-.card-form{background:var(--card);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04)}
-form{display:grid;gap:10px}
-label{font-size:13px;color:var(--muted)}
-input[type=text],input[type=date],textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-textarea{min-height:90px;resize:vertical}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-
-/* modal small */
-.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,23,0.6),rgba(2,6,23,0.6));z-index:50}
-.modal.show{display:flex}
-.modal-inner{width:96%;max-width:720px;background:var(--card);padding:16px;border-radius:12px}
-
-footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
-
-@media (max-width:700px){.row{grid-template-columns:1fr}.menu{display:flex;gap:6px}}
-
+    /* tiny refinements for the Tailwind build (optional) */
+    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+    .nav-btn.active{ background: rgba(56,189,248,0.12); }
   </style>
 </head>
-<body>
-  <div class="container">
-    <header>
-      <div class="brand">
-        <div class="logo">GC</div>
-        <div>
-          <div style="font-weight:700">Gestor Clientes</div>
-          <div style="font-size:12px;color:var(--muted)">App ligera — Mobile first</div>
-        </div>
-      </div><nav>
-    <div class="menu">
-      <button id="nav-dashboard" class="active">Dashboard</button>
-      <button id="nav-clientes">Clientes</button>
-      <button id="nav-add">Añadir cliente</button>
-    </div>
-  </nav>
+<body class="bg-[color:var(--bg,#0f172a)] text-slate-200 min-h-screen">  <!-- SIDEBAR -->  <aside id="sidebar" class="w-64 bg-surface border-r border-slate-800 fixed h-full left-[-260px] transition-all duration-300 p-6 z-50 shadow-xl">
+    <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">📋 Menú</h2>
+    <nav class="flex flex-col gap-3">
+      <button id="nav-dashboard" class="menu-btn nav-btn px-4 py-2 rounded-lg text-left">Dashboard</button>
+      <button id="nav-clientes" class="menu-btn nav-btn px-4 py-2 rounded-lg text-left">Clientes</button>
+      <button id="nav-add" class="menu-btn nav-btn px-4 py-2 rounded-lg text-left">Añadir cliente</button>
+    </nav><div class="mt-10">
+  <h3 class="text-sm mb-2 text-slate-400">Apariencia</h3>
+  <button id="toggle-theme" class="w-full py-2 bg-slate-800 rounded hover:bg-slate-700">Cambiar modo</button>
+</div>
+
+<div class="mt-6">
+  <button id="export-xlsx" class="w-full py-2 mb-2 bg-slate-800 rounded hover:bg-slate-700">Exportar XLSX</button>
+  <button id="export-pdf" class="w-full py-2 bg-slate-800 rounded hover:bg-slate-700">Exportar PDF</button>
+</div>
+
+  </aside>  <!-- MAIN -->  <div class="flex-1 flex flex-col ml-0 min-h-screen"><!-- HEADER -->
+<header class="w-full bg-surface border-b border-slate-700 p-5 flex items-center justify-between shadow">
+  <div class="flex items-center gap-4">
+    <div class="w-12 h-12 bg-accent text-black font-bold rounded-xl flex items-center justify-center shadow">GC</div>
+    <h1 class="text-2xl font-bold tracking-wide">Gestor Clientes</h1>
+  </div>
+  <div class="flex items-center gap-3">
+    <button id="btn-menu" class="px-4 py-2 bg-slate-800 rounded-lg hover:bg-slate-700">☰</button>
+    <button id="install-btn" class="px-4 py-2 bg-accent text-black rounded-lg hover:bg-sky-300 hidden">Instalar</button>
+  </div>
 </header>
 
-<main>
+<!-- CONTENT -->
+<main class="p-6 space-y-10">
+
   <!-- DASHBOARD -->
   <section id="section-dashboard">
-    <div class="cards">
-      <div class="stat">
-        <h3>Total clientes</h3>
-        <p id="stat-total">—</p>
+    <div class="flex justify-between items-center">
+      <h2 class="text-3xl font-bold mb-4">⏳ Próximas caducidades (3 días)</h2>
+      <div class="flex items-center gap-3">
+        <div class="text-sm text-slate-400">Notificaciones:</div>
+        <button id="notify-check" class="px-3 py-1 bg-slate-800 rounded">Comprobar</button>
       </div>
-      <div class="stat">
-        <h3>Caducan hoy</h3>
-        <p id="stat-today">—</p>
+    </div>
+
+    <div class="grid lg:grid-cols-3 sm:grid-cols-2 gap-6">
+      <div class="col-span-2">
+        <div class="bg-slate-900 p-4 rounded-xl shadow"> 
+          <canvas id="chart-exp" height="140"></canvas>
+        </div>
       </div>
-      <div class="stat">
-        <h3>Próxima renovación</h3>
-        <p id="stat-next">—</p>
-      </div>
+      <div id="dashboard-list" class="space-y-4"></div>
     </div>
   </section>
 
   <!-- CLIENTES -->
-  <section id="section-clientes" style="display:none">
-    <div class="card-form">
-      <h3>Clientes</h3>
-      <p class="meta">Lista en tarjetas. Usa los botones para editar, renovar, copiar o eliminar.</p>
-      <div id="clients-grid" class="grid-clients" style="margin-top:10px">
-        <!-- tarjetas generadas aquí -->
-      </div>
+  <section id="section-clientes" class="hidden">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-3xl font-bold">Clientes</h2>
+      <input id="search" placeholder="Buscar cliente..." class="px-4 py-2 bg-slate-800 rounded-lg border border-slate-700 w-60" />
     </div>
+    <div id="clients-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
   </section>
 
   <!-- AÑADIR CLIENTE -->
-  <section id="section-add" style="display:none">
-    <div class="card-form">
-      <h3>Añadir cliente</h3>
-      <form id="form-add">
-        <label>Nombre</label>
-        <input type="text" id="f-nombre" required />
+  <section id="section-add" class="hidden">
+    <h2 class="text-3xl font-bold mb-6">Añadir cliente</h2>
+    <form id="form-add" class="grid gap-4 bg-slate-900 p-6 rounded-xl border border-slate-800 shadow">
+      <div>
+        <label class="block text-sm mb-1">Nombre</label>
+        <input id="f-nombre" type="text" class="w-full p-3 bg-slate-800 rounded border border-slate-700" required>
+      </div>
 
-        <div class="row">
-          <div>
-            <label>Fecha de creación</label>
-            <input type="date" id="f-creacion" required />
-          </div>
-          <div>
-            <label>Caducidad</label>
-            <input type="date" id="f-caducidad" required />
-          </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm mb-1">Fecha creación</label>
+          <input id="f-creacion" type="date" class="w-full p-3 bg-slate-800 rounded border border-slate-700" required>
         </div>
-
-        <label>Usuario</label>
-        <input type="text" id="f-usuario" />
-
-        <label>Contraseña</label>
-        <input type="text" id="f-contrasena" />
-
-        <label>Aplicacion</label>
-        <input type="text" id="f-aplicacion" />
-
-        <label>Recomendaciones</label>
-        <textarea id="f-recomendaciones"></textarea>
-
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button type="submit" class="btn edit">Guardar</button>
-          <button type="button" id="f-reset" class="btn copy">Reset</button>
+        <div>
+          <label class="block text-sm mb-1">Caducidad</label>
+          <input id="f-caducidad" type="date" class="w-full p-3 bg-slate-800 rounded border border-slate-700" required>
         </div>
-      </form>
-    </div>
+      </div>
+
+      <div>
+        <label class="block text-sm mb-1">Usuario</label>
+        <input id="f-usuario" type="text" class="w-full p-3 bg-slate-800 rounded border border-slate-700">
+      </div>
+
+      <div>
+        <label class="block text-sm mb-1">Contraseña</label>
+        <input id="f-contrasena" type="text" class="w-full p-3 bg-slate-800 rounded border border-slate-700">
+      </div>
+
+      <div>
+        <label class="block text-sm mb-1">Aplicación</label>
+        <input id="f-aplicacion" type="text" class="w-full p-3 bg-slate-800 rounded border border-slate-700">
+      </div>
+
+      <div>
+        <label class="block text-sm mb-1">Recomendaciones</label>
+        <textarea id="f-recomendaciones" class="w-full p-3 bg-slate-800 rounded border border-slate-700 h-24"></textarea>
+      </div>
+
+      <div class="flex gap-3">
+        <button type="submit" class="bg-accent text-black font-bold py-3 rounded-lg hover:bg-sky-300 shadow">Guardar</button>
+        <button id="btn-reset" type="button" class="px-4 py-3 bg-slate-800 rounded-lg">Reset</button>
+      </div>
+    </form>
   </section>
 
 </main>
 
-<footer>
-  Nota: este código asume Firestore (Cloud Firestore). Reemplaza la configuración de Firebase en el script con tus claves.
-</footer>
-
-  </div>  <!-- Modal editar -->  <div id="modal" class="modal">
-    <div class="modal-inner">
-      <h3 id="modal-title">Editar cliente</h3>
-      <form id="form-edit">
-        <label>Nombre</label>
-        <input type="text" id="e-nombre" required />
-        <div class="row">
-          <div>
-            <label>Fecha de creación</label>
-            <input type="date" id="e-creacion" required />
-          </div>
-          <div>
-            <label>Caducidad</label>
-            <input type="date" id="e-caducidad" required />
-          </div>
+  </div>  <!-- MODAL EDICIÓN -->  <div id="modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+    <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 w-full max-w-xl shadow-xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold">Editar cliente</h3>
+        <div class="flex gap-2">
+          <button id="modal-copy" class="px-3 py-1 bg-slate-800 rounded">Copiar</button>
+          <button id="modal-renew" class="px-3 py-1 bg-slate-800 rounded">Renovar</button>
+          <button id="modal-delete" class="px-3 py-1 bg-red-700 rounded">Eliminar</button>
         </div>
-        <label>Usuario</label>
-        <input type="text" id="e-usuario" />
-        <label>Contraseña</label>
-        <input type="text" id="e-contrasena" />
-        <label>Aplicacion</label>
-        <input type="text" id="e-aplicacion" />
-        <label>Recomendaciones</label>
-        <textarea id="e-recomendaciones"></textarea><div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end">
-      <button type="button" id="modal-cancel" class="btn copy">Cancelar</button>
-      <button type="submit" class="btn edit">Guardar cambios</button>
+      </div>
+      <form id="form-edit" class="grid gap-4">
+        <div class="grid grid-cols-2 gap-4">
+          <input id="e-nombre" placeholder="Nombre" class="p-3 bg-slate-800 rounded border border-slate-700" />
+          <input id="e-aplicacion" placeholder="Aplicación" class="p-3 bg-slate-800 rounded border border-slate-700" />
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <input id="e-creacion" type="date" class="p-3 bg-slate-800 rounded border border-slate-700" />
+          <input id="e-caducidad" type="date" class="p-3 bg-slate-800 rounded border border-slate-700" />
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <input id="e-usuario" placeholder="Usuario" class="p-3 bg-slate-800 rounded border border-slate-700" />
+          <input id="e-contrasena" placeholder="Contraseña" class="p-3 bg-slate-800 rounded border border-slate-700" />
+        </div>
+        <textarea id="e-recomendaciones" class="p-3 bg-slate-800 rounded border border-slate-700 h-28" placeholder="Recomendaciones"></textarea>
+        <div class="flex justify-end gap-3">
+          <button id="modal-cancel" type="button" class="px-4 py-2 bg-slate-700 rounded hover:bg-slate-600">Cancelar</button>
+          <button type="submit" class="px-4 py-2 bg-accent text-black font-bold rounded hover:bg-sky-300">Guardar</button>
+        </div>
+      </form>
     </div>
-  </form>
-</div>
+  </div>  <!-- FIREBASE + LÓGICA -->  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
-  </div>  <!-- Firebase + App logic -->  <script type="module">
-    // --- REEMPLAZA ESTA CONFIG CON LA TUYA ---
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
       authDomain: "gestioncandy-b9356.firebaseapp.com",
@@ -190,213 +187,235 @@ footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
       messagingSenderId: "869982852654",
       appId: "1:869982852654:web:ac450321a746e62365f1bf"
     };
-    // -----------------------------------------
-
-    // Import modular Firebase (CDN) - versión relativamente reciente
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
-    import { getFirestore, collection, addDoc, doc, getDocs, onSnapshot, updateDoc, deleteDoc, query, orderBy } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const clientesCol = collection(db, 'clientes');
 
-    // Elementos UI
-    const navDashboard = document.getElementById('nav-dashboard');
-    const navClientes = document.getElementById('nav-clientes');
-    const navAdd = document.getElementById('nav-add');
-
+    // UI refs
+    const sidebar = document.getElementById('sidebar');
+    const btnMenu = document.getElementById('btn-menu');
     const secDashboard = document.getElementById('section-dashboard');
     const secClientes = document.getElementById('section-clientes');
     const secAdd = document.getElementById('section-add');
-
     const clientsGrid = document.getElementById('clients-grid');
-    const statTotal = document.getElementById('stat-total');
-    const statToday = document.getElementById('stat-today');
-    const statNext = document.getElementById('stat-next');
+    const dashboardList = document.getElementById('dashboard-list');
+    const chartCanvas = document.getElementById('chart-exp');
 
-    // form add
-    const formAdd = document.getElementById('form-add');
-    const fReset = document.getElementById('f-reset');
+    // PWA install prompt handling
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('install-btn').classList.remove('hidden');
+    });
+    document.getElementById('install-btn').addEventListener('click', async ()=>{
+      if(!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      document.getElementById('install-btn').classList.add('hidden');
+    });
 
-    // modal edit
-    const modal = document.getElementById('modal');
-    const modalCancel = document.getElementById('modal-cancel');
-    const formEdit = document.getElementById('form-edit');
+    btnMenu.onclick = () => sidebar.style.left = sidebar.style.left === '0px' ? '-260px' : '0px';
 
-    // navegación sencilla
-    function setActive(button){
-      document.querySelectorAll('.menu button').forEach(b=>b.classList.remove('active'));
-      button.classList.add('active');
+    function showSection(section){
+      secDashboard.classList.add('hidden'); secClientes.classList.add('hidden'); secAdd.classList.add('hidden');
+      section.classList.remove('hidden'); sidebar.style.left='-260px';
     }
-    navDashboard.addEventListener('click', ()=>{setActive(navDashboard); secDashboard.style.display='block'; secClientes.style.display='none'; secAdd.style.display='none'});
-    navClientes.addEventListener('click', ()=>{setActive(navClientes); secDashboard.style.display='none'; secClientes.style.display='block'; secAdd.style.display='none'});
-    navAdd.addEventListener('click', ()=>{setActive(navAdd); secDashboard.style.display='none'; secClientes.style.display='none'; secAdd.style.display='block'});
+    document.getElementById('nav-dashboard').onclick = () => showSection(secDashboard);
+    document.getElementById('nav-clientes').onclick = () => showSection(secClientes);
+    document.getElementById('nav-add').onclick = () => showSection(secAdd);
 
-    // UTIL
-    function formatDate(d){ if(!d) return '-'; const dt = new Date(d); if(isNaN(dt)) return d; return dt.toLocaleDateString(); }
-    function isoDateForInput(d){ if(!d) return ''; const dt = new Date(d); if(isNaN(dt)) return ''; const yyyy = dt.getFullYear(); const mm = String(dt.getMonth()+1).padStart(2,'0'); const dd = String(dt.getDate()).padStart(2,'0'); return `${yyyy}-${mm}-${dd}`; }
-
-    // ========== Firestore interactions ==========
-    const clientesCol = collection(db, 'clientes');
-
-    // realtime listener
-    const q = query(clientesCol, orderBy('creacion', 'desc'));
-    onSnapshot(q, snapshot => {
-      const docs = [];
-      snapshot.forEach(d=>docs.push({id:d.id,...d.data()}));
-      renderClients(docs);
-      updateStats(docs);
-    }, err => console.error('snapshot error', err));
-
-    async function addClient(data){
-      try{
-        await addDoc(clientesCol, data);
-      }catch(e){console.error(e); alert('Error guardando cliente: '+e.message)}
+    // theme toggle
+    document.getElementById('toggle-theme').onclick = ()=>{
+      document.documentElement.classList.toggle('dark');
     }
 
-    async function updateClient(id, data){
-      try{ const d = doc(db,'clientes',id); await updateDoc(d,data); }
-      catch(e){console.error(e); alert('Error actualizando: '+e.message)}
-    }
+    // Helper: format date
+    function fmt(d){ if(!d) return '-'; const dt = new Date(d); if(isNaN(dt)) return d; return dt.toLocaleDateString(); }
 
-    async function deleteClient(id){
-      if(!confirm('¿Eliminar cliente? Esta acción no se puede deshacer.')) return;
-      try{ await deleteDoc(doc(db,'clientes',id)); }
-      catch(e){console.error(e); alert('Error al eliminar: '+e.message)}
-    }
-
-    // ========== Render UI ==========
-    function renderClients(items){
-      clientsGrid.innerHTML = '';
-      if(items.length===0){ clientsGrid.innerHTML = '<div style="color:var(--muted)">No hay clientes aún.</div>'; return }
-
-      items.forEach(it=>{
-        const card = document.createElement('div'); card.className='card';
-        const creacion = it.creacion ? formatDate(it.creacion) : '-';
-        const caducidad = it.caducidad ? formatDate(it.caducidad) : '-';
-
-        card.innerHTML = `
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <h4>${escapeHtml(it.nombre||'Sin nombre')}</h4>
-            <div class="meta">${escapeHtml(it.aplicacion||'')}</div>
+    // Render client card with action buttons
+    function makeClientCard(item){
+      const card = document.createElement('div');
+      card.className = 'bg-slate-900 p-4 rounded-xl border border-slate-800 shadow';
+      card.innerHTML = `
+        <div class="flex justify-between items-start gap-3">
+          <div>
+            <h3 class="font-bold text-lg">${escapeHtml(item.nombre||'—')}</h3>
+            <div class="text-sm text-slate-400">App: ${escapeHtml(item.aplicacion||'—')}</div>
+            <div class="text-sm mt-2">Creación: ${fmt(item.creacion)} · <span class="font-semibold">Caduca: ${fmt(item.caducidad)}</span></div>
+            <div class="text-sm text-slate-400 mt-2">Usuario: ${escapeHtml(item.usuario||'—')}</div>
           </div>
-          <div class="meta">Creado: ${creacion} · Caduca: ${caducidad}</div>
-          <div class="meta">Usuario: ${escapeHtml(it.usuario||'—')}</div>
-          <div class="meta">Recomendaciones: ${escapeHtml(it.recomendaciones||'—')}</div>
-          <div class="btns">
-            <button class="btn edit" data-id="${it.id}" data-action="edit">Editar</button>
-            <button class="btn renew" data-id="${it.id}" data-action="renew">Renovar</button>
-            <button class="btn copy" data-id="${it.id}" data-action="copy">Copiar</button>
-            <button class="btn delete" data-id="${it.id}" data-action="delete">Eliminar</button>
+          <div class="flex flex-col gap-2">
+            <button data-id="${item.id}" data-action="edit" class="px-3 py-1 bg-slate-800 rounded">Editar</button>
+            <button data-id="${item.id}" data-action="renew" class="px-3 py-1 bg-emerald-600 text-black rounded">Renovar</button>
+            <button data-id="${item.id}" data-action="copy" class="px-3 py-1 bg-slate-700 rounded">Copiar</button>
+            <button data-id="${item.id}" data-action="delete" class="px-3 py-1 bg-red-700 rounded">Eliminar</button>
           </div>
-        `;
-        // attach listeners
-        card.querySelectorAll('button').forEach(b=>{
-          b.addEventListener('click', (ev)=>{
-            const id = b.getAttribute('data-id');
-            const action = b.getAttribute('data-action');
-            if(action==='edit') openEditModal(it);
-            if(action==='renew') handleRenew(it);
-            if(action==='copy') handleCopy(it);
-            if(action==='delete') deleteClient(id);
-          });
+        </div>
+      `;
+
+      // attach listeners
+      card.querySelectorAll('button').forEach(b=>{
+        b.addEventListener('click', async (ev)=>{
+          const id = b.getAttribute('data-id');
+          const action = b.getAttribute('data-action');
+          if(action==='edit') openEditModalById(id);
+          if(action==='renew') await renewById(id);
+          if(action==='copy') copyPasswordById(id);
+          if(action==='delete') deleteById(id);
         });
-
-        clientsGrid.appendChild(card);
       });
+
+      return card;
     }
 
-    // stats
-    function updateStats(items){
-      statTotal.textContent = items.length;
-      const today = new Date(); today.setHours(0,0,0,0);
-      const todayCount = items.filter(i=>{
-        if(!i.caducidad) return false;
-        const d = new Date(i.caducidad); d.setHours(0,0,0,0);
-        return d.getTime()===today.getTime();
-      }).length;
-      statToday.textContent = todayCount;
-
-      // next expiring
-      const withDates = items.filter(i=>i.caducidad).map(i=>({id:i.id, nombre:i.nombre, cad:new Date(i.caducidad)})).filter(x=>!isNaN(x.cad));
-      withDates.sort((a,b)=>a.cad - b.cad);
-      statNext.textContent = withDates.length? `${withDates[0].nombre || '—'} (${formatDate(withDates[0].cad)})` : '—';
-    }
-
-    // ========== Actions ==========
-    formAdd.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const data = {
-        nombre: document.getElementById('f-nombre').value.trim(),
-        creacion: document.getElementById('f-creacion').value || null,
-        caducidad: document.getElementById('f-caducidad').value || null,
-        usuario: document.getElementById('f-usuario').value || '',
-        contrasena: document.getElementById('f-contrasena').value || '',
-        aplicacion: document.getElementById('f-aplicacion').value || '',
-        recomendaciones: document.getElementById('f-recomendaciones').value || '',
-        createdAt: new Date().toISOString()
-      };
-      await addClient(data);
-      formAdd.reset();
-      alert('Cliente añadido');
-    });
-
-    fReset.addEventListener('click', ()=>formAdd.reset());
-
-    // Edit modal
-    let editingId = null;
-    function openEditModal(item){
-      editingId = item.id;
-      document.getElementById('e-nombre').value = item.nombre || '';
-      document.getElementById('e-creacion').value = isoDateForInput(item.creacion);
-      document.getElementById('e-caducidad').value = isoDateForInput(item.caducidad);
-      document.getElementById('e-usuario').value = item.usuario || '';
-      document.getElementById('e-contrasena').value = item.contrasena || '';
-      document.getElementById('e-aplicacion').value = item.aplicacion || '';
-      document.getElementById('e-recomendaciones').value = item.recomendaciones || '';
-      modal.classList.add('show');
-    }
-    modalCancel.addEventListener('click', ()=>{ modal.classList.remove('show'); editingId = null; });
-
-    formEdit.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      if(!editingId) return;
-      const data = {
-        nombre: document.getElementById('e-nombre').value.trim(),
-        creacion: document.getElementById('e-creacion').value || null,
-        caducidad: document.getElementById('e-caducidad').value || null,
-        usuario: document.getElementById('e-usuario').value || '',
-        contrasena: document.getElementById('e-contrasena').value || '',
-        aplicacion: document.getElementById('e-aplicacion').value || '',
-        recomendaciones: document.getElementById('e-recomendaciones').value || '',
-        updatedAt: new Date().toISOString()
-      };
-      await updateClient(editingId, data);
-      modal.classList.remove('show'); editingId = null;
-    });
-
-    // Renew: añade 1 año a la caducidad actual (si no tiene, lo pone a hoy + 1 año)
-    async function handleRenew(item){
-      let base = item.caducidad ? new Date(item.caducidad) : new Date();
-      if(isNaN(base)) base = new Date();
-      const newDate = new Date(base);
-      newDate.setFullYear(newDate.getFullYear()+1);
-      await updateClient(item.id, { caducidad: newDate.toISOString(), updatedAt: new Date().toISOString() });
-      alert('Caducidad renovada a ' + formatDate(newDate));
-    }
-
-    // Copy password to clipboard
-    async function handleCopy(item){
-      try{
-        if(!item.contrasena) { alert('No hay contraseña para copiar'); return }
-        await navigator.clipboard.writeText(item.contrasena);
-        alert('Contraseña copiada al portapapeles');
-      }catch(e){ console.error(e); alert('No se pudo copiar: ' + e.message) }
-    }
-
-    // small helper to escape HTML
+    // escape
     function escapeHtml(str){ if(!str) return ''; return String(str).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
 
-    // If your Firebase uses Realtime Database instead of Firestore, you'll need to change the logic.
-    // --- Fin script ---
+    // CRUD handlers
+    async function addClient(data){ try{ await addDoc(clientesCol, data); }catch(e){ console.error(e); alert('Error guardando: '+e.message);} }
+    async function updateClient(id, data){ try{ await updateDoc(doc(db,'clientes',id), data); }catch(e){ console.error(e); alert('Error actualizando: '+e.message);} }
+    async function deleteById(id){ if(!confirm('Eliminar cliente?')) return; try{ await deleteDoc(doc(db,'clientes',id)); }catch(e){ console.error(e); alert('Error al eliminar: '+e.message);} }
+
+    async function renewById(id){ try{ const dref = doc(db,'clientes',id); const snap = (await dref.get) ; /* placeholder - read uses onSnapshot; we'll just update to +1 year via client list cached below */ }
+    catch(e){ console.error(e)} }
+
+    // copy password
+    async function copyPasswordById(id){ const found = cachedList.find(x=>x.id===id); if(!found || !found.contrasena){ alert('No hay contraseña'); return } try{ await navigator.clipboard.writeText(found.contrasena); alert('Contraseña copiada'); }catch(e){ alert('No se pudo copiar: '+e.message) } }
+
+    // cached data
+    let cachedList = [];
+
+    // realtime listener
+    const q = query(clientesCol, orderBy('creacion','desc'));
+    onSnapshot(q, snap => {
+      cachedList = snap.docs.map(d=>({ id: d.id, ...d.data() }));
+      renderClients(cachedList);
+      renderDashboard(cachedList);
+      renderChart(cachedList);
+    }, err => console.error('snapshot',err));
+
+    // render clients list
+    function renderClients(list){
+      const grid = clientsGrid; grid.innerHTML = '';
+      const term = document.getElementById('search').value.toLowerCase();
+      const filtered = list.filter(i => i.nombre && i.nombre.toLowerCase().includes(term));
+      filtered.forEach(it=> grid.appendChild(makeClientCard(it)));
+    }
+    document.getElementById('search').addEventListener('input', ()=>renderClients(cachedList));
+
+    // dashboard: items expiring in 3 days
+    function renderDashboard(list){
+      const now = new Date(); now.setHours(0,0,0,0);
+      const limit = new Date(); limit.setDate(limit.getDate()+3); limit.setHours(23,59,59,999);
+      const soon = list.filter(i=>{
+        if(!i.caducidad) return false;
+        const d = new Date(i.caducidad);
+        return d>=now && d<=limit;
+      });
+      dashboardList.innerHTML = '';
+      if(soon.length===0) dashboardList.innerHTML = '<div class="text-slate-400">No hay caducidades próximas.</div>';
+      soon.forEach(it=>{
+        const el = document.createElement('div');
+        el.className = 'bg-slate-900 p-4 rounded-xl border border-slate-800';
+        el.innerHTML = `<div class="flex justify-between items-start">
+          <div>
+            <h3 class="font-bold">${escapeHtml(it.nombre)}</h3>
+            <div class="text-sm text-slate-400">Caduca: ${fmt(it.caducidad)}</div>
+          </div>
+          <div class="flex flex-col gap-2">
+            <button data-id="${it.id}" class="px-3 py-1 bg-emerald-600 text-black rounded renew-btn">Renovar</button>
+            <button data-id="${it.id}" class="px-3 py-1 bg-slate-700 rounded copy-btn">Copiar</button>
+          </div>
+        </div>`;
+        // attach
+        el.querySelector('.renew-btn')?.addEventListener('click', ()=>renewItem(it));
+        el.querySelector('.copy-btn')?.addEventListener('click', ()=>copyPasswordById(it.id));
+        dashboardList.appendChild(el);
+      });
+      // notifications for soon items
+      if(soon.length>0) scheduleNotifications(soon);
+    }
+
+    // renew item: add 1 year
+    async function renewItem(item){ const base = item.caducidad ? new Date(item.caducidad) : new Date(); const nd = new Date(base); nd.setFullYear(nd.getFullYear()+1); await updateClient(item.id, { caducidad: nd.toISOString(), updatedAt: new Date().toISOString() }); alert('Renovado a '+fmt(nd)); }
+
+    // open edit modal by id
+    let editingId = null;
+    function openEditModalById(id){ const it = cachedList.find(x=>x.id===id); if(!it) return; editingId = id; document.getElementById('e-nombre').value = it.nombre||''; document.getElementById('e-aplicacion').value = it.aplicacion||''; document.getElementById('e-creacion').value = isoForInput(it.creacion); document.getElementById('e-caducidad').value = isoForInput(it.caducidad); document.getElementById('e-usuario').value = it.usuario||''; document.getElementById('e-contrasena').value = it.contrasena||''; document.getElementById('e-recomendaciones').value = it.recomendaciones||''; document.getElementById('modal').classList.remove('hidden'); }
+
+    document.getElementById('modal-cancel').addEventListener('click', ()=>{ document.getElementById('modal').classList.add('hidden'); editingId = null; });
+    document.getElementById('form-edit').addEventListener('submit', async (e)=>{ e.preventDefault(); if(!editingId) return; const data = { nombre: document.getElementById('e-nombre').value.trim(), aplicacion: document.getElementById('e-aplicacion').value.trim(), creacion: document.getElementById('e-creacion').value||null, caducidad: document.getElementById('e-caducidad').value||null, usuario: document.getElementById('e-usuario').value||'', contrasena: document.getElementById('e-contrasena').value||'', recomendaciones: document.getElementById('e-recomendaciones').value||'', updatedAt: new Date().toISOString() }; await updateClient(editingId,data); document.getElementById('modal').classList.add('hidden'); editingId = null; });
+
+    // add form
+    document.getElementById('form-add').addEventListener('submit', async (e)=>{ e.preventDefault(); const data = { nombre: document.getElementById('f-nombre').value.trim(), creacion: document.getElementById('f-creacion').value||null, caducidad: document.getElementById('f-caducidad').value||null, usuario: document.getElementById('f-usuario').value||'', contrasena: document.getElementById('f-contrasena').value||'', aplicacion: document.getElementById('f-aplicacion').value||'', recomendaciones: document.getElementById('f-recomendaciones').value||'', createdAt: new Date().toISOString() }; await addClient(data); e.target.reset(); alert('Cliente añadido'); });
+    document.getElementById('btn-reset').addEventListener('click', ()=>document.getElementById('form-add').reset());
+
+    // iso for input
+    function isoForInput(d){ if(!d) return ''; const t=new Date(d); if(isNaN(t)) return ''; return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}`; }
+
+    // render chart
+    let chart = null;
+    function renderChart(list){
+      // group by days in next 7 days
+      const buckets = {};
+      const today = new Date(); for(let i=0;i<7;i++){ const key = new Date(today.getFullYear(),today.getMonth(),today.getDate()+i).toLocaleDateString(); buckets[key]=0 }
+      list.forEach(i=>{ if(!i.caducidad) return; const d = new Date(i.caducidad); const key = d.toLocaleDateString(); if(key in buckets) buckets[key]++ });
+      const labels = Object.keys(buckets);
+      const data = Object.values(buckets);
+      if(chart) chart.destroy();
+      chart = new Chart(chartCanvas.getContext('2d'), { type:'bar', data:{ labels, datasets:[{ label:'Caducidades', data, backgroundColor:'rgba(56,189,248,0.6)' }] }, options:{ responsive:true, plugins:{ legend:{ display:false } } } });
+    }
+
+    // schedule notifications (local) for items
+    async function scheduleNotifications(items){ if(!('Notification' in window)) return; if(Notification.permission!=='granted') return; items.forEach(it=>{ const d = new Date(it.caducidad); const title = `Caduca: ${it.nombre}`; const body = `Caduca el ${fmt(it.caducidad)}`; try{ new Notification(title,{ body, tag: it.id }); }catch(e){ console.warn('notif failed',e) } }); }
+
+    document.getElementById('notify-check').addEventListener('click', async ()=>{ if(Notification.permission==='granted'){ const soon = cachedList.filter(i=>{ if(!i.caducidad) return false; const d=new Date(i.caducidad); const now=new Date(); return d>=now && d<=new Date(now.getFullYear(),now.getMonth(),now.getDate()+3,23,59,59,999); }); scheduleNotifications(soon); alert('Notificaciones enviadas (si están permitidas)'); } else { const per = await Notification.requestPermission(); alert('Permiso: '+per); } });
+
+    // EXPORT XLSX
+    document.getElementById('export-xlsx').addEventListener('click', ()=>{
+      const ws = XLSX.utils.json_to_sheet(cachedList.map(i=>({ Nombre:i.nombre, Creacion:i.creacion, Caducidad:i.caducidad, Usuario:i.usuario, Aplicacion:i.aplicacion, Recomendaciones:i.recomendaciones })));
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Clientes'); XLSX.writeFile(wb, 'clientes.xlsx');
+    });
+
+    // EXPORT PDF (via html2canvas + jsPDF)
+    document.getElementById('export-pdf').addEventListener('click', async ()=>{
+      const el = document.getElementById('clients-grid'); if(!el) return; const canvas = await html2canvas(el, { scale:1.5, backgroundColor:'#0f172a' }); const img = canvas.toDataURL('image/png'); const { jsPDF } = window.jspdf; const pdf = new jsPDF({orientation:'portrait'}); const w = pdf.internal.pageSize.getWidth(); const h = (canvas.height * w) / canvas.width; pdf.addImage(img,'PNG',0,0,w,h); pdf.save('clientes.pdf');
+    });
+
+    // copy helper already defined above
+
+    // simple renew all implementation for card buttons
+    async function renewById(id){ const it = cachedList.find(x=>x.id===id); if(!it) return; await renewItem(it); }
+
+    // delete id function uses deleteById
+
+    // PWA: create manifest dynamically and register service worker (from blob)
+    (function registerPWA(){
+      const manifest = {
+        name: 'Gestor Clientes', short_name: 'Gestor', start_url: '/', display: 'standalone', background_color:'#0f172a', theme_color:'#0f172a', icons:[{ src:'/icon-192.png', sizes:'192x192', type:'image/png' },{ src:'/icon-512.png', sizes:'512x512', type:'image/png' }]
+      };
+      const blob = new Blob([JSON.stringify(manifest)], { type:'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('link'); link.rel='manifest'; link.href = url; document.head.appendChild(link);
+
+      // service worker as blob
+      if('serviceWorker' in navigator){
+        const swCode = `self.addEventListener('install', e=>{ self.skipWaiting(); }); self.addEventListener('activate', e=>{ self.clients.claim(); }); self.addEventListener('fetch', event=>{ /* basic offline behavior */ });`;
+        const swBlob = new Blob([swCode], { type:'application/javascript' });
+        const swUrl = URL.createObjectURL(swBlob);
+        navigator.serviceWorker.register(swUrl).then(()=>console.log('SW registrado')).catch(e=>console.warn(e));
+      }
+    })();
+
+    // Request notification permission at start
+    (async ()=>{ if('Notification' in window && Notification.permission==='default'){ try{ await Notification.requestPermission(); }catch(e){} } })();
+
+    // small utilities: render initial empty state
+    function renderInitialEmpty(){ document.getElementById('clients-grid').innerHTML = '<div class="text-slate-400">No hay clientes aún.</div>'; document.getElementById('dashboard-list').innerHTML = '<div class="text-slate-400">No hay caducidades próximas.</div>'; }
+    renderInitialEmpty();
+
   </script></body>
 </html>
