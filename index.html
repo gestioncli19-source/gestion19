@@ -68,7 +68,6 @@
 
 <main>
 
-<!-- DASHBOARD -->
 <section id="section-dashboard">
   <div class="cards">
     <div class="stat">
@@ -81,9 +80,11 @@
       <h3>Próxima renovación</h3><p id="stat-next">—</p>
     </div>
   </div>
+  <div id="dashboard-soon-exp" class="cards" style="margin-top: 18px">
+    <p class="meta" style="grid-column: 1 / -1; margin-bottom: 0;">Clientes que caducan en los próximos 3 días:</p>
+  </div>
 </section>
 
-<!-- CLIENTES -->
 <section id="section-clientes" style="display:none">
   <div class="card-form">
     <h3>Clientes</h3>
@@ -92,7 +93,6 @@
   </div>
 </section>
 
-<!-- AÑADIR CLIENTE -->
 <section id="section-add" style="display:none">
   <div class="card-form">
     <h3>Añadir cliente</h3>
@@ -119,7 +119,6 @@
       <input type="text" id="f-contrasena" />
 
       <label>Aplicación</label>
-      <!-- CAMBIO A SELECT -->
       <select id="f-aplicacion">
         <option value="Spinning TV">Spinning TV</option>
         <option value="Spinning IBO">Spinning IBO</option>
@@ -146,7 +145,6 @@
 
 </div>
 
-<!-- MODAL EDITAR -->
 <div id="modal" class="modal">
   <div class="modal-inner">
     <h3 id="modal-title">Editar cliente</h3>
@@ -173,8 +171,12 @@
       <input type="text" id="e-contrasena" />
 
       <label>Aplicación</label>
-      <!-- Aquí NO hiciste cambios y queda tal cual -->
-      <input type="text" id="e-aplicacion" />
+      <select id="e-aplicacion">
+        <option value="Spinning TV">Spinning TV</option>
+        <option value="Spinning IBO">Spinning IBO</option>
+        <option value="Spinning Mate">Spinning Mate</option>
+        <option value="Hot Player">Hot Player</option>
+      </select>
 
       <label>Recomendaciones</label>
       <textarea id="e-recomendaciones"></textarea>
@@ -187,7 +189,6 @@
   </div>
 </div>
 
-<!-- FIREBASE + APP LOGIC -->
 <script type="module">
 
 // --- CONFIG FIREBASE ---
@@ -222,6 +223,7 @@ const clientsGrid = document.getElementById('clients-grid');
 const statTotal = document.getElementById('stat-total');
 const statToday = document.getElementById('stat-today');
 const statNext = document.getElementById('stat-next');
+const dashboardSoonExp = document.getElementById('dashboard-soon-exp'); // Nuevo contenedor para tarjetas en Dashboard
 
 // FORM ADD
 const formAdd = document.getElementById('form-add');
@@ -324,12 +326,12 @@ function renderDashboard(list){
     return d >= now && d <= limit;
   });
 
-  const box = document.getElementById('section-dashboard');
-  if(!box) return;
+  // Limpiar contenedor y añadir el título si hay clientes
+  dashboardSoonExp.innerHTML = `<p class="meta" style="grid-column: 1 / -1; margin-bottom: 0;">Clientes que caducan en los próximos 3 días (${soon.length}):</p>`;
 
-  // Limpia tarjetas previas
-  const old = document.querySelectorAll('.exp-card');
-  old.forEach(e => e.remove());
+  if (soon.length === 0) {
+      dashboardSoonExp.innerHTML += '<p style="grid-column: 1 / -1; color: var(--muted); margin-top: 10px;">No hay clientes próximos a caducar.</p>';
+  }
 
   soon.forEach(item => {
     const card = document.createElement('div');
@@ -342,7 +344,7 @@ function renderDashboard(list){
         <button class="btn copy" onclick="copyPassword('${item.id}')">Copiar</button>
       </div>
     `;
-    box.appendChild(card);
+    dashboardSoonExp.appendChild(card);
   });
 }
 
@@ -409,7 +411,7 @@ window.openEdit = function(id){
   document.getElementById('e-caducidad').value = isoForInput(item.caducidad);
   document.getElementById('e-usuario').value = item.usuario || "";
   document.getElementById('e-contrasena').value = item.contrasena || "";
-  document.getElementById('e-aplicacion').value = item.aplicacion || "";
+  document.getElementById('e-aplicacion').value = item.aplicacion || ""; // Establece el valor del select
   document.getElementById('e-recomendaciones').value = item.recomendaciones || "";
 
   modal.setAttribute('data-id', id);
@@ -433,7 +435,7 @@ formEdit.addEventListener('submit', async e=>{
     caducidad: document.getElementById('e-caducidad').value,
     usuario: document.getElementById('e-usuario').value,
     contrasena: document.getElementById('e-contrasena').value,
-    aplicacion: document.getElementById('e-aplicacion').value,
+    aplicacion: document.getElementById('e-aplicacion').value, // El valor es tomado del select
     recomendaciones: document.getElementById('e-recomendaciones').value
   };
 
@@ -469,4 +471,3 @@ fReset.addEventListener('click', ()=> formAdd.reset());
 </script>
 </body>
 </html>
-
