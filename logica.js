@@ -6,14 +6,14 @@ import {
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
 
 import { 
-    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, signInWithCustomToken, signInAnonymously
+    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+    // Eliminamos signInAnonymously y signInWithCustomToken para forzar el login manual
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
 
 setLogLevel('debug');
 
 // Variables de entorno globales (Definición robusta con Fallback)
-// Estas variables __app_id, __firebase_config, etc., no existirán en GitHub.
-// Por eso, USAMOS LOS FALLBACKS (tu configuración real).
+// USAMOS LOS FALLBACKS (tu configuración real para GitHub Pages)
 const APP_ID_FALLBACK = 'gestioncli19-app-id'; 
 const FIREBASE_CONFIG_FALLBACK = {
     apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
@@ -28,7 +28,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : APP_ID_FALLBACK;
 const firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config !== '{}' 
     ? JSON.parse(__firebase_config) 
     : FIREBASE_CONFIG_FALLBACK;
-const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+// const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; // Ya no se usa
 
 let db, auth;
 let cachedList = []; 
@@ -36,7 +36,7 @@ let currentRecommendations = [];
 let currentUserId = null;
 
 
-// --- INICIALIZACIÓN DE FIREBASE (Flujo corregido para Autenticación Anónima) ---
+// --- INICIALIZACIÓN DE FIREBASE (SOLO CONFIGURACIÓN, SIN LOGIN AUTOMÁTICO) ---
 async function initializeFirebase() {
     console.log("Iniciando Firebase con ID de App:", appId);
 
@@ -51,21 +51,8 @@ async function initializeFirebase() {
         db = getFirestore(app);
         auth = getAuth(app);
         
-        let signedIn = false;
-
-        // 1. Intentar iniciar sesión con Custom Token (si existe en el entorno de Canvas)
-        if (initialAuthToken) {
-             await signInWithCustomToken(auth, initialAuthToken);
-             signedIn = true;
-        }
-
-        // 2. Si no hay token (estamos en GitHub), iniciar sesión ANÓNIMAMENTE
-        // (Esto funciona ahora que lo has habilitado)
-        if (!signedIn) {
-            await signInAnonymously(auth);
-        }
-
         // Listener de Estado de Autenticación
+        // Esta es la única forma de avanzar. Espera un signInWithEmailAndPassword exitoso.
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUserId = user.uid;
@@ -79,9 +66,7 @@ async function initializeFirebase() {
 
     } catch (error) {
         console.error("Error durante la inicialización de Firebase:", error);
-        if (error.code !== 'auth/custom-token-mismatch') { 
-            loginErrorMsg.textContent = `Error: ${error.code}. Revisa la configuración de API Key y el proveedor Anónimo.`;
-        }
+        loginErrorMsg.textContent = `Error crítico de Firebase: ${error.code}.`;
     }
 }
 
@@ -95,6 +80,7 @@ function handleAuthStatus(isLoggedIn) {
     } else {
         document.getElementById('section-login').classList.add('show');
         document.getElementById('app-container').style.display = 'none';
+        document.getElementById('login-error-message').textContent = '';
     }
 }
 
@@ -103,13 +89,14 @@ function switchSection(target) {
         'dashboard': document.getElementById('section-dashboard'),
         'clientes': document.getElementById('section-clientes'),
         'add': document.getElementById('section-add'),
+        'tutorial': document.getElementById('section-tutorial'),
     };
     
     Object.keys(sections).forEach(key => {
         sections[key].style.display = 'none';
     });
     
-    sections[target].style.display = 'grid'; 
+    sections[target].style.display = (target === 'tutorial') ? 'block' : 'grid';
     const btn = document.getElementById(`nav-${target}`);
     if(btn) setActive(btn);
 
@@ -131,6 +118,7 @@ document.getElementById('nav-add').addEventListener('click', ()=>{
     setDefaultDates(); 
     document.getElementById('f-telefono').value = '+34'; 
 });
+document.getElementById('nav-tutorial').addEventListener('click', ()=> switchSection('tutorial'));
 document.getElementById('nav-logout').addEventListener('click', async () => {
     await signOut(auth);
     showNotification("Sesión Cerrada", "Has cerrado sesión correctamente.", 'success');
@@ -149,6 +137,7 @@ formLogin.addEventListener('submit', async (e) => {
     try {
         await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
         loginErrorMsg.textContent = '';
+        // onAuthStateChanged maneja la transición a la app principal
     } catch (error) {
         let message = "Error de inicio de sesión.";
         if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
@@ -157,8 +146,8 @@ formLogin.addEventListener('submit', async (e) => {
             message = "Formato de email no válido.";
         } else if (error.code === 'auth/network-request-failed') {
              message = "Error de red. Revisa tu conexión.";
-        } else if (error.code === 'auth/admin-restricted-operation') {
-             message = "Operación bloqueada. Revisa que el proveedor Email/Password esté habilitado.";
+        } else if (error.code === 'auth/admin-restricted-operation' || error.code === 'auth/operation-not-allowed') {
+             message = "Operación bloqueada. Revisa que el proveedor Email/Password esté habilitado en Firebase.";
         }
         loginErrorMsg.textContent = message;
         console.error("Login error:", error);
@@ -169,14 +158,13 @@ formLogin.addEventListener('submit', async (e) => {
 // --- LÓGICA DE FIRESTORE ---
 
 function getClientCollection() {
-    // Usamos la ruta de datos privados del usuario actual (anonimo o logeado).
+    // Usamos la ruta de datos privados del usuario (autenticado por email/pass).
     const uid = currentUserId || 'unauthenticated'; 
-    // NOTA: Esta ruta es la que definimos para las reglas de seguridad.
     return collection(db, `clients_app/${appId}/users/${uid}/client_data`);
 }
 
 function startListeners() {
-    // Asegurarse de que el listener solo se inicie si tenemos un ID de usuario
+    // Asegurarse de que el listener solo se inicie si tenemos un ID de usuario logeado
     if (!currentUserId) {
         console.log("Esperando autenticación para iniciar listeners...");
         return;
@@ -216,6 +204,7 @@ function getNewCaducidad(currentDate, months) {
 
 function formatDate(d){
   if(!d) return '-';
+  if(d.toDate) d = d.toDate();
   const dt = new Date(d);
   if(isNaN(dt.getTime())) return d;
   return dt.toLocaleDateString();
@@ -223,6 +212,7 @@ function formatDate(d){
 
 function isoForInput(d){
   if(!d) return '';
+  if(d.toDate) d = d.toDate();
   const t = new Date(d);
   if(isNaN(t.getTime())) return '';
   const yyyy = t.getFullYear();
@@ -269,6 +259,7 @@ if(document.getElementById('f-creacion')) {
 // --- Dashboard Logic ---
 function getExpiryStatus(isoDate) {
     if (!isoDate) return '';
+    if(isoDate.toDate) isoDate = isoDate.toDate(); 
     const date = new Date(isoDate);
     const now = new Date();
     const diffTime = date.getTime() - now.getTime();
@@ -287,7 +278,7 @@ function getSoonToExpire(list) {
     limit.setHours(23,59,59,999);
     return list.filter(i => {
       if(!i.caducidad) return false;
-      const d = new Date(i.caducidad);
+      let d = i.caducidad.toDate ? i.caducidad.toDate() : new Date(i.caducidad);
       return d >= now && d <= limit;
     });
 }
@@ -297,7 +288,7 @@ function getExpired(list) {
     now.setHours(0,0,0,0);
     return list.filter(i => {
         if(!i.caducidad) return false;
-        const d = new Date(i.caducidad);
+        let d = i.caducidad.toDate ? i.caducidad.toDate() : new Date(i.caducidad);
         return d < now; 
     });
 }
@@ -358,6 +349,8 @@ function renderDashboard(list){
 window.toggleRenovara = async function(checkbox) {
     const id = checkbox.dataset.id;
     const newValue = checkbox.checked;
+    if (!currentUserId) return showNotification("Error", "Usuario no autenticado.", 'error');
+
     try {
         await updateDoc(doc(db, getClientCollection().id, id), { renovara: newValue });
         showNotification("Estado Actualizado", `Estado de 'Renovará' cambiado a ${newValue ? 'Sí' : 'No'}.`, 'success');
@@ -395,7 +388,7 @@ window.copyPassword = function(id) {
 
 window.addFreeMonth = async function(id) {
     const item = cachedList.find(i => i.id === id);
-    if(!item) return;
+    if(!item || !currentUserId) return showNotification("Error", "Cliente o usuario no encontrado.", 'error');
 
     const recommendationsCount = item.recomendaciones ? item.recomendaciones.length : 0;
     if (recommendationsCount < 3) {
@@ -404,12 +397,21 @@ window.addFreeMonth = async function(id) {
     }
 
     const oldCaducidad = item.caducidad;
-    const newCaducidad = getNewCaducidad(oldCaducidad, 1); // Sumar 1 mes
+    const newCaducidad = getNewCaducidad(oldCaducidad, 1); 
 
     try {
         await updateDoc(doc(db, getClientCollection().id, id), {
             caducidad: newCaducidad
         });
+
+        await addDoc(collection(db, getClientCollection().id, id, "renovaciones"), {
+            fecha_renovacion: new Date().toISOString(),
+            caducidad_anterior: oldCaducidad || 'Fecha no registrada',
+            nueva_caducidad: newCaducidad,
+            tipo_accion: 'Mes Gratis', 
+            usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
+        });
+
         showNotification("Mes Gratis Añadido", `Cliente ${item.nombre} extendido por 1 mes.`, 'success');
     } catch (error) {
         showNotification("Error", "No se pudo añadir el mes gratis. (Revisa reglas de Firestore)", 'error');
@@ -419,25 +421,22 @@ window.addFreeMonth = async function(id) {
 
 window.renewItem = async function(id){
   const item = cachedList.find(i => i.id === id);
-  if(!item) return;
+  if(!item || !currentUserId) return showNotification("Error", "Cliente o usuario no encontrado.", 'error');
 
   const oldCaducidad = item.caducidad;
-  const newCaducidad = getNewCaducidad(oldCaducidad, 3); // Sumar 3 meses
+  const newCaducidad = getNewCaducidad(oldCaducidad, 3); 
 
   try {
       await updateDoc(doc(db, getClientCollection().id, id), {
         caducidad: newCaducidad
       });
 
-      // Registrar la renovación en la subcolección 'renovaciones'
-      // Aseguramos que la subcolección también use la ruta correcta
-      const historyCol = collection(db, getClientCollection().id, id, "renovaciones");
-      await addDoc(historyCol, {
+      await addDoc(collection(db, getClientCollection().id, id, "renovaciones"), {
           fecha_renovacion: new Date().toISOString(),
           caducidad_anterior: oldCaducidad || 'Fecha no registrada',
           nueva_caducidad: newCaducidad,
           tipo_accion: 'Renovación Normal (+3 meses)',
-          usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Anónimo'
+          usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
       });
 
       showNotification("Renovación Exitosa", "Cliente renovado por 3 meses y registro guardado.", 'success');
@@ -453,7 +452,6 @@ function filterClients(searchTerm = "", filter = 'all') {
     const normalizedSearch = searchTerm.toLowerCase();
     let filteredList = cachedList;
     
-    // Lógica de filtro (si se añade)
     if (filter === 'soon') {
         filteredList = getSoonToExpire(cachedList);
     } else if (filter === 'expired') {
@@ -473,13 +471,13 @@ document.getElementById('search-input').addEventListener('input', (e) => {
     filterClients(e.target.value, 'all');
 });
 document.getElementById('stat-3days-link').addEventListener('click', () => {
+    currentFilter = 'soon';
     document.getElementById('search-input').value = '';
-    filterClients('', 'soon');
     switchSection('clientes');
 });
 document.getElementById('stat-expired-link').addEventListener('click', () => {
+    currentFilter = 'expired';
     document.getElementById('search-input').value = '';
-    filterClients('', 'expired');
     switchSection('clientes');
 });
 
@@ -544,6 +542,7 @@ window.sendWhatsappAlert = function(id) {
 
 window.deleteItem = async function(id) {
     if (!confirm("¿Estás seguro de que quieres eliminar este cliente?")) return;
+    if (!currentUserId) return showNotification("Error", "Usuario no autenticado.", 'error');
 
     try {
         await deleteDoc(doc(db, getClientCollection().id, id));
@@ -582,10 +581,9 @@ const addRecommendationLogic = (prefix) => {
             renderRecommendations(currentRecommendations, container, prefix);
         }
     };
-    // (Aquí se podría añadir lógica de autocompletado)
 };
-addRecommendationLogic('f'); // Para el formulario de Añadir
-addRecommendationLogic('e'); // Para el formulario de Editar
+addRecommendationLogic('f'); 
+addRecommendationLogic('e'); 
 
 
 // --- MODAL Y FORMULARIOS ---
@@ -619,7 +617,7 @@ document.getElementById('modal-cancel').addEventListener('click', () => {
 document.getElementById('form-edit').addEventListener('submit', async e=>{
   e.preventDefault();
   const id = document.getElementById('modal').getAttribute('data-id');
-  if(!id) return;
+  if(!id || !currentUserId) return showNotification("Error", "Usuario o ID no válido.", 'error');
 
   const data = {
     nombre: document.getElementById('e-nombre').value,
@@ -639,13 +637,15 @@ document.getElementById('form-edit').addEventListener('submit', async e=>{
       showNotification("Guardado", `Cambios en cliente ${data.nombre} guardados.`, 'success');
       currentRecommendations = [];
   } catch (error) {
-      showNotification("Error", "No se pudieron guardar los cambios.", 'error');
+      showNotification("Error", "No se pudieron guardar los cambios. (Revisa reglas de Firestore)", 'error');
       console.error("Error updating item:", error);
   }
 });
 
 document.getElementById('form-add').addEventListener('submit', async e=>{
   e.preventDefault();
+  if (!currentUserId) return showNotification("Error", "Usuario no autenticado.", 'error');
+
 
   const data = {
     nombre: document.getElementById('f-nombre').value,
@@ -670,7 +670,7 @@ document.getElementById('form-add').addEventListener('submit', async e=>{
           caducidad_anterior: 'Nuevo Cliente',
           nueva_caducidad: data.caducidad,
           tipo_accion: 'Creación (+3 meses)', 
-          usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Anónimo'
+          usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
       });
       
       showNotification("Cliente Creado", `El cliente ${data.nombre} ha sido añadido con éxito.`, 'success');
@@ -681,7 +681,7 @@ document.getElementById('form-add').addEventListener('submit', async e=>{
       document.getElementById('f-recommended-clients').innerHTML = '';
       document.getElementById('f-telefono').value = '+34'; 
   } catch (error) {
-      showNotification("Error de Creación", "No se pudo añadir el nuevo cliente.", 'error');
+      showNotification("Error de Creación", "No se pudo añadir el nuevo cliente. (Revisa reglas de Firestore)", 'error');
       console.error("Error adding item:", error);
   }
 });
@@ -697,7 +697,7 @@ document.getElementById('f-reset').addEventListener('click', ()=> {
 // --- HISTORIAL ---
 window.openHistoryModal = async function(id) {
     const item = cachedList.find(i => i.id === id);
-    if (!item) return;
+    if (!item || !currentUserId) return showNotification("Error", "Cliente o usuario no encontrado.", 'error');
 
     document.getElementById('history-modal-title').textContent = `Historial de Renovaciones de ${item.nombre}`;
 
@@ -748,37 +748,5 @@ function renderRenewalHistory(historyList, targetDiv) {
     targetDiv.innerHTML = html;
 }
 
-// --- EXPORTAR CSV ---
-document.getElementById('btn-export-csv').addEventListener('click', () => {
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Nombre,Telefono,App,Usuario,Contrasena,Creacion,Caducidad,Recomendaciones\n";
-
-    cachedList.forEach(item => {
-        const nombre = `"${item.nombre || ''}"`;
-        const telefono = `"${item.telefono || ''}"`;
-        const app = `"${item.aplicacion || ''}"`;
-        const usuario = `"${item.usuario || ''}"`;
-        const contrasena = `"${item.contrasena || ''}"`;
-        const creacion = `"${formatDate(item.creacion) || ''}"`;
-        const caducidad = `"${formatDate(item.caducidad) || ''}"`;
-        const recomendaciones = `"${(item.recomendaciones || []).join(', ')}"`;
-        
-        csvContent += [nombre, telefono, app, usuario, contrasena, creacion, caducidad, recomendaciones].join(",") + "\n";
-    });
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "gestor_clientes.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showNotification("Exportado", "Se ha descargado el archivo CSV.", 'success');
-});
-
-
 // Iniciar la aplicación
 window.onload = initializeFirebase;
-</script>
-</body>
-</html>
