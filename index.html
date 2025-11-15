@@ -21,6 +21,13 @@
     .menu button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer; transition: background 0.2s}
     .menu button:hover { background: rgba(255,255,255,0.05); }
     .menu button.active{background:var(--accent);color:#052018;border:none}
+    /* AJUSTE PARA BOTÓN ICONO EN NAVEGACIÓN */
+    .menu button[title="Ajustes"] { 
+        padding: 8px 10px; /* Un poco menos padding que los otros botones de texto */
+        font-size: 1.5em; /* Tamaño del icono */
+        line-height: 1;
+    }
+
     main{display:grid;grid-template-columns:1fr;gap:18px}
     .cards-col{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:18px;}
     .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
@@ -217,6 +224,10 @@
         /* Ajuste de formularios y botones */
         .btn{padding:10px 14px; border-radius:10px; font-size: 15px;} 
         .menu button { padding: 10px 16px; font-size: 15px; } /* Botones de menú más grandes */
+        .menu button[title="Ajustes"] { 
+            padding: 8px 12px; /* Ajuste de padding para el icono */
+            font-size: 1.7em;
+        }
         input[type=text],input[type=date],textarea,select,input[type=email],input[type=password]{padding:12px; font-size: 16px;}
         label{font-size:14px;}
         .input-add-row input[type=text] { padding: 8px 12px; }
@@ -257,8 +268,7 @@
       <button id="nav-dashboard" class="active">Dashboard</button>
       <button id="nav-clientes">Clientes</button>
       <button id="nav-add">Añadir cliente</button>
-      <button id="nav-ajustes">Ajustes</button>
-      <button id="nav-logout" class="btn delete" style="margin-left: 12px;">Cerrar Sesión</button>
+      <button id="nav-ajustes" title="Ajustes">⚙️</button>
     </div>
   </nav>
 </header>
@@ -286,7 +296,6 @@
   <div class="card-form">
     <div id="clients-header-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
       <h3 id="clients-header-h3">Clientes</h3>
-      <button id="btn-export-csv" class="btn export">Exportar a CSV 📥</button>
     </div>
     
     <input type="text" id="search-input" placeholder="Buscar por Nombre, Usuario o Aplicación..." style="margin-bottom: 12px;" />
@@ -356,7 +365,16 @@
 <section id="section-ajustes" style="display:none">
   <div class="card-form">
     <h3>Ajustes de la Aplicación</h3>
-    <p class="meta">Próximamente se podrán configurar aquí las opciones de la aplicación.</p>
+    
+    <h4 style="margin-top: 20px; margin-bottom: 10px; color: var(--accent);">Gestión de Datos (CSV)</h4>
+    <div style="display:flex; gap: 10px; flex-wrap: wrap;">
+        <button id="btn-export-csv-settings" class="btn export">Exportar CSV 📥</button>
+        <button id="btn-import-csv" class="btn edit">Importar CSV 📤 (Pendiente)</button>
+        <input type="file" id="file-import-csv" accept=".csv" style="display:none;" />
+    </div>
+
+    <h4 style="margin-top: 30px; margin-bottom: 10px; color: var(--red);">Sesión</h4>
+    <button id="nav-logout-settings" class="btn delete">Cerrar Sesión 🔒</button>
   </div>
 </section>
 
@@ -478,14 +496,18 @@ const loginErrorMessage = document.getElementById('login-error-message');
 const navDashboard = document.getElementById('nav-dashboard');
 const navClientes = document.getElementById('nav-clientes');
 const navAdd = document.getElementById('nav-add');
-const navAjustes = document.getElementById('nav-ajustes'); // NUEVO
-const navLogout = document.getElementById('nav-logout');
+const navAjustes = document.getElementById('nav-ajustes');
+
+// ELEMENTOS DE AJUSTES (MOVIDOS)
+const navLogout = document.getElementById('nav-logout-settings'); 
+const btnExportCSV = document.getElementById('btn-export-csv-settings'); 
+const btnImportCSV = document.getElementById('btn-import-csv'); 
 
 // SECCIONES PRINCIPALES
 const sectionDashboard = document.getElementById('section-dashboard');
 const sectionClientes = document.getElementById('section-clientes');
 const sectionAdd = document.getElementById('section-add');
-const sectionAjustes = document.getElementById('section-ajustes'); // NUEVO
+const sectionAjustes = document.getElementById('section-ajustes');
 
 // FORM ADD
 const formAdd = document.getElementById('form-add');
@@ -495,7 +517,7 @@ const fCaducidad = document.getElementById('f-caducidad');
 const fNewRecommendation = document.getElementById('f-new-recommendation');
 const fAddRecommendationBtn = document.getElementById('f-add-recommendation-btn');
 const fRecommendedClientsDiv = document.getElementById('f-recommended-clients');
-const fAutocompleteList = document.getElementById('f-autocomplete-list'); // NUEVO
+const fAutocompleteList = document.getElementById('f-autocomplete-list');
 
 // FORM EDIT
 const formEdit = document.getElementById('form-edit');
@@ -504,7 +526,7 @@ const modalCancel = document.getElementById('modal-cancel');
 const eNewRecommendation = document.getElementById('e-new-recommendation');
 const eAddRecommendationBtn = document.getElementById('e-add-recommendation-btn');
 const eRecommendedClientsDiv = document.getElementById('e-recommended-clients');
-const eAutocompleteList = document.getElementById('e-autocomplete-list'); // NUEVO
+const eAutocompleteList = document.getElementById('e-autocomplete-list');
 
 // HISTORIAL MODAL
 const historyModal = document.getElementById('history-modal');
@@ -590,7 +612,7 @@ function setActive(btn){
   sectionDashboard.style.display = 'none';
   sectionClientes.style.display = 'none';
   sectionAdd.style.display = 'none';
-  sectionAjustes.style.display = 'none'; // NUEVO
+  sectionAjustes.style.display = 'none';
 
   if(btn === navDashboard){
     sectionDashboard.style.display = 'block';
@@ -606,7 +628,7 @@ function setActive(btn){
   } else if (btn === navAdd){
     sectionAdd.style.display = 'block';
     setDefaultDates(); 
-  } else if (btn === navAjustes) { // NUEVO
+  } else if (btn === navAjustes) {
     sectionAjustes.style.display = 'block';
   }
 }
@@ -614,7 +636,7 @@ function setActive(btn){
 navDashboard.addEventListener('click', ()=>setActive(navDashboard));
 navClientes.addEventListener('click', ()=>setActive(navClientes));
 navAdd.addEventListener('click', ()=>setActive(navAdd));
-navAjustes.addEventListener('click', ()=>setActive(navAjustes)); // NUEVO
+navAjustes.addEventListener('click', ()=>setActive(navAjustes));
 
 // --- LÓGICA DE FILTRADO DEL DASHBOARD ---
 
@@ -674,6 +696,7 @@ formLogin.addEventListener('submit', async (e) => {
     }
 });
 
+// Listener para el botón de Cerrar Sesión en Ajustes
 navLogout.addEventListener('click', async () => {
     try {
         await signOut(auth);
@@ -728,15 +751,22 @@ function startDataListener() {
     });
 }
 
-// --- LÓGICA CSV: EXPORTACIÓN ---
-document.getElementById('btn-export-csv').addEventListener('click', exportToCSV);
+// --- LÓGICA CSV: EXPORTACIÓN E IMPORTACIÓN ---
+// Listener para el nuevo botón de Exportar en Ajustes
+btnExportCSV.addEventListener('click', exportToCSV);
+
+// Listener para el nuevo botón de Importar en Ajustes (Función pendiente)
+btnImportCSV.addEventListener('click', () => {
+    showNotification("Función Pendiente", "La funcionalidad de Importar CSV está en desarrollo.", 'yellow');
+});
+
 
 function exportToCSV() {
     if (cachedList.length === 0) {
         showNotification("Error", "No hay datos para exportar.", 'error');
         return;
     }
-    const headers = ["nombre", "usuario", "contrasena", "caducidad", "creacion", "aplicacion", "telefono", "dispositivo", "recomendaciones"];
+    const headers = ["nombre", "usuario", "contrasena", "caducidad", "creacion", "aplicacion", "telefono", "dispositivo", "recomendaciones", "renovara"];
     const separator = ";"; 
     let csvContent = headers.join(separator) + "\n";
     cachedList.forEach(item => {
@@ -750,7 +780,8 @@ function exportToCSV() {
             `"${item.telefono || ''}"`,
             `"${item.dispositivo || ''}"`,
             // Formatear el array de recomendaciones como una cadena separada por '|'
-            `"${Array.isArray(item.recomendaciones) ? item.recomendaciones.join('|') : ''}"` 
+            `"${Array.isArray(item.recomendaciones) ? item.recomendaciones.join('|') : ''}"`, 
+            `"${item.renovara ? 'Sí' : 'No'}"`
         ].join(separator);
         csvContent += row + "\n";
     });
@@ -1003,7 +1034,7 @@ function renderDashboard(list){
       <div class="btns">
         <button class="btn renew" onclick="renewItem('${item.id}')">Renovar</button>
         ${freeMonthBtn}
-        <button class="btn copy" onclick="copyPassword('${item.id}')">Copiar</button>
+        <button class="btn copy" onclick="copyCredentials('${item.id}')">Copiar</button>
         ${whatsappBtn}
       </div>
     `;
@@ -1091,6 +1122,32 @@ window.renewItem = async function(id){
   }
 }
 
+// *** FUNCIÓN MEJORADA: COPIAR MÚLTIPLES DATOS ***
+window.copyCredentials = function(id) {
+    const item = cachedList.find(i => i.id === id);
+    if (!item || !item.contrasena) {
+        showNotification("Error", "No hay datos suficientes para copiar (falta contraseña).", 'error');
+        return;
+    }
+
+    // Formatear el texto a copiar con los campos solicitados
+    const formattedText = `
+[Credenciales de Cliente]
+Cliente: ${item.nombre || 'N/A'}
+Usuario: ${item.usuario || 'N/A'}
+Contraseña: ${item.contrasena}
+Aplicación: ${item.aplicacion || 'N/A'}
+Caducidad: ${formatDate(item.caducidad)}
+`;
+    
+    navigator.clipboard.writeText(formattedText.trim())
+        .then(() => showNotification("Credenciales Copiadas", `Datos de ${item.nombre} (Usuario, Contraseña, Caducidad, App) copiados.`, 'success'))
+        .catch(err => {
+            console.error('Error al copiar: ', err);
+            showNotification("Error", "Error al copiar al portapapeles.", 'error');
+        });
+}
+
 
 // *** FUNCIÓN CLAVE: RENDERIZADO DE CLIENTES ***
 function renderClients(list, status = null, searchTerm = ''){
@@ -1161,23 +1218,12 @@ function renderClients(list, status = null, searchTerm = ''){
         <button class="btn edit" onclick="openEdit('${item.id}')">Editar</button>
         <button class="btn renew" onclick="renewItem('${item.id}')">Renovar</button>
         ${freeMonthBtn}
-        <button class="btn copy" onclick="copyPassword('${item.id}')">Copiar</button>
+        <button class="btn copy" onclick="copyCredentials('${item.id}')">Copiar</button>
         <button class="btn delete" onclick="deleteItem('${item.id}')">Eliminar</button>
       </div>
     `;
     clientsGrid.appendChild(card);
   });
-}
-
-window.copyPassword = function(id) {
-    const item = cachedList.find(i => i.id === id);
-    if (item && item.contrasena) {
-        navigator.clipboard.writeText(item.contrasena)
-            .then(() => showNotification("Copiado", `Contraseña de ${item.nombre} copiada.`, 'success'))
-            .catch(err => console.error('Error al copiar: ', err));
-    } else {
-        showNotification("Error", "No hay contraseña para copiar.", 'error');
-    }
 }
 
 window.deleteItem = async function(id) {
