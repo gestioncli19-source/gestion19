@@ -26,7 +26,7 @@
         padding: 8px 10px; 
     }
     main{display:grid;grid-template-columns:1fr;gap:18px}
-    .cards-col{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:18px;}
+    .cards-col{display:grid;grid-template-columns:repeat(3, 1fr);gap:12px;margin-bottom:18px;}
     .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
     .stat{background:var(--glass);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
     .stat-clickable {
@@ -452,7 +452,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
   authDomain: "gestioncandy-b9356.firebaseapp.com",
   projectId: "gestioncandy-b9356",
-  storageBucket: "gestioncandy-b9356.firebasestorage.app",
+  storageBucket: "gestioncandy-b9356.firebaseapp.com",
   messagingSenderId: "869982852654",
   appId: "1:869982852654:web:ac450321a746e62365f1bf"
 };
@@ -812,7 +812,7 @@ function startDataListener(uid) {
 // FUNCIÓN WHATSAPP
 window.sendWhatsappAlert = function(id) {
     const item = cachedList.find(i => i.id === id);
-    if (!item || !item.telefono || item.telefono.length < 6) {
+    if (!item || !item.telefono || item.telefono.length < 5) {
         showNotification("Error", "Teléfono no válido o faltante.", 'error');
         return;
     }
@@ -1163,7 +1163,7 @@ btnExportCsv.addEventListener('click', () => {
     showNotification("Exportación Exitosa", "Se ha descargado el archivo CSV con tus clientes.", 'success');
 });
 
-// --- LÓGICA DE IMPORTACIÓN CSV ---
+// --- LÓGICA DE IMPORTACIÓN CSV (CORREGIDA PARA MINIMAL CSV Y DELIMITADORES) ---
 
 // Función para procesar el texto CSV e importar a Firestore
 async function importClientsFromCsv(csvText) {
@@ -1173,43 +1173,102 @@ async function importClientsFromCsv(csvText) {
         return;
     }
     
-    // Implementación simple que asume un CSV limpio con la estructura esperada (headers = lines[0])
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-    const dataLines = lines.slice(1);
+    // Obtener la primera línea (encabezados)
+    const headerLine = lines[0];
     
+    // 1. Detectar el delimitador: Coma (,) o Punto y coma (;)
+    let delimiter = ',';
+    // Contar ocurrencias del delimitador en la primera línea de datos (línea 2 del archivo)
+    const firstDataLine = lines[1];
+    const commaCount = (firstDataLine.match(/,/g) || []).length;
+    const semicolonCount = (firstDataLine.match(/;/g) || []).length;
+    
+    // Si hay más puntos y comas que comas, usamos punto y coma como delimitador principal
+    if (semicolonCount > commaCount) {
+        delimiter = ';';
+    }
+    
+    // 2. Extraer los encabezados usando el delimitador detectado
+    const headers = headerLine.split(delimiter).map(h => h.trim().toLowerCase().replace(/"/g, ''));
+    
+    // Lista de todos los encabezados posibles (para mapeo)
+    const possibleHeaders = ["nombre", "telefono", "creacion", "caducidad", "usuario", "contrasena", "dispositivo", "aplicacion", "recomendaciones"];
+
+    // Verificar si al menos los campos mínimos requeridos por el usuario están presentes
+    const mandatoryFields = ["nombre", "caducidad"];
+    const hasMandatoryFields = mandatoryFields.every(field => headers.includes(field));
+
+    if (!hasMandatoryFields) {
+        showNotification("Error de Formato", `El archivo CSV debe contener al menos las columnas 'nombre' y 'caducidad'. Solo se encontraron: ${headers.join(', ')}.`, 'error');
+        return;
+    }
+    
+    const dataLines = lines.slice(1);
     const clientsToImport = [];
 
     for (const line of dataLines) {
-        const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // RegEx para manejar comas dentro de comillas
+        let values;
+        
+        if (delimiter === ';') {
+             // Split simple para punto y coma
+             values = line.split(delimiter).map(v => v.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+        } else {
+             // Split complejo para coma (maneja comas internas si están entre comillas)
+             values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); 
+             // Limpiar el array de valores
+             values = values.map(v => v.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+        }
+        
         if (values.length < headers.length) {
              continue; // Ignorar líneas incompletas
         }
 
-        const client = {};
+        let client = {};
+        
+        // 1. Mapear los campos existentes del CSV
         for (let i = 0; i < headers.length; i++) {
-            let value = values[i] ? values[i].trim().replace(/^"|"$/g, '').replace(/""/g, '"') : ''; // Limpieza de comillas
-
-            if (headers[i] === 'recomendaciones') {
-                // Revertir el split con punto y coma
-                client[headers[i]] = value ? value.split(';').map(r => r.trim()).filter(r => r.length > 0) : [];
-            } else if (headers[i] === 'creacion' || headers[i] === 'caducidad') {
-                client[headers[i]] = new Date(value).toISOString();
+            const header = headers[i];
+            let value = values[i] || ''; 
+            
+            if (header.includes('recomendaciones')) {
+                // Revertir el split con punto y coma (ya que internamente usamos ;)
+                client.recomendaciones = value ? value.split(';').map(r => r.trim()).filter(r => r.length > 0) : [];
+            } else if (header.includes('creacion') || header.includes('caducidad')) {
+                // Si es un campo de fecha y tiene valor, lo convertimos a ISO
+                if (value) {
+                    client[header] = new Date(value).toISOString();
+                } else {
+                    client[header] = '';
+                }
             } else {
-                client[headers[i]] = value;
+                client[header] = value;
             }
         }
         
-        // Agregar campos obligatorios
-        client.userId = currentUID;
+        // 2. Asignar valores por defecto a los campos faltantes
+        const defaultApp = document.getElementById('s-aplicacion-default').value;
+        const todayISO = new Date().toISOString();
+
+        client.nombre = client.nombre || '';
+        client.telefono = client.telefono || "";
+        client.creacion = client.creacion || todayISO; 
+        client.caducidad = client.caducidad || '';
+        client.usuario = client.usuario || "";
+        client.contrasena = client.contrasena || "";
+        client.dispositivo = client.dispositivo || "";
+        client.aplicacion = client.aplicacion || defaultApp; 
+        client.recomendaciones = client.recomendaciones || [];
         client.renovara = false; 
+        client.userId = currentUID; 
         
+        // La condición de importación se mantiene para los campos esenciales
         if (client.nombre && client.caducidad && currentUID) {
             clientsToImport.push(client);
         }
     }
 
     if (clientsToImport.length === 0) {
-        showNotification("Error", "No se encontraron clientes válidos para importar. Asegúrate de que el formato sea correcto.", 'error');
+        showNotification("Error", `No se encontraron clientes válidos para importar. Asegúrate de que las columnas 'nombre' y 'caducidad' estén correctas.`, 'error');
         return;
     }
 
