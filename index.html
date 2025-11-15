@@ -369,7 +369,7 @@
     <h4 style="margin-top: 20px; margin-bottom: 10px; color: var(--accent);">Gestión de Datos (CSV)</h4>
     <div style="display:flex; gap: 10px; flex-wrap: wrap;">
         <button id="btn-export-csv-settings" class="btn export">Exportar CSV 📥</button>
-        <button id="btn-import-csv" class="btn edit">Importar CSV 📤 (Pendiente)</button>
+        <button id="btn-import-csv" class="btn edit">Importar CSV 📤</button>
         <input type="file" id="file-import-csv" accept=".csv" style="display:none;" />
     </div>
 
@@ -502,6 +502,7 @@ const navAjustes = document.getElementById('nav-ajustes');
 const navLogout = document.getElementById('nav-logout-settings'); 
 const btnExportCSV = document.getElementById('btn-export-csv-settings'); 
 const btnImportCSV = document.getElementById('btn-import-csv'); 
+const fileImportCSV = document.getElementById('file-import-csv'); // AÑADIDO: Elemento input type="file" oculto
 
 // SECCIONES PRINCIPALES
 const sectionDashboard = document.getElementById('section-dashboard');
@@ -752,12 +753,114 @@ function startDataListener() {
 }
 
 // --- LÓGICA CSV: EXPORTACIÓN E IMPORTACIÓN ---
-// Listener para el nuevo botón de Exportar en Ajustes
-btnExportCSV.addEventListener('click', exportToCSV);
 
-// Listener para el nuevo botón de Importar en Ajustes (Función pendiente)
+// Lógica para analizar una línea CSV. Asume separador ';'.
+function parseCSVLine(line, separator = ';') {
+    return line.split(separator).map(part => part.trim().replace(/^"|"$/g, ''));
+}
+
+
+async function importFromCSV(file) {
+    const reader = new FileReader();
+    
+    reader.onload = async (event) => {
+        const text = event.target.result;
+        const lines = text.split('\n').filter(line => line.trim() !== '');
+
+        if (lines.length <= 1) { 
+            showNotification("Error de Importación", "El archivo CSV está vacío o solo contiene la cabecera.", 'error');
+            return;
+        }
+
+        const today = isoForInput(new Date());
+        let importedCount = 0;
+        let errorCount = 0;
+        
+        // El bucle empieza en la línea 1 (índice 1) para saltar la cabecera
+        for (let i = 1; i < lines.length; i++) {
+            const row = parseCSVLine(lines[i]);
+            
+            // Validar que haya al menos 4 columnas (Nombre, Usuario, Contraseña, Caducidad)
+            if (row.length < 4 || !row[0] || !row[3]) { 
+                console.warn(`Línea ${i + 1} saltada por datos incompletos o formato incorrecto:`, lines[i]);
+                errorCount++;
+                continue; 
+            }
+
+            const clientData = {
+                // Campos proporcionados por el usuario
+                nombre: row[0] || 'Cliente Sin Nombre',
+                usuario: row[1] || '',
+                contrasena: row[2] || '',
+                caducidad: row[3], // Se espera formato YYYY-MM-DD
+
+                // Campos que reciben valores por defecto (no están en el CSV)
+                telefono: '',
+                creacion: today, 
+                dispositivo: '',
+                aplicacion: 'Spinning TV', // Valor por defecto
+                recomendaciones: [],
+                renovara: false
+            };
+            
+            // Validación básica del formato de la fecha de caducidad (YYYY-MM-DD)
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(clientData.caducidad)) {
+                 console.warn(`Línea ${i + 1} saltada: Formato de fecha de caducidad incorrecto (${clientData.caducidad}). Debe ser YYYY-MM-DD.`);
+                 errorCount++;
+                 continue;
+            }
+
+            try {
+                const docRef = await addDoc(col, clientData);
+                
+                // Registro de la creación en el historial
+                await addDoc(collection(db, "clientes", docRef.id, "renovaciones"), {
+                    fecha_renovacion: new Date().toISOString(),
+                    caducidad_anterior: 'Importación CSV',
+                    nueva_caducidad: clientData.caducidad,
+                    tipo_accion: 'Importación CSV', 
+                    usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
+                });
+                
+                importedCount++;
+            } catch (e) {
+                console.error(`Error al añadir cliente desde línea ${i + 1}:`, e);
+                errorCount++;
+            }
+        }
+        
+        if (importedCount > 0) {
+            showNotification("Importación Exitosa", `Se han importado ${importedCount} clientes.`, 'success');
+        }
+        if (errorCount > 0) {
+            showNotification("Errores de Importación", `No se pudieron importar ${errorCount} filas (revise la consola para detalles).`, 'yellow');
+        }
+        if (importedCount === 0 && errorCount === 0) {
+             showNotification("Información", "No se encontraron datos válidos para importar en el archivo.", 'yellow');
+        }
+    };
+
+    reader.onerror = () => {
+        showNotification("Error de Lectura", "No se pudo leer el archivo CSV.", 'error');
+    };
+
+    reader.readAsText(file);
+}
+
+// Listener para el botón de Importar en Ajustes (AHORA FUNCIONAL)
 btnImportCSV.addEventListener('click', () => {
-    showNotification("Función Pendiente", "La funcionalidad de Importar CSV está en desarrollo.", 'yellow');
+    // Al hacer clic en el botón visible, disparamos el clic en el campo de archivo oculto
+    fileImportCSV.click(); 
+});
+
+// Listener para el cambio de archivo (maneja la importación)
+fileImportCSV.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        importFromCSV(file);
+    }
+    // Resetear el valor del input para que el mismo archivo pueda ser seleccionado de nuevo
+    e.target.value = null; 
 });
 
 
