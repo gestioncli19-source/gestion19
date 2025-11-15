@@ -62,11 +62,13 @@
     .btn.export{background:var(--yellow);color:#212108;}
     .btn.history{background:#0f172a;color:var(--accent); border: 1px solid var(--accent);} 
     .btn.whatsapp-alert{background:var(--whatsapp);color:#0f1724; font-weight: 700; border: none;} 
+    .btn.logout{background:var(--red); color:#ffcfcf;} 
 
     .card-form{background:var(--card);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04)}
     form{display:grid;gap:10px}
     label{font-size:13px;color:var(--muted)}
-    input[type=text],input[type=date],textarea,select,input[type=email],input[type=password]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    input[type=text],input[type=date],textarea,select,input[type=email],input[type=password], input[type=file]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    input[type=file] { padding: 8px; }
     textarea{min-height:90px;resize:vertical}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,23,0.6),rgba(2,6,23,0.6));z-index:50}
@@ -191,6 +193,33 @@
     .autocomplete-list li:hover, .autocomplete-list li.active {
         background: var(--glass);
     }
+    
+    /* Estilos para la nueva sección de Ajustes */
+    #section-settings {
+        display: none;
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+    .settings-card {
+        background: var(--card);
+        padding: 16px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    .settings-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    .settings-group h4 {
+        margin: 0 0 5px;
+        color: var(--accent);
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        padding-bottom: 5px;
+    }
+
+
     footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
 
     @media (min-width: 701px) {
@@ -236,7 +265,7 @@
       <button id="nav-dashboard" class="active">Dashboard</button>
       <button id="nav-clientes">Clientes</button>
       <button id="nav-add">Añadir cliente</button>
-      <button id="nav-logout" class="btn delete" style="margin-left: 12px;">Cerrar Sesión</button>
+      <button id="nav-settings" title="Ajustes ⚙️">⚙️ Ajustes</button>
     </div>
   </nav>
 </header>
@@ -329,6 +358,27 @@
     </form>
   </div>
 </section>
+
+<section id="section-settings" style="display:none">
+    <div class="settings-card">
+        <h3>⚙️ Ajustes y Herramientas</h3>
+        
+        <div class="settings-group">
+            <h4>Importar datos</h4>
+            <p style="font-size: 13px; color: var(--muted); margin: 0;">Sube un archivo CSV con columnas: `nombre,usuario,contrasena,caducidad` (las demás son opcionales). Acepta separadores `,` o `;`.</p>
+            <form id="form-import-csv">
+                <input type="file" id="csv-file-input" accept=".csv" required />
+                <button type="submit" class="btn renew" style="margin-top: 10px;">Importar CSV 📤</button>
+            </form>
+        </div>
+
+        <div class="settings-group">
+            <h4>Gestión de Sesión</h4>
+            <button id="btn-settings-logout" class="btn logout">Cerrar Sesión</button>
+        </div>
+    </div>
+</section>
+
 </main>
 
 <footer></footer>
@@ -414,7 +464,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
 import {
   getFirestore, collection, addDoc, doc, onSnapshot,
-  updateDoc, deleteDoc, query, orderBy, getDocs
+  updateDoc, deleteDoc, query, orderBy, getDocs, writeBatch, where
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
 
 import { 
@@ -442,6 +492,7 @@ const sections = {
     'dashboard': document.getElementById('section-dashboard'),
     'clientes': document.getElementById('section-clientes'),
     'add': document.getElementById('section-add'),
+    'settings': document.getElementById('section-settings'), // NUEVA SECCIÓN
 };
 const modal = document.getElementById('modal'); 
 const historyModal = document.getElementById('history-modal');
@@ -464,7 +515,7 @@ const fTelefono = document.getElementById('f-telefono');
 let cachedList = []; 
 let currentRecommendations = []; 
 let cachedClientNames = new Set(); 
-let currentFilter = 'all'; // Para filtros de stats
+let currentFilter = 'all'; 
 const col = collection(db, "clientes");
 
 
@@ -472,13 +523,10 @@ const col = collection(db, "clientes");
 
 function getNewCaducidad(currentDate, months) {
     let date = currentDate ? new Date(currentDate) : new Date();
-    // Clonar la fecha para evitar modificar la original antes de tiempo
     let newDate = new Date(date);
     
-    // Sumar meses
     newDate.setMonth(newDate.getMonth() + months);
     
-    // Si el día del mes cambia (ej: de 31 de Enero a Febrero), ajustamos al último día de Febrero
     if (newDate.getDate() < date.getDate()) {
         newDate.setDate(0); 
     }
@@ -527,7 +575,6 @@ function setDefaultDates() {
 
     fCreacion.value = isoForInput(today);
     fCaducidad.value = isoForInput(caducidad3Months);
-    // fTelefono ya tiene el valor por defecto en el HTML: value="+34"
 }
 setDefaultDates(); 
 
@@ -545,18 +592,16 @@ function setActive(btn){
   btn.classList.add('active');
 }
 
-// ** FUNCIÓN PARA CAMBIAR DE SECCIÓN Y GESTIONAR LA VISTA ** (FIX)
 function switchSection(target) {
     Object.keys(sections).forEach(key => {
         sections[key].style.display = 'none';
     });
-    // La sección clientes usa 'grid' y las otras 'grid' en el main, pero para el display inicial solo ponemos 'grid'
-    // La sección 'add' también es una 'grid'
-    sections[target].style.display = 'grid'; 
+    // Ajuste del display para cada sección principal
+    sections[target].style.display = target === 'clientes' || target === 'add' || target === 'settings' ? 'grid' : 'grid'; 
+
     const btn = document.getElementById(`nav-${target}`);
     if(btn) setActive(btn);
 
-    // Si se va a clientes, se aplica el filtro actual.
     if (target === 'clientes') {
       filterClients(document.getElementById('search-input').value, currentFilter);
     }
@@ -593,30 +638,30 @@ function getExpired(list) {
     return list.filter(i => {
         if(!i.caducidad) return false;
         const d = new Date(i.caducidad);
-        // Si la caducidad es HOY o antes de HOY (00:00:00)
         return d < now; 
     });
 }
 
 
-// --- AUTENTICACIÓN Y GESTIÓN DE ESTADO (FIX) ---
+// --- AUTENTICACIÓN Y GESTIÓN DE ESTADO ---
 
 function handleAuthStatus(user) {
     if (user) {
         sectionLogin.classList.remove('show');
         appContainer.style.display = 'block';
         loginErrorMsg.textContent = '';
-        switchSection('dashboard');
+        // Si el usuario ya estaba logueado, se mantiene en la última vista, sino a dashboard
+        if (!auth.currentFilter) {
+            switchSection('dashboard');
+        }
     } else {
         sectionLogin.classList.add('show');
         appContainer.style.display = 'none';
-        // Limpiar inputs al cerrar sesión
         loginEmail.value = '';
         loginPassword.value = '';
     }
 }
 
-// Oyente de estado de autenticación de Firebase
 onAuthStateChanged(auth, handleAuthStatus);
 
 // 1. Manejador de Login
@@ -626,7 +671,6 @@ formLogin.addEventListener('submit', async (e) => {
 
     try {
         await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
-        // Éxito manejado por onAuthStateChanged
     } catch (error) {
         let message = "Error de inicio de sesión.";
         if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
@@ -640,29 +684,28 @@ formLogin.addEventListener('submit', async (e) => {
 });
 
 
-// 2. Manejador de Logout
-document.getElementById('nav-logout').addEventListener('click', async () => {
+// 2. Manejador de Logout (Centralizado en Ajustes y nav)
+window.handleLogout = async function() {
     try {
         await signOut(auth);
         showNotification("Sesión Cerrada", "Has cerrado sesión correctamente.", 'success');
-        // El reset de UI es manejado por onAuthStateChanged
     } catch (error) {
         showNotification("Error", "No se pudo cerrar la sesión.", 'error');
         console.error("Logout error:", error);
     }
-});
+};
+document.getElementById('btn-settings-logout').addEventListener('click', window.handleLogout);
 
 
-// 3. Oyentes de Navegación (FIX)
+// 3. Oyentes de Navegación
 document.getElementById('nav-dashboard').addEventListener('click', ()=> switchSection('dashboard'));
 document.getElementById('nav-clientes').addEventListener('click', ()=> switchSection('clientes'));
 document.getElementById('nav-add').addEventListener('click', ()=>{
     switchSection('add');
     setDefaultDates(); 
-    fTelefono.value = '+34'; // Asegurar +34 al abrir
+    fTelefono.value = '+34'; 
 });
-
-
+document.getElementById('nav-settings').addEventListener('click', ()=> switchSection('settings')); // NUEVO
 
 // --- CARGA DE CLIENTES EN TIEMPO REAL ---
 
@@ -678,7 +721,6 @@ const unsubscribe = onSnapshot(col, (snapshot) => {
     renderDashboard(list);
     updateStats(list);
     
-    // Si estamos en la vista de clientes, volvemos a renderizar para que se actualice.
     if (sections.clientes.style.display !== 'none') {
         filterClients(document.getElementById('search-input').value, currentFilter);
     }
@@ -687,7 +729,7 @@ const unsubscribe = onSnapshot(col, (snapshot) => {
 });
 
 
-// --- RESTO DE LÓGICA (Filtros y Stats) ---
+// --- LÓGICA DE FILTROS Y ESTADÍSTICAS ---
 
 function updateStats(list) {
     document.getElementById('stat-total').textContent = list.length;
@@ -697,7 +739,6 @@ function updateStats(list) {
     document.getElementById('stat-expired').textContent = expired.length;
 }
 
-// Filtros de Stats
 document.getElementById('stat-3days-link').addEventListener('click', () => {
     currentFilter = 'soon';
     document.getElementById('search-input').value = '';
@@ -709,7 +750,6 @@ document.getElementById('stat-expired-link').addEventListener('click', () => {
     switchSection('clientes');
 });
 
-// Búsqueda
 document.getElementById('search-input').addEventListener('input', (e) => {
     currentFilter = 'all';
     filterClients(e.target.value);
@@ -736,7 +776,8 @@ function filterClients(searchTerm = '', filter = 'all') {
 }
 
 
-// MEJORA 1: FUNCIÓN CLAVE: RENDERIZADO DEL DASHBOARD ACTUALIZADO (VISUALIZACIÓN EN FILA Y ESTILO DISTINTO)
+// --- LÓGICA DE TABLA Y ACCIONES ---
+
 window.toggleRenovara = async function(checkbox) {
     const id = checkbox.dataset.id;
     const newValue = checkbox.checked;
@@ -799,7 +840,7 @@ function renderDashboard(list){
 }
 
 
-// MEJORA 2: FUNCIÓN COPYPASSWORD ACTUALIZADA
+// MEJORA 2: FUNCIÓN COPYPASSWORD
 window.copyPassword = function(id) {
     const item = cachedList.find(i => i.id === id);
     if (!item) return;
@@ -819,7 +860,7 @@ window.copyPassword = function(id) {
     });
 }
 
-// *** FUNCIÓN WHATSAPP ***
+// FUNCIÓN WHATSAPP
 window.sendWhatsappAlert = function(id) {
     const item = cachedList.find(i => i.id === id);
     if (!item || !item.telefono || item.telefono.length < 6) {
@@ -828,7 +869,7 @@ window.sendWhatsappAlert = function(id) {
     }
 
     const message = encodeURIComponent(`Hola ${item.nombre || ''}. Tu suscripción va a caducar pronto, ¿vas a querer renovar? 🙂`);
-    const phone = item.telefono.replace(/\s/g, '').replace('+', ''); // Limpiar espacios y quitar el +, WhatsApp lo añade si es necesario
+    const phone = item.telefono.replace(/\s/g, '').replace('+', '');
     
     const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
     
@@ -850,20 +891,18 @@ window.addFreeMonth = async function(id) {
     }
 
     const oldCaducidad = item.caducidad;
-    const newCaducidad = getNewCaducidad(oldCaducidad, 1); // Sumar 1 mes
+    const newCaducidad = getNewCaducidad(oldCaducidad, 1); 
 
     try {
-        // 1. Actualizar el documento principal
         await updateDoc(doc(db, "clientes", id), {
             caducidad: newCaducidad
         });
 
-        // 2. Registrar la acción en la subcolección 'renovaciones'
         await addDoc(collection(db, "clientes", id, "renovaciones"), {
             fecha_renovacion: new Date().toISOString(),
             caducidad_anterior: oldCaducidad || 'Fecha no registrada',
             nueva_caducidad: newCaducidad,
-            tipo_accion: 'Mes Gratis', // Diferenciar la acción
+            tipo_accion: 'Mes Gratis', 
             usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
         });
 
@@ -875,26 +914,24 @@ window.addFreeMonth = async function(id) {
 }
 
 
-// *** FUNCIÓN RENEW ITEM ACTUALIZADA PARA GUARDAR EL HISTORIAL Y TIPO DE ACCIÓN ***
+// FUNCIÓN RENEW ITEM CON HISTORIAL
 window.renewItem = async function(id){
   const item = cachedList.find(i => i.id === id);
   if(!item) return;
 
   const oldCaducidad = item.caducidad;
-  const newCaducidad = getNewCaducidad(oldCaducidad, 3); // Sumar 3 meses
+  const newCaducidad = getNewCaducidad(oldCaducidad, 3); 
 
   try {
-      // 1. Actualizar el documento principal
       await updateDoc(doc(db, "clientes", id), {
         caducidad: newCaducidad
       });
 
-      // 2. Registrar la renovación en la subcolección 'renovaciones'
       await addDoc(collection(db, "clientes", id, "renovaciones"), {
           fecha_renovacion: new Date().toISOString(),
           caducidad_anterior: oldCaducidad || 'Fecha no registrada',
           nueva_caducidad: newCaducidad,
-          tipo_accion: 'Renovación Normal (+3 meses)', // Diferenciar la acción
+          tipo_accion: 'Renovación Normal (+3 meses)', 
           usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
       });
 
@@ -905,17 +942,68 @@ window.renewItem = async function(id){
   }
 }
 
-// ... (El resto de la lógica de Autocompletado, Renderizado de Recomendaciones, Delete, etc. )
+// RENDERIZADO DE CLIENTES EN SECCIÓN CLIENTES 
+function renderClients(list){
+  const clientsGrid = document.getElementById('clients-grid');
+  clientsGrid.innerHTML = "";
+
+  list.forEach(item => {
+    let recommendationsHTML = '';
+    if (item.recomendaciones && item.recomendaciones.length > 0) {
+        recommendationsHTML = `<div class="meta" style="margin-top: 8px;">Recomendaciones (${item.recomendaciones.length}): ${item.recomendaciones.join(', ')}</div>`;
+    }
+    
+    const statusClass = getExpiryStatus(item.caducidad);
+
+    const whatsappBtn = item.telefono && item.telefono.length > 5 ? 
+        `<button class="btn whatsapp-alert" onclick="sendWhatsappAlert('${item.id}')">Avisar 💬</button>` : '';
+
+    const card = document.createElement('div');
+    card.className = `card ${statusClass}`;
+    card.innerHTML = `
+      <h4>${item.nombre}</h4>
+      <div class="meta">Teléfono: ${item.telefono || "-"}</div>
+      <div class="meta">App: ${item.aplicacion || "-"}</div>
+      <div class="meta">Creación: ${formatDate(item.creacion)}</div>
+      <div class="meta">Caduca: ${formatDate(item.caducidad)}</div>
+      ${recommendationsHTML}
+
+      <div class="btns">
+        <button class="btn edit" onclick="openEdit('${item.id}')">Editar</button>
+        <button class="btn renew" onclick="renewItem('${item.id}')">Renovar</button>
+        <button class="btn free-month" onclick="addFreeMonth('${item.id}')">Mes gratis</button>
+        <button class="btn copy" onclick="copyPassword('${item.id}')">Copiar</button>
+        ${whatsappBtn}
+        <button class="btn delete" onclick="deleteItem('${item.id}')">Eliminar</button>
+      </div>
+    `;
+    clientsGrid.appendChild(card);
+  });
+}
+
+window.deleteItem = async function(id) {
+    if (!confirm("¿Estás seguro de que quieres eliminar este cliente?")) return;
+
+    try {
+        await deleteDoc(doc(db, "clientes", id));
+        showNotification("Eliminado", "Cliente eliminado con éxito.", 'success');
+    } catch (error) {
+        showNotification("Error", "No se pudo eliminar el cliente. (Revisa reglas de Firestore)", 'error');
+        console.error("Error deleting item:", error);
+    }
+}
+
+
+// --- LÓGICA DE EDICIÓN Y RECOMENDACIONES ---
+
 window.openEdit = function(id){
     const item = cachedList.find(i => i.id === id);
     if(!item) return;
 
-    // Carga de recomendaciones
     currentRecommendations = [...(item.recomendaciones || [])];
     renderRecommendations(currentRecommendations, document.getElementById('e-recommended-clients'), 'e');
 
     document.getElementById('e-nombre').value = item.nombre;
-    // MEJORA 6: Valor por defecto "+34" si el campo está vacío
     document.getElementById('e-telefono').value = item.telefono || "+34"; 
     document.getElementById('e-creacion').value = isoForInput(item.creacion);
     document.getElementById('e-caducidad').value = isoForInput(item.caducidad);
@@ -933,7 +1021,6 @@ document.getElementById('modal-cancel').addEventListener('click', () => {
     modal.classList.remove('show');
     currentRecommendations = [];
 });
-// ... (continúa con el resto de funciones JS)
 
 function renderRecommendations(recommendations, targetElement, prefix) {
     targetElement.innerHTML = '';
@@ -949,7 +1036,6 @@ window.removeRecommendation = function(prefix, index) {
     renderRecommendations(currentRecommendations, document.getElementById(`${prefix}-recommended-clients`), prefix);
 }
 
-// Logica de añadir recomendación (se duplica para f- y e-)
 const addRecommendationLogic = (prefix) => {
     const input = document.getElementById(`${prefix}-new-recommendation`);
     const container = document.getElementById(`${prefix}-recommended-clients`);
@@ -963,7 +1049,6 @@ const addRecommendationLogic = (prefix) => {
             renderRecommendations(currentRecommendations, container, prefix);
         }
     };
-    // ... (Logica de autocompletado si se añade más tarde)
 };
 
 addRecommendationLogic('f');
@@ -1018,7 +1103,6 @@ formAdd.addEventListener('submit', async e=>{
   try {
       const docRef = await addDoc(col, data);
       
-      // Registrar la creación como la primera 'renovación'
       await addDoc(collection(db, "clientes", docRef.id, "renovaciones"), {
           fecha_renovacion: new Date().toISOString(),
           caducidad_anterior: 'Nuevo Cliente',
@@ -1033,7 +1117,7 @@ formAdd.addEventListener('submit', async e=>{
       setDefaultDates(); 
       currentRecommendations = [];
       document.getElementById('f-recommended-clients').innerHTML = '';
-      document.getElementById('f-telefono').value = '+34'; // MEJORA 6: Resetear teléfono a +34
+      document.getElementById('f-telefono').value = '+34'; 
   } catch (error) {
       showNotification("Error de Creación", "No se pudo añadir el nuevo cliente. (Revisa reglas de Firestore)", 'error');
       console.error("Error adding item:", error);
@@ -1045,10 +1129,12 @@ fReset.addEventListener('click', ()=> {
     setDefaultDates();
     currentRecommendations = [];
     document.getElementById('f-recommended-clients').innerHTML = '';
-    document.getElementById('f-telefono').value = '+34'; // MEJORA 6: Resetear teléfono a +34
+    document.getElementById('f-telefono').value = '+34'; 
 });
 
-// *** HISTORIAL ***
+
+// --- LÓGICA DEL HISTORIAL ---
+
 window.openHistoryModal = async function(id) {
     const item = cachedList.find(i => i.id === id);
     if (!item) return;
@@ -1073,7 +1159,6 @@ document.getElementById('history-modal-close').addEventListener('click', () => {
 });
 
 
-// FUNCIÓN PARA RENDERIZAR EL HISTORIAL (ACTUALIZADA CON TIPO DE ACCIÓN)
 function renderRenewalHistory(historyList, targetDiv) {
     targetDiv.innerHTML = '';
     if (historyList.length === 0) {
@@ -1102,54 +1187,177 @@ function renderRenewalHistory(historyList, targetDiv) {
     targetDiv.innerHTML = html;
 }
 
-// RENDERIZADO DE CLIENTES EN SECCIÓN CLIENTES 
-function renderClients(list){
-  const clientsGrid = document.getElementById('clients-grid');
-  clientsGrid.innerHTML = "";
+// --- LÓGICA DE IMPORTACIÓN/EXPORTACIÓN CSV ---
 
-  list.forEach(item => {
-    let recommendationsHTML = '';
-    if (item.recomendaciones && item.recomendaciones.length > 0) {
-        recommendationsHTML = `<div class="meta" style="margin-top: 8px;">Recomendaciones (${item.recomendaciones.length}): ${item.recomendaciones.join(', ')}</div>`;
+// Exportación
+document.getElementById('btn-export-csv').addEventListener('click', () => {
+    if (cachedList.length === 0) {
+        showNotification("Error", "No hay datos para exportar.", 'error');
+        return;
     }
+
+    const headers = ["nombre", "usuario", "contrasena", "caducidad", "creacion", "telefono", "dispositivo", "aplicacion", "recomendaciones", "renovara", "id"];
     
-    const statusClass = getExpiryStatus(item.caducidad);
+    // Convertir la lista a formato CSV
+    let csvContent = headers.join(";") + "\n"; // Usamos punto y coma como separador
 
-    const whatsappBtn = item.telefono && item.telefono.length > 5 ? 
-        `<button class="btn whatsapp-alert" onclick="sendWhatsappAlert('${item.id}')">Avisar 💬</button>` : '';
+    cachedList.forEach(item => {
+        const row = headers.map(header => {
+            let value = item[header];
 
-    const card = document.createElement('div');
-    card.className = `card ${statusClass}`;
-    card.innerHTML = `
-      <h4>${item.nombre}</h4>
-      <div class="meta">Teléfono: ${item.telefono || "-"}</div>
-      <div class="meta">App: ${item.aplicacion || "-"}</div>
-      <div class="meta">Creación: ${formatDate(item.creacion)}</div>
-      <div class="meta">Caduca: ${formatDate(item.caducidad)}</div>
-      ${recommendationsHTML}
+            // Manejo especial para recomendaciones (array)
+            if (header === 'recomendaciones') {
+                value = (value && Array.isArray(value)) ? value.join('|') : '';
+            } 
+            // Manejo de booleanos
+            else if (typeof value === 'boolean') {
+                value = value ? 'TRUE' : 'FALSE';
+            }
+            // Asegurar que las fechas estén en formato ISO si se requiere (para re-importación)
+            else if (header === 'creacion' || header === 'caducidad') {
+                value = isoForInput(value);
+            }
+            
+            // Reemplazar ; por , para evitar problemas de delimitador en el valor, si hay
+            value = (value === null || value === undefined) ? '' : String(value).replace(/;/g, ',').replace(/\n/g, ' ').replace(/"/g, '""');
+            
+            // Rodear con comillas si contiene , o está vacío
+            return (value.includes(',') || value.length === 0) ? `"${value}"` : value;
 
-      <div class="btns">
-        <button class="btn edit" onclick="openEdit('${item.id}')">Editar</button>
-        <button class="btn renew" onclick="renewItem('${item.id}')">Renovar</button>
-        <button class="btn free-month" onclick="addFreeMonth('${item.id}')">Mes gratis</button>
-        <button class="btn copy" onclick="copyPassword('${item.id}')">Copiar</button>
-        ${whatsappBtn}
-        <button class="btn delete" onclick="deleteItem('${item.id}')">Eliminar</button>
-      </div>
-    `;
-    clientsGrid.appendChild(card);
-  });
-}
+        }).join(";");
+        csvContent += row + "\n";
+    });
 
-window.deleteItem = async function(id) {
-    if (!confirm("¿Estás seguro de que quieres eliminar este cliente?")) return;
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'clientes_exportado.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showNotification("Exportado", "Datos exportados a clientes_exportado.csv", 'success');
+});
 
-    try {
-        await deleteDoc(doc(db, "clientes", id));
-        showNotification("Eliminado", "Cliente eliminado con éxito.", 'success');
-    } catch (error) {
-        showNotification("Error", "No se pudo eliminar el cliente. (Revisa reglas de Firestore)", 'error');
-        console.error("Error deleting item:", error);
+// Importación
+document.getElementById('form-import-csv').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fileInput = document.getElementById('csv-file-input');
+    const file = fileInput.files[0];
+
+    if (!file) {
+        showNotification("Error", "Por favor, selecciona un archivo CSV.", 'error');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        try {
+            const csvText = event.target.result;
+            await processCsv(csvText);
+            fileInput.value = ''; // Resetear el input file
+            switchSection('clientes'); // Volver a la vista de clientes
+        } catch (error) {
+            showNotification("Error de Importación", `Hubo un error al procesar el archivo: ${error.message}`, 'error');
+            console.error(error);
+        }
+    };
+    reader.readAsText(file);
+});
+
+async function processCsv(csvText) {
+    // 1. Detección del delimitador (coma o punto y coma)
+    const lines = csvText.trim().split('\n');
+    if (lines.length < 2) {
+        throw new Error("El archivo CSV está vacío o solo contiene la cabecera.");
+    }
+    const headerLine = lines[0];
+    let delimiter = ',';
+    if (headerLine.includes(';')) {
+        delimiter = ';';
+    }
+
+    const headers = headerLine.toLowerCase().split(delimiter).map(h => h.trim().replace(/['"]+/g, ''));
+    const requiredHeaders = ["nombre", "usuario", "contrasena", "caducidad"];
+    const missingHeaders = requiredHeaders.filter(rh => !headers.includes(rh));
+
+    if (missingHeaders.length > 0) {
+        throw new Error(`Faltan campos obligatorios: ${missingHeaders.join(', ')}`);
+    }
+
+    const clientsToImport = [];
+    const batch = writeBatch(db);
+    let successCount = 0;
+
+    for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        // Función de parseo simple que respeta las comillas para manejar el delimitador dentro de los valores
+        const values = line.match(/(".*?"|[^,;]+)(,|$|;)/g).map(v => v.replace(/,$/g, '').replace(/;$/g, '').trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+        
+        if (values.length !== headers.length) {
+            // Intenta parsear con el otro delimitador si el conteo no coincide (puede que haya un error de detección)
+            const fallbackValues = line.match(/(".*?"|[^,;]+)(,|$|;)/g).map(v => v.replace(/,$/g, '').replace(/;$/g, '').trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+            if (fallbackValues.length !== headers.length) {
+                console.warn(`Saltando línea ${i+1} debido a un número inconsistente de columnas.`);
+                continue;
+            }
+        }
+        
+        let clientData = {};
+        headers.forEach((header, index) => {
+            let value = values[index] || '';
+            
+            // Conversiones de tipo
+            if (header === 'recomendaciones') {
+                clientData[header] = value ? value.split('|') : [];
+            } else if (header === 'renovara') {
+                clientData[header] = (value.toUpperCase() === 'TRUE');
+            } else {
+                clientData[header] = value;
+            }
+        });
+
+        // Aplicar valores por defecto para campos esenciales si no están en el CSV
+        clientData.creacion = clientData.creacion || new Date().toISOString().split('T')[0]; // Fecha actual
+        clientData.telefono = clientData.telefono || '';
+        clientData.dispositivo = clientData.dispositivo || '';
+        clientData.aplicacion = clientData.aplicacion || 'Spinning TV';
+        clientData.usuario = clientData.usuario || 'N/A';
+        clientData.contrasena = clientData.contrasena || 'N/A';
+        clientData.renovara = clientData.renovara || false;
+        clientData.recomendaciones = clientData.recomendaciones || [];
+
+        // Validar caducidad (mínimo)
+        if (!clientData.caducidad) {
+             throw new Error(`La línea ${i+1} no tiene un valor válido para 'caducidad'.`);
+        }
+
+        // Usamos addDoc para añadir nuevos documentos a la colección 'clientes'
+        const newDocRef = doc(col);
+        batch.set(newDocRef, clientData);
+        clientsToImport.push({id: newDocRef.id, ...clientData});
+        successCount++;
+    }
+
+    if (successCount > 0) {
+        await batch.commit();
+        // Generar un evento de historial de renovación de "Creación" para cada nuevo cliente
+        const historyBatch = writeBatch(db);
+        clientsToImport.forEach(client => {
+            historyBatch.set(doc(collection(db, "clientes", client.id, "renovaciones")), {
+                fecha_renovacion: new Date().toISOString(),
+                caducidad_anterior: 'Importación CSV',
+                nueva_caducidad: client.caducidad,
+                tipo_accion: 'Creación (Importación CSV)', 
+                usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
+            });
+        });
+        await historyBatch.commit();
+        showNotification("Importación Exitosa", `Se importaron ${successCount} clientes al sistema.`, 'success');
+    } else {
+        showNotification("Advertencia", "No se importó ningún cliente válido.", 'error');
     }
 }
 
