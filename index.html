@@ -872,16 +872,34 @@ function renderRecommendedClients(recommendations, containerDiv, inputElementId,
 }
 
 
-// *** RENDERIZADO DE CLIENTES EN SECCIÓN CLIENTES ***
+// *** RENDERIZADO DE CLIENTES EN SECCIÓN CLIENTES (CORREGIDO) ***
 function renderClients(list){
   const clientsGrid = document.getElementById('clients-grid');
   clientsGrid.innerHTML = "";
   
   list.forEach(item => {
     let recommendationsHTML = '';
-    if (item.recomendaciones && item.recomendaciones.length > 0) {
+    
+    // ⬇️ LÓGICA DE CORRECCIÓN AÑADIDA AQUÍ ⬇️
+    let clientRecommendations = item.recomendaciones;
+
+    // 1. Si no es un array, intentamos convertirlo o lo ponemos vacío
+    if (!Array.isArray(clientRecommendations)) {
+        if (typeof clientRecommendations === 'string' && clientRecommendations.trim() !== '') {
+            // Si es un string, lo dividimos por comas (o el separador que uses) y limpiamos espacios
+            clientRecommendations = clientRecommendations.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        } else {
+            // Si es null, undefined, o string vacío, lo dejamos como array vacío
+            clientRecommendations = []; 
+        }
+    }
+    // ⬆️ FIN DE LÓGICA DE CORRECCIÓN ⬆️
+
+    if (clientRecommendations.length > 0) { // Usamos el nuevo array corregido
         recommendationsHTML = `<div class="tags" style="margin-top:8px">`;
-        item.recomendaciones.forEach(rec => {
+        
+        // El error ocurría aquí, pero ahora 'clientRecommendations' es siempre un Array
+        clientRecommendations.forEach(rec => {
             recommendationsHTML += `<span class="tag-label">${rec}</span>`;
         });
         recommendationsHTML += `</div>`;
