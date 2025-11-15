@@ -51,6 +51,8 @@
     .btn.copy{background:#0b1220;color:var(--muted);border:1px solid rgba(255,255,255,0.03)}
     .btn.delete{background:#3b0b0b;color:#ffcfcf}
     .btn.export{background:var(--yellow);color:#212108;}
+    .btn.history{background:#0f172a;color:var(--accent); border: 1px solid var(--accent);} /* NUEVO */
+
     .card-form{background:var(--card);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04)}
     form{display:grid;gap:10px}
     label{font-size:13px;color:var(--muted)}
@@ -175,6 +177,9 @@
     @media (min-width: 701px) {
         .cards-col {
             grid-template-columns: repeat(3, 1fr);
+        }
+        .modal-inner.history { /* NUEVO ESTILO PARA EL MODAL DE HISTORIAL */
+             max-width: 450px;
         }
     }
     @media (max-width:700px){.row{grid-template-columns:1fr}.menu{display:flex;gap:6px}}
@@ -353,11 +358,25 @@
                </div>
       </div>
 
-      <div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end">
-        <button type="button" id="modal-cancel" class="btn copy">Cancelar</button>
-        <button type="submit" class="btn edit">Guardar cambios</button>
+      <div style="display:flex;gap:8px;margin-top:8px;justify-content:space-between">
+        <button type="button" id="btn-history-open" class="btn history">Ver Historial</button>
+        <div style="display:flex;gap:8px;">
+          <button type="button" id="modal-cancel" class="btn copy">Cancelar</button>
+          <button type="submit" class="btn edit">Guardar cambios</button>
+        </div>
       </div>
     </form>
+  </div>
+</div>
+
+<div id="history-modal" class="modal">
+  <div class="modal-inner history">
+    <h3 id="history-modal-title">Historial de Renovaciones</h3>
+    <div id="history-list" style="max-height: 400px; overflow-y: auto;">
+        </div>
+    <div style="text-align: right; margin-top: 15px;">
+        <button type="button" id="history-modal-close" class="btn copy">Cerrar</button>
+    </div>
   </div>
 </div>
 
@@ -370,10 +389,9 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
 import {
   getFirestore, collection, addDoc, doc, onSnapshot,
-  updateDoc, deleteDoc, query, orderBy
+  updateDoc, deleteDoc, query, orderBy, getDocs
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
 
-// **NUEVO: Importar módulos de AUTH**
 import { 
     getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged 
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
@@ -391,14 +409,14 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app); // **NUEVO: Inicializar Auth**
+const auth = getAuth(app); 
 
 // --- ELEMENTOS UI DE LA APLICACIÓN ---
-const appContainer = document.getElementById('app-container'); // Contenedor principal
+const appContainer = document.getElementById('app-container'); 
 const navDashboard = document.getElementById('nav-dashboard');
 const navClientes = document.getElementById('nav-clientes');
 const navAdd = document.getElementById('nav-add');
-const navLogout = document.getElementById('nav-logout'); // Botón Cerrar Sesión
+const navLogout = document.getElementById('nav-logout'); 
 
 const secDashboard = document.getElementById('section-dashboard');
 const secClientes = document.getElementById('section-clientes');
@@ -428,13 +446,11 @@ const formAdd = document.getElementById('form-add');
 const fReset = document.getElementById('f-reset');
 const fCreacion = document.getElementById('f-creacion');
 
-// RECOMENDACIONES ADD
+// RECOMENDACIONES ADD/EDIT
 const fRecommendedClientsDiv = document.getElementById('f-recommended-clients');
 const fNewRecommendationInput = document.getElementById('f-new-recommendation');
 const fAddRecommendationBtn = document.getElementById('f-add-recommendation-btn');
 const fRecContainer = document.getElementById('f-recomendaciones-container'); 
-
-// RECOMENDACIONES EDIT
 const eRecommendedClientsDiv = document.getElementById('e-recommended-clients');
 const eNewRecommendationInput = document.getElementById('e-new-recommendation');
 const eAddRecommendationBtn = document.getElementById('e-add-recommendation-btn');
@@ -443,34 +459,38 @@ const eRecContainer = document.getElementById('e-recomendaciones-container');
 // SEARCH
 const searchInput = document.getElementById('search-input');
 
-// MODAL
+// MODAL EDIT
 const modal = document.getElementById('modal');
 const modalCancelBtn = document.getElementById('modal-cancel');
 const formEdit = document.getElementById('form-edit');
+const btnHistoryOpen = document.getElementById('btn-history-open'); // NUEVO BOTÓN
+
+// MODAL HISTORY (NUEVO)
+const historyModal = document.getElementById('history-modal');
+const historyModalCloseBtn = document.getElementById('history-modal-close');
+
 
 // NOTIFICATIONS
 const notificationsContainer = document.getElementById('notifications-container');
 
 // VARIABLES GLOBALES
-let cachedList = []; // Lista de todos los clientes
-let currentRecommendations = []; // Array para gestionar las recomendaciones en el formulario
-let cachedClientNames = new Set(); // Set para el autocompletado y validación de nombres
-
-// REFERENCIA A LA COLECCIÓN (Fuera de onAuthStateChanged para ser global)
+let cachedList = []; 
+let currentRecommendations = []; 
+let cachedClientNames = new Set(); 
 const col = collection(db, "clientes");
 
 // --- FUNCIONES AUXILIARES ---
 function formatDate(d){
   if(!d) return '-';
   const dt = new Date(d);
-  if(isNaN(dt)) return d;
+  if(isNaN(dt.getTime())) return d;
   return dt.toLocaleDateString();
 }
 
 function isoForInput(d){
   if(!d) return '';
   const t = new Date(d);
-  if(isNaN(t)) return '';
+  if(isNaN(t.getTime())) return '';
   const yyyy = t.getFullYear();
   const mm = String(t.getMonth()+1).padStart(2,'0');
   const dd = String(t.getDate()).padStart(2,'0');
@@ -497,7 +517,7 @@ function showNotification(title, message, type = 'success') {
 function setDefaultCreationDate() {
   fCreacion.value = isoForInput(new Date());
 }
-setDefaultCreationDate(); // Llama esto solo una vez al cargar
+setDefaultCreationDate(); 
 
 function setActive(btn){
   document.querySelectorAll('.menu button').forEach(b=>b.classList.remove('active'));
@@ -533,19 +553,14 @@ navAdd.addEventListener('click', ()=>{
 
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        // Usuario logueado
         sectionLogin.classList.remove('show');
         appContainer.style.display = 'block';
-        showNotification("Bienvenido", `Sesión iniciada con ${user.email}.`, 'success');
-        
-        // Iniciar la carga de datos solo después del login
+        showNotification("Bienvenido", `Sesión iniciada con ${user.email.split('@')[0]}.`, 'success');
         startDataListener();
 
     } else {
-        // Usuario NO logueado
         sectionLogin.classList.add('show');
         appContainer.style.display = 'none';
-        // Limpiar datos y notificar si no fue un logout manual
         if (cachedList.length > 0) {
             showNotification("Sesión Cerrada", "Por favor, inicia sesión para continuar.", 'error');
         }
@@ -555,17 +570,15 @@ onAuthStateChanged(auth, (user) => {
 });
 
 
-// **NUEVO: FUNCIÓN PARA INICIAR SESIÓN**
 formLogin.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = loginEmailInput.value;
     const password = loginPasswordInput.value;
     
-    loginErrorMsg.textContent = ''; // Limpiar mensaje de error previo
+    loginErrorMsg.textContent = ''; 
 
     try {
         await signInWithEmailAndPassword(auth, email, password);
-        // onAuthStateChanged se encargará de ocultar el login y mostrar la app
     } catch (error) {
         let message = "Error de inicio de sesión.";
         
@@ -580,7 +593,6 @@ formLogin.addEventListener('submit', async (e) => {
     }
 });
 
-// **NUEVO: FUNCIÓN PARA CERRAR SESIÓN**
 navLogout.addEventListener('click', async () => {
     try {
         await signOut(auth);
@@ -592,13 +604,12 @@ navLogout.addEventListener('click', async () => {
 });
 
 
-// --- CARGA DE CLIENTES EN TIEMPO REAL (AHORA DENTRO DE UNA FUNCIÓN) ---
+// --- CARGA DE CLIENTES EN TIEMPO REAL ---
 function startDataListener() {
     const q = query(col, orderBy("creacion", "desc"));
 
     onSnapshot(q, snap => {
         cachedList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        // Actualizamos la lista de nombres para autocompletado
         cachedClientNames = new Set(cachedList.map(c => c.nombre));
         filterClients(searchInput.value);
         renderDashboard(cachedList);
@@ -607,7 +618,7 @@ function startDataListener() {
 }
 
 
-// --- RESTO DE LÓGICA DE FILTRO Y RENDERING (SIN CAMBIOS FUNCIONALES) ---
+// --- RESTO DE LÓGICA (Funciones de filtro y rendering) ---
 
 function filterByStat(filterType) {
     setActive(navClientes);
@@ -647,7 +658,6 @@ function filterByStat(filterType) {
     renderClients(filteredList);
 }
 
-// Event Listeners para los stats clicables
 stat3DaysLink.addEventListener('click', () => filterByStat('3days'));
 statExpiredLink.addEventListener('click', () => filterByStat('expired'));
 
@@ -672,7 +682,7 @@ searchInput.addEventListener('input', (e) => filterClients(e.target.value));
 
 function updateStats(list){
   statTotal.textContent = list.length;
-  // Lógica de 3 días y caducados permanece igual
+  
   const today = new Date();
   today.setHours(0,0,0,0);
   const limit3Days = new Date(today);
@@ -757,7 +767,6 @@ window.toggleRenovara = async function(checkbox) {
 }
 
 
-// --- INDICADORES VISUALES DE CADUCIDAD ---
 function getExpiryStatus(caducidad) {
     if (!caducidad) return 'status-green'; 
 
@@ -847,7 +856,6 @@ function addRecommendedClient(name, inputElement, targetDiv) {
     currentRecommendations.push(name);
     renderRecommendedClients(currentRecommendations, targetDiv);
     inputElement.value = '';
-    // Cerrar el autocompletado después de añadir
     if (inputElement.nextElementSibling && inputElement.nextElementSibling.classList.contains('autocomplete-list')) {
         inputElement.nextElementSibling.remove();
     }
@@ -863,7 +871,6 @@ function removeRecommendedClient(button) {
     renderRecommendedClients(currentRecommendations, targetDiv);
 }
 
-// LÓGICA DE AUTOCOMPLETADO
 function autocomplete(input, container, targetDiv) {
     const listId = `${input.id}-list`;
     let currentFocus = -1;
@@ -945,7 +952,6 @@ function autocomplete(input, container, targetDiv) {
 }
 
 
-// Event Listeners para el autocompletado y el botón '+'
 autocomplete(fNewRecommendationInput, fRecContainer, fRecommendedClientsDiv);
 fAddRecommendationBtn.addEventListener('click', () => addRecommendedClient(fNewRecommendationInput.value.trim(), fNewRecommendationInput, fRecommendedClientsDiv));
 
@@ -962,13 +968,11 @@ function exportToCsv() {
         return;
     }
 
-    // Definir las cabeceras (headers)
     const headers = [
         'Nombre', 'Creacion', 'Caducidad', 'Usuario', 'Contrasena', 
         'Dispositivo', 'Aplicacion', 'Renovara', 'Recomendaciones'
     ];
     
-    // Mapear los datos al formato CSV
     const csvRows = [];
     csvRows.push(headers.join(';')); 
 
@@ -980,7 +984,6 @@ function exportToCsv() {
             recs = '';
         }
 
-        // Sanitización básica y formato
         const sanitize = (str) => `"${(str || '').toString().replace(/"/g, '""')}"`;
 
         const row = [
@@ -997,7 +1000,6 @@ function exportToCsv() {
         csvRows.push(row.join(';'));
     });
 
-    // Crear el Blob y descargar
     const csvString = csvRows.join('\n');
     const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -1013,7 +1015,7 @@ function exportToCsv() {
 }
 
 
-// --- LÓGICA DE ACCIONES (DEFINIDAS EN EL ÁMBITO GLOBAL 'WINDOW') (sin cambios funcionales) ---
+// --- LÓGICA DE ACCIONES (DEFINIDAS EN EL ÁMBITO GLOBAL 'WINDOW') ---
 
 window.copyPassword = function(id){
   const item = cachedList.find(i => i.id === id);
@@ -1026,18 +1028,31 @@ window.copyPassword = function(id){
   showNotification("Copiado", "Datos clave copiados al portapapeles.", 'success');
 }
 
+// *** FUNCIÓN RENEW ITEM ACTUALIZADA PARA GUARDAR EL HISTORIAL ***
 window.renewItem = async function(id){
   const item = cachedList.find(i => i.id === id);
   if(!item) return;
 
-  let date = new Date(item.caducidad || new Date());
+  const oldCaducidad = item.caducidad;
+  let date = new Date(oldCaducidad || new Date());
   date.setMonth(date.getMonth() + 3); 
+  const newCaducidad = date.toISOString();
 
   try {
+      // 1. Actualizar el documento principal
       await updateDoc(doc(db, "clientes", id), {
-        caducidad: date.toISOString()
+        caducidad: newCaducidad
       });
-      showNotification("Renovación Exitosa", "Cliente renovado por 3 meses.", 'success');
+
+      // 2. Registrar la renovación en la subcolección 'renovaciones'
+      await addDoc(collection(db, "clientes", id, "renovaciones"), {
+          fecha_renovacion: new Date().toISOString(),
+          caducidad_anterior: oldCaducidad || 'Fecha no registrada',
+          nueva_caducidad: newCaducidad,
+          usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
+      });
+
+      showNotification("Renovación Exitosa", "Cliente renovado por 3 meses y registro guardado.", 'success');
   } catch (error) {
       showNotification("Error de Renovación", "No se pudo renovar el cliente. (Revisa reglas de Firestore)", 'error');
       console.error("Error renewing item:", error);
@@ -1056,7 +1071,7 @@ window.deleteItem = async function(id){
   }
 }
 
-// ABRIR MODAL DE EDICIÓN (También requiere ser global)
+// ABRIR MODAL DE EDICIÓN
 window.openEdit = function(id){
   const item = cachedList.find(i => i.id === id);
   if(!item) return;
@@ -1081,13 +1096,75 @@ window.openEdit = function(id){
   eNewRecommendationInput.value = '';
 
   modal.setAttribute('data-id', id);
+  btnHistoryOpen.onclick = () => openHistoryModal(id); // Añadir el evento al botón de historial
   modal.classList.add('show');
 };
 
-// CERRAR MODAL
+// CERRAR MODAL EDITAR
 modalCancelBtn.addEventListener('click', ()=>{
   modal.classList.remove('show');
 });
+
+// CERRAR MODAL HISTORIAL
+historyModalCloseBtn.addEventListener('click', ()=>{
+  historyModal.classList.remove('show');
+});
+
+
+// *** FUNCIÓN PARA ABRIR Y CARGAR EL HISTORIAL (NUEVA) ***
+window.openHistoryModal = async function(id) {
+    const client = cachedList.find(i => i.id === id);
+    if (!client) return;
+
+    // Ocultar modal de edición para mostrar el de historial
+    modal.classList.remove('show');
+
+    document.getElementById('history-modal-title').textContent = `Historial de Renovaciones: ${client.nombre}`;
+    const historyListDiv = document.getElementById('history-list');
+    historyListDiv.innerHTML = '<p style="text-align:center; color: var(--muted);">Cargando historial...</p>';
+
+    historyModal.setAttribute('data-id', id);
+    historyModal.classList.add('show');
+
+    try {
+        const renovacionesRef = collection(db, "clientes", id, "renovaciones");
+        const q = query(renovacionesRef, orderBy("fecha_renovacion", "desc"));
+        const querySnapshot = await getDocs(q);
+
+        const history = querySnapshot.docs.map(d => d.data());
+        renderRenewalHistory(history, historyListDiv);
+
+    } catch (error) {
+        historyListDiv.innerHTML = '<p style="text-align:center; color: var(--red);">Error al cargar el historial. (Revisa reglas de Firestore)</p>';
+        console.error("Error fetching renewal history:", error);
+    }
+};
+
+// FUNCIÓN PARA RENDERIZAR EL HISTORIAL
+function renderRenewalHistory(historyList, targetDiv) {
+    targetDiv.innerHTML = '';
+    if (historyList.length === 0) {
+        targetDiv.innerHTML = '<p style="text-align:center; color: var(--muted);">No se encontraron registros de renovación.</p>';
+        return;
+    }
+
+    let html = '<div style="display:grid; gap:10px;">';
+    historyList.forEach(rec => {
+        html += `
+            <div class="stat" style="border-left: 4px solid var(--accent); padding:10px;">
+                <strong>Fecha de Registro: ${formatDate(rec.fecha_renovacion)}</strong>
+                <div style="font-size: 13px; color: var(--muted); margin-top: 5px;">
+                     Caducidad anterior: ${formatDate(rec.caducidad_anterior)}<br/>
+                     Nueva Caducidad: ${formatDate(rec.nueva_caducidad)}
+                     ${rec.usuario ? `<br/>Usuario: ${rec.usuario.split('@')[0]}` : ''}
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    targetDiv.innerHTML = html;
+}
+
 
 // GUARDAR CAMBIOS EN MODAL
 formEdit.addEventListener('submit', async e=>{
@@ -1134,7 +1211,17 @@ formAdd.addEventListener('submit', async e=>{
   };
 
   try {
-      await addDoc(col, data);
+      // 1. Añadir el cliente
+      const docRef = await addDoc(col, data);
+      
+      // 2. Registrar la creación como la primera 'renovación' (opcional, pero útil para historial)
+      await addDoc(collection(db, "clientes", docRef.id, "renovaciones"), {
+          fecha_renovacion: new Date().toISOString(),
+          caducidad_anterior: 'Nuevo Cliente',
+          nueva_caducidad: data.caducidad,
+          usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
+      });
+      
       showNotification("Cliente Creado", `El cliente ${data.nombre} ha sido añadido con éxito.`, 'success');
       
       formAdd.reset();
