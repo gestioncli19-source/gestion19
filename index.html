@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Gestor de Clientes</title>
   
-  <!-- 1. Enlace a tu hoja de estilos CSS -->
-  <link rel="stylesheet" href="style.css">
+  <!-- CORRECCIÓN DE RUTA: Ruta relativa simple, asume que style.css está junto a index.html -->
+  <link rel="stylesheet" href="style.css"> 
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -43,6 +43,7 @@
       <button id="nav-dashboard" class="active">Dashboard</button>
       <button id="nav-clientes">Clientes</button>
       <button id="nav-add">Añadir cliente</button>
+      <button id="nav-tutorial">Tutorial</button> 
       <button id="nav-logout" class="btn delete" style="margin-left: 12px;">Cerrar Sesión</button>
     </div>
   </nav>
@@ -136,6 +137,36 @@
     </form>
   </div>
 </section>
+
+<section id="section-tutorial" style="display:none">
+    <div class="card-form">
+        <h3>Guía de Uso del Gestor de Clientes</h3>
+        <div style="font-size: 14px; color: var(--muted); line-height: 1.6;">
+            <p style="color: var(--accent); font-weight: 600;">Bienvenido al tutorial. A continuación, se detalla la función de cada sección y botón de la aplicación.</p>
+
+            <h4>1. Dashboard (Panel Principal)</h4>
+            <ul>
+                <li><strong>Métricas:</strong> Muestra el resumen de la aplicación.</li>
+                <li><strong>Clientes Próximos a Caducar:</strong> Se muestra en **fila horizontal** con un estilo único.</li>
+            </ul>
+
+            <h4>2. Clientes (Listado)</h4>
+            <p>Muestra todas las tarjetas de clientes. Se aplican **colores variados** en el borde izquierdo para una distinción visual.</p>
+            <ul>
+                <li><strong>Botón Copiar:</strong> Copia `Usuario`, `Contraseña`, `Aplicación` y `Fecha de caducidad`.</li>
+                <li><strong>Botón Mes Gratis:</strong> Solo se activa si el cliente tiene **3 o más recomendaciones registradas**.</li>
+            </ul>
+
+            <h4>3. Modal de Edición</h4>
+            <p>La ventana de edición está optimizada (Scrollable y responsive) para funcionar correctamente en **móvil y PC**.</p>
+            <ul>
+                <li>**Teléfono:** El campo ya viene con el prefijo `+34` por defecto.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+
 </main>
 
 <footer></footer>
@@ -148,33 +179,33 @@
     <form id="form-edit">
 
       <label>Nombre</label>
-      <input type="text" id="e-nombre" required />
+      <input type="text" id="e-nombre" required /> 
       
       <label>Teléfono (Ej: 34600123456)</label>
-      <input type="text" id="e-telefono" placeholder="Código de país + número (sin espacios)" />
+      <input type="text" id="e-telefono" placeholder="Código de país + número (sin espacios)" /> 
 
       <div class="row">
         <div>
           <label>Fecha de creación</label>
-          <input type="date" id="e-creacion" required />
+          <input type="date" id="e-creacion" required /> 
         </div>
         <div>
           <label>Caducidad</label>
-          <input type="date" id="e-caducidad" required />
+          <input type="date" id="e-caducidad" required /> 
         </div>
       </div>
 
       <label>Usuario</label>
-      <input type="text" id="e-usuario" />
+      <input type="text" id="e-usuario" /> 
 
       <label>Contraseña</label>
-      <input type="text" id="e-contrasena" />
+      <input type="text" id="e-contrasena" /> 
 
       <label>Dispositivo utilizado</label>
-      <input type="text" id="e-dispositivo" />
+      <input type="text" id="e-dispositivo" /> 
 
       <label>Aplicación</label>
-      <select id="e-aplicacion">
+      <select id="e-aplicacion"> 
         <option value="Spinning TV">Spinning TV</option>
         <option value="Spinning IBO">Spinning IBO</option>
         <option value="Spinning Mate">Spinning Mate</option>
@@ -215,8 +246,7 @@
 <div id="notifications-container"></div>
 
 
-<!-- 2. Enlace a tu lógica JavaScript -->
-<!-- "type=module" es CRÍTICO porque tu script usa "import" -->
+<!-- CORRECCIÓN DE RUTA: Ruta relativa simple, asume que script.js está junto a index.html -->
 <script type="module" src="script.js"></script>
 
 </body>
