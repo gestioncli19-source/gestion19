@@ -739,7 +739,7 @@ function renderDashboard(list){
     
     // GENERACIÓN CONDICIONAL DEL BOTÓN WHATSAPP
     const whatsappBtn = item.telefono && item.telefono.length > 5 ? 
-        `<button class="btn whatsapp-alert" onclick="sendWhatsappAlert('${item.id}')">¡Avisar! 💬</button>` : '';
+        `<button class="btn whatsapp-alert" onclick="sendWhatsappAlert('${item.id}')">Avisar💬</button>` : '';
 
     const card = document.createElement('div');
     card.className = "card exp-card";
