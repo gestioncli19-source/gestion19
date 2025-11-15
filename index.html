@@ -20,6 +20,11 @@
     .menu button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer; transition: background 0.2s}
     .menu button:hover { background: rgba(255,255,255,0.05); }
     .menu button.active{background:var(--accent);color:#052018;border:none}
+    /* NUEVO: Estilos para el botón de Engranaje */
+    .menu button#nav-settings {
+        font-size: 18px; 
+        padding: 8px 10px; 
+    }
     main{display:grid;grid-template-columns:1fr;gap:18px}
     .cards-col{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:18px;}
     .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
@@ -48,12 +53,12 @@
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn.edit{background:#1f2937;color:#e6eef6}
     .btn.renew{background:#064e3b;color:var(--accent)}
-    .btn.free-month{background:#0b2e3b;color:var(--accent); border: 1px solid rgba(110, 231, 183, 0.3);} /* NUEVO */
+    .btn.free-month{background:#0b2e3b;color:var(--accent); border: 1px solid rgba(110, 231, 183, 0.3);} 
     .btn.copy{background:#0b1220;color:var(--muted);border:1px solid rgba(255,255,255,0.03)}
     .btn.delete{background:#3b0b0b;color:#ffcfcf}
     .btn.export{background:var(--yellow);color:#212108;}
     .btn.history{background:#0f172a;color:var(--accent); border: 1px solid var(--accent);} 
-    .btn.whatsapp-alert{background:var(--whatsapp);color:#0f1724; font-weight: 700; border: none;} /* NUEVO */
+    .btn.whatsapp-alert{background:var(--whatsapp);color:#0f1724; font-weight: 700; border: none;} 
 
     .card-form{background:var(--card);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04)}
     form{display:grid;gap:10px}
@@ -219,8 +224,7 @@
       <button id="nav-dashboard" class="active">Dashboard</button>
       <button id="nav-clientes">Clientes</button>
       <button id="nav-add">Añadir cliente</button>
-      <button id="nav-settings">Ajustes</button>
-      <button id="nav-logout" class="btn delete" style="margin-left: 12px;">Cerrar Sesión</button>
+      <button id="nav-settings" style="font-size: 18px;">⚙️</button>
     </div>
   </nav>
 </header>
@@ -248,7 +252,6 @@
   <div class="card-form">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
       <h3>Clientes</h3>
-      <button id="btn-export-csv" class="btn export">Exportar a CSV 📥</button>
     </div>
     
     <input type="text" id="search-input" placeholder="Buscar por Nombre, Usuario o Aplicación..." style="margin-bottom: 12px;" />
@@ -317,7 +320,7 @@
 <section id="section-settings" style="display:none">
   <div class="card-form">
     <h3>Ajustes de la aplicación</h3>
-    <p style="color:var(--muted);">Aquí puedes volver a poner la configuración predefinida que tenías. Si tienes la configuración guardada en un código anterior, puedes pegarla aquí.</p>
+    <p style="color:var(--muted);">Establece las opciones por defecto para la aplicación.</p>
     
     <form id="form-settings">
         <label>Aplicación por defecto (p.ej. para el formulario Añadir)</label>
@@ -333,6 +336,21 @@
 
         <button type="submit" class="btn edit" style="margin-top: 15px;">Guardar Ajustes</button>
     </form>
+    
+    <h3 style="margin-top: 25px;">Herramientas de Datos</h3>
+    <p style="color:var(--muted);">Importa y exporta la base de datos de clientes.</p>
+
+    <div style="display:flex; gap: 10px; flex-wrap: wrap; margin-bottom: 25px;">
+        <button id="btn-export-csv" class="btn export">Exportar a CSV 📥</button>
+
+        <label for="file-import" class="btn edit" style="cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+            Importar CSV 📤
+        </label>
+        <input type="file" id="file-import" accept=".csv" style="display: none;" />
+    </div>
+
+    <h3 style="margin-top: 10px;">Sesión</h3>
+    <button id="btn-settings-logout" class="btn delete" style="margin-top: 5px;">Cerrar Sesión</button>
 
   </div>
 </section>
@@ -451,7 +469,6 @@ const formLogin = document.getElementById('form-login');
 const loginEmail = document.getElementById('login-email');
 const loginPassword = document.getElementById('login-password');
 const loginErrorMessage = document.getElementById('login-error-message');
-const navLogout = document.getElementById('nav-logout');
 
 // Main UI Elements
 const navDashboard = document.getElementById('nav-dashboard');
@@ -477,7 +494,6 @@ const modalCancel = document.getElementById('modal-cancel');
 const historyModal = document.getElementById('history-modal');
 const historyModalClose = document.getElementById('history-modal-close');
 
-
 // FORM ADD
 const formAdd = document.getElementById('form-add');
 const fReset = document.getElementById('f-reset');
@@ -497,6 +513,12 @@ const formSettings = document.getElementById('form-settings');
 const sRenovacionDefault = document.getElementById('s-renovacion-default');
 let defaultRenovationMonths = 3; 
 
+// NUEVOS ELEMENTOS DE AJUSTES/HERRAMIENTAS
+const btnExportCsv = document.getElementById('btn-export-csv'); 
+const fileImport = document.getElementById('file-import'); 
+const btnLogoutSettings = document.getElementById('btn-settings-logout'); 
+
+
 // VARIABLES GLOBALES
 let cachedList = []; 
 let currentRecommendations = []; 
@@ -504,7 +526,7 @@ let cachedClientNames = new Set();
 const col = collection(db, "clientes");
 let currentUID = null; 
 
-// --- FUNCIONES AUXILIARES (MOVIDAS AL INICIO) ---
+// --- FUNCIONES AUXILIARES ---
 
 function getNewCaducidad(currentDate, months) {
     let date = currentDate ? new Date(currentDate) : new Date();
@@ -573,7 +595,6 @@ function getExpiryStatus(caducidad) {
     }
 }
 
-// FUNCION QUE FALTABA ESTAR DEFINIDA ANTES DE SU LLAMADA
 function updateStats(list) {
     const now = new Date();
     now.setHours(0,0,0,0);
@@ -762,11 +783,9 @@ document.getElementById('nav-settings').addEventListener('click', ()=>{
     document.getElementById('s-renovacion-default').value = defaultRenovationMonths;
 });
 
-// --- CARGA DE CLIENTES EN TIEMPO REAL ---
-
-// Esta función ahora sí puede llamar a updateStats, filterClients y renderDashboard
-// porque están definidas justo arriba.
+// --- CARGA DE CLIENTES EN TIEMPO REAL (LÓGICA MULTIUSUARIO) ---
 function startDataListener(uid) {
+    // La consulta clave que asegura que solo se carguen los clientes del usuario actual (uid)
     const q = query(col, where("userId", "==", uid), orderBy("caducidad", "desc"));
 
     onSnapshot(q, (snapshot) => {
@@ -779,7 +798,6 @@ function startDataListener(uid) {
             cachedClientNames.add(client.nombre.toLowerCase());
         });
         
-        // Llamadas de función que antes daban error
         updateStats(cachedList); 
         filterClients(searchInput.value);
         renderDashboard(cachedList);
@@ -936,7 +954,6 @@ window.openEdit = function(id){
   document.getElementById('modal').classList.add('show');
 };
 
-// ... (El resto de funciones de lógica de tags, autocompletado y historial se mantienen aquí)
 function setupRecommendationEvents(addBtn, inputField, tagsDiv) {
     
     const renderTags = () => {
@@ -1089,6 +1106,156 @@ async function openHistoryModal(clientId) {
 // FIN DE OTRAS FUNCIONES
 
 
+// --- LÓGICA DE EXPORTACIÓN CSV ---
+
+// Ayuda a convertir la lista de clientes a una cadena CSV
+function convertToCsv(data) {
+    if (data.length === 0) return '';
+    
+    // Encabezados explícitos
+    const headers = ["nombre", "telefono", "creacion", "caducidad", "usuario", "contrasena", "dispositivo", "aplicacion", "recomendaciones"];
+    const csvRows = [];
+
+    // 1. Encabezados
+    csvRows.push(headers.join(','));
+
+    // 2. Datos
+    for (const client of data) {
+        const values = headers.map(header => {
+            let value = client[header] || '';
+            
+            if (header === 'recomendaciones') {
+                // Usa punto y coma como delimitador interno para las recomendaciones
+                value = Array.isArray(value) ? value.join(';') : ''; 
+            }
+            
+            // Sanitización básica: maneja comillas y saltos de línea envolviendo en comillas dobles
+            value = String(value).replace(/"/g, '""'); 
+            if (value.includes(',') || value.includes('\n') || value.includes(';')) {
+                value = `"${value}"`;
+            }
+            return value;
+        });
+        csvRows.push(values.join(','));
+    }
+
+    return csvRows.join('\n');
+}
+
+// Listener para el botón de exportar (ahora en la sección de ajustes)
+btnExportCsv.addEventListener('click', () => {
+    const csvContent = convertToCsv(cachedList);
+    if (!csvContent) {
+        showNotification("Error", "No hay datos de clientes para exportar.", 'error');
+        return;
+    }
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `clientes_exportados_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showNotification("Exportación Exitosa", "Se ha descargado el archivo CSV con tus clientes.", 'success');
+});
+
+// --- LÓGICA DE IMPORTACIÓN CSV ---
+
+// Función para procesar el texto CSV e importar a Firestore
+async function importClientsFromCsv(csvText) {
+    const lines = csvText.split('\n').filter(line => line.trim() !== '');
+    if (lines.length < 2) {
+        showNotification("Error", "El archivo CSV está vacío o incompleto.", 'error');
+        return;
+    }
+    
+    // Implementación simple que asume un CSV limpio con la estructura esperada (headers = lines[0])
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    const dataLines = lines.slice(1);
+    
+    const clientsToImport = [];
+
+    for (const line of dataLines) {
+        const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // RegEx para manejar comas dentro de comillas
+        if (values.length < headers.length) {
+             continue; // Ignorar líneas incompletas
+        }
+
+        const client = {};
+        for (let i = 0; i < headers.length; i++) {
+            let value = values[i] ? values[i].trim().replace(/^"|"$/g, '').replace(/""/g, '"') : ''; // Limpieza de comillas
+
+            if (headers[i] === 'recomendaciones') {
+                // Revertir el split con punto y coma
+                client[headers[i]] = value ? value.split(';').map(r => r.trim()).filter(r => r.length > 0) : [];
+            } else if (headers[i] === 'creacion' || headers[i] === 'caducidad') {
+                client[headers[i]] = new Date(value).toISOString();
+            } else {
+                client[headers[i]] = value;
+            }
+        }
+        
+        // Agregar campos obligatorios
+        client.userId = currentUID;
+        client.renovara = false; 
+        
+        if (client.nombre && client.caducidad && currentUID) {
+            clientsToImport.push(client);
+        }
+    }
+
+    if (clientsToImport.length === 0) {
+        showNotification("Error", "No se encontraron clientes válidos para importar. Asegúrate de que el formato sea correcto.", 'error');
+        return;
+    }
+
+    let importedCount = 0;
+    try {
+        for (const client of clientsToImport) {
+            const docRef = await addDoc(col, client);
+            
+            // Añadir registro de creación al historial
+            await addDoc(collection(db, "clientes", docRef.id, "renovaciones"), {
+                fecha_renovacion: new Date().toISOString(),
+                caducidad_anterior: 'Importado (CSV)',
+                nueva_caducidad: client.caducidad,
+                tipo_accion: 'Creación (CSV)', 
+                usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
+            });
+            importedCount++;
+        }
+        
+        showNotification("Importación Exitosa", `Se han importado ${importedCount} clientes. La aplicación se actualizará.`, 'success');
+        // El listener onSnapshot se encarga de refrescar la UI
+    } catch (error) {
+        showNotification("Error de Importación", `Solo se pudieron importar ${importedCount} clientes. Revisa la consola y las reglas de Firestore.`, 'error');
+        console.error("Error importing clients:", error);
+    }
+}
+
+// Listener para el input de archivo
+fileImport.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const csvText = e.target.result;
+        await importClientsFromCsv(csvText);
+        // Limpiar el input para permitir re-importar el mismo archivo
+        event.target.value = null; 
+    };
+    reader.onerror = () => {
+        showNotification("Error", "No se pudo leer el archivo.", 'error');
+    };
+    reader.readAsText(file);
+});
+
+
 // --- AUTENTICACIÓN Y GESTIÓN DE ESTADO ---
 
 onAuthStateChanged(auth, (user) => {
@@ -1127,8 +1294,8 @@ formLogin.addEventListener('submit', async e => {
     }
 });
 
-// LOGOUT
-navLogout.addEventListener('click', async () => {
+// LOGOUT (MOVIDO A AJUSTES)
+btnLogoutSettings.addEventListener('click', async () => {
     try {
         await signOut(auth);
         showNotification("Sesión Cerrada", "Has cerrado tu sesión con éxito.", 'success');
@@ -1194,7 +1361,7 @@ formAdd.addEventListener('submit', async e=>{
     aplicacion: document.getElementById('f-aplicacion').value,
     recomendaciones: currentRecommendations, 
     renovara: false,
-    userId: currentUID 
+    userId: currentUID // Clave para la segregación de datos
   };
 
   try {
@@ -1204,7 +1371,7 @@ formAdd.addEventListener('submit', async e=>{
           fecha_renovacion: new Date().toISOString(),
           caducidad_anterior: 'Nuevo Cliente',
           nueva_caducidad: data.caducidad,
-          tipo_accion: 'Creación (+3 meses)', 
+          tipo_accion: `Creación (+${defaultRenovationMonths} meses)`, 
           usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
       });
       
