@@ -35,7 +35,7 @@
     .stat p{margin:8px 0 0;font-size:20px;font-weight:600}
     .grid-clients{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
     
-    /* MEJORA 4: Color de las tarjetas de clientes */
+    /* Color de las tarjetas de clientes */
     .card{
         background:linear-gradient(180deg, #152238, #182845); /* Tonalidad azul oscura */
         padding:14px;
@@ -71,7 +71,7 @@
     .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,23,0.6),rgba(2,6,23,0.6));z-index:50}
     .modal.show{display:flex}
-    /* MEJORA 3: Ajuste del modal de edición para PC y móvil */
+    /* Ajuste del modal de edición para PC y móvil */
     .modal-inner{
         width:96%;
         max-width:720px;
@@ -192,6 +192,11 @@
         background: var(--glass);
     }
     footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
+    
+    .settings-link { color: var(--accent); text-decoration: none; display: block; padding: 10px 15px; border-radius: 8px; background: rgba(110, 231, 183, 0.1); margin-bottom: 10px; transition: background 0.2s;}
+    .settings-link:hover { background: rgba(110, 231, 183, 0.2); }
+    .settings-link.external { background: #152238; border: 1px solid rgba(255,255,255,0.06);}
+    .settings-link.external:hover { background: #1a2942; }
 
     @media (min-width: 701px) {
         .cards-col {
@@ -236,6 +241,8 @@
       <button id="nav-dashboard" class="active">Dashboard</button>
       <button id="nav-clientes">Clientes</button>
       <button id="nav-add">Añadir cliente</button>
+      <!-- Nuevo botón de AJUSTES -->
+      <button id="nav-settings">Ajustes</button>
       <button id="nav-logout" class="btn delete" style="margin-left: 12px;">Cerrar Sesión</button>
     </div>
   </nav>
@@ -329,6 +336,28 @@
     </form>
   </div>
 </section>
+
+<!-- NUEVA SECCIÓN: AJUSTES -->
+<section id="section-settings" style="display:none">
+  <div class="card-form">
+    <h3>Ajustes y Ayuda</h3>
+    
+    <h4 style="margin-top: 20px; color: var(--accent);">Documentación</h4>
+    <!-- Enlace al nuevo archivo tutorial.html -->
+    <a href="tutorial.html" target="_blank" class="settings-link external">
+        Tutorial de Uso Completo (Abrir en nueva pestaña)
+    </a>
+
+    <h4 style="margin-top: 20px; color: var(--accent);">Copia de Seguridad</h4>
+     <p style="font-size: 14px; color: var(--muted); margin-bottom: 10px;">
+        Use esta opción para descargar todos sus datos en formato CSV para mantener un respaldo.
+    </p>
+    <button id="btn-export-csv-settings" class="btn export">Exportar Base de Datos a CSV 📥</button>
+
+  </div>
+</section>
+<!-- FIN NUEVA SECCIÓN -->
+
 </main>
 
 <footer></footer>
@@ -442,6 +471,7 @@ const sections = {
     'dashboard': document.getElementById('section-dashboard'),
     'clientes': document.getElementById('section-clientes'),
     'add': document.getElementById('section-add'),
+    'settings': document.getElementById('section-settings'), // Nueva sección
 };
 const modal = document.getElementById('modal'); 
 const historyModal = document.getElementById('history-modal');
@@ -458,6 +488,11 @@ const fReset = document.getElementById('f-reset');
 const fCreacion = document.getElementById('f-creacion');
 const fCaducidad = document.getElementById('f-caducidad'); 
 const fTelefono = document.getElementById('f-telefono'); 
+
+
+// EXPORT BUTTONS
+const btnExport = document.getElementById('btn-export-csv');
+const btnExportSettings = document.getElementById('btn-export-csv-settings');
 
 
 // VARIABLES GLOBALES
@@ -545,14 +580,12 @@ function setActive(btn){
   btn.classList.add('active');
 }
 
-// ** FUNCIÓN PARA CAMBIAR DE SECCIÓN Y GESTIONAR LA VISTA ** (FIX)
-function switchSection(target) {
+// ** FUNCIÓN PARA CAMBIAR DE SECCIÓN Y GESTIONAR LA VISTA ** function switchSection(target) {
     Object.keys(sections).forEach(key => {
         sections[key].style.display = 'none';
     });
-    // La sección clientes usa 'grid' y las otras 'grid' en el main, pero para el display inicial solo ponemos 'grid'
-    // La sección 'add' también es una 'grid'
-    sections[target].style.display = 'grid'; 
+    // Todas las secciones usan display: grid excepto la de settings, que podría usar 'block' o 'grid'
+    sections[target].style.display = (target === 'settings') ? 'block' : 'grid'; 
     const btn = document.getElementById(`nav-${target}`);
     if(btn) setActive(btn);
 
@@ -599,7 +632,7 @@ function getExpired(list) {
 }
 
 
-// --- AUTENTICACIÓN Y GESTIÓN DE ESTADO (FIX) ---
+// --- AUTENTICACIÓN Y GESTIÓN DE ESTADO ---
 
 function handleAuthStatus(user) {
     if (user) {
@@ -653,7 +686,7 @@ document.getElementById('nav-logout').addEventListener('click', async () => {
 });
 
 
-// 3. Oyentes de Navegación (FIX)
+// 3. Oyentes de Navegación (INCLUYENDO AJUSTES)
 document.getElementById('nav-dashboard').addEventListener('click', ()=> switchSection('dashboard'));
 document.getElementById('nav-clientes').addEventListener('click', ()=> switchSection('clientes'));
 document.getElementById('nav-add').addEventListener('click', ()=>{
@@ -661,7 +694,7 @@ document.getElementById('nav-add').addEventListener('click', ()=>{
     setDefaultDates(); 
     fTelefono.value = '+34'; // Asegurar +34 al abrir
 });
-
+document.getElementById('nav-settings').addEventListener('click', ()=> switchSection('settings')); // Nuevo
 
 
 // --- CARGA DE CLIENTES EN TIEMPO REAL ---
@@ -736,7 +769,7 @@ function filterClients(searchTerm = '', filter = 'all') {
 }
 
 
-// MEJORA 1: FUNCIÓN CLAVE: RENDERIZADO DEL DASHBOARD ACTUALIZADO (VISUALIZACIÓN EN FILA Y ESTILO DISTINTO)
+// FUNCIÓN: RENDERIZADO DEL DASHBOARD ACTUALIZADO (VISUALIZACIÓN EN FILA Y ESTILO DISTINTO)
 window.toggleRenovara = async function(checkbox) {
     const id = checkbox.dataset.id;
     const newValue = checkbox.checked;
@@ -799,7 +832,7 @@ function renderDashboard(list){
 }
 
 
-// MEJORA 2: FUNCIÓN COPYPASSWORD ACTUALIZADA
+// FUNCIÓN COPYPASSWORD ACTUALIZADA
 window.copyPassword = function(id) {
     const item = cachedList.find(i => i.id === id);
     if (!item) return;
@@ -814,7 +847,7 @@ window.copyPassword = function(id) {
     navigator.clipboard.writeText(textToCopy).then(() => {
         showNotification("Copiado", "Usuario, Contraseña, Aplicación y Caducidad copiados.", 'success');
     }).catch(err => {
-        showNotification("Error", "No se pudo copiar el texto.", 'error');
+        showNotification("Error", "No se pudo copiar el texto. (Asegúrate de que la ventana está activa)", 'error');
         console.error('Error al copiar: ', err);
     });
 }
@@ -822,7 +855,7 @@ window.copyPassword = function(id) {
 // *** FUNCIÓN WHATSAPP ***
 window.sendWhatsappAlert = function(id) {
     const item = cachedList.find(i => i.id === id);
-    if (!item || !item.telefono || item.telefono.length < 6) {
+    if (!item || !item.telefono || item.telefono.length < 5) {
         showNotification("Error", "Teléfono no válido o faltante.", 'error');
         return;
     }
@@ -837,7 +870,7 @@ window.sendWhatsappAlert = function(id) {
     showNotification("Alerta enviada", `Se abrió WhatsApp para enviar mensaje a ${item.nombre}.`, 'success');
 }
 
-// MEJORA 5: FUNCIÓN MES GRATIS CON CONDICIÓN DE RECOMENDACIONES
+// FUNCIÓN MES GRATIS CON CONDICIÓN DE RECOMENDACIONES
 window.addFreeMonth = async function(id) {
     const item = cachedList.find(i => i.id === id);
     if(!item) return;
@@ -905,7 +938,7 @@ window.renewItem = async function(id){
   }
 }
 
-// ... (El resto de la lógica de Autocompletado, Renderizado de Recomendaciones, Delete, etc. )
+
 window.openEdit = function(id){
     const item = cachedList.find(i => i.id === id);
     if(!item) return;
@@ -915,7 +948,7 @@ window.openEdit = function(id){
     renderRecommendations(currentRecommendations, document.getElementById('e-recommended-clients'), 'e');
 
     document.getElementById('e-nombre').value = item.nombre;
-    // MEJORA 6: Valor por defecto "+34" si el campo está vacío
+    // Valor por defecto "+34" si el campo está vacío
     document.getElementById('e-telefono').value = item.telefono || "+34"; 
     document.getElementById('e-creacion').value = isoForInput(item.creacion);
     document.getElementById('e-caducidad').value = isoForInput(item.caducidad);
@@ -963,7 +996,6 @@ const addRecommendationLogic = (prefix) => {
             renderRecommendations(currentRecommendations, container, prefix);
         }
     };
-    // ... (Logica de autocompletado si se añade más tarde)
 };
 
 addRecommendationLogic('f');
@@ -1033,7 +1065,7 @@ formAdd.addEventListener('submit', async e=>{
       setDefaultDates(); 
       currentRecommendations = [];
       document.getElementById('f-recommended-clients').innerHTML = '';
-      document.getElementById('f-telefono').value = '+34'; // MEJORA 6: Resetear teléfono a +34
+      document.getElementById('f-telefono').value = '+34'; // Resetear teléfono a +34
   } catch (error) {
       showNotification("Error de Creación", "No se pudo añadir el nuevo cliente. (Revisa reglas de Firestore)", 'error');
       console.error("Error adding item:", error);
@@ -1045,7 +1077,7 @@ fReset.addEventListener('click', ()=> {
     setDefaultDates();
     currentRecommendations = [];
     document.getElementById('f-recommended-clients').innerHTML = '';
-    document.getElementById('f-telefono').value = '+34'; // MEJORA 6: Resetear teléfono a +34
+    document.getElementById('f-telefono').value = '+34'; // Resetear teléfono a +34
 });
 
 // *** HISTORIAL ***
@@ -1142,7 +1174,12 @@ function renderClients(list){
 }
 
 window.deleteItem = async function(id) {
-    if (!confirm("¿Estás seguro de que quieres eliminar este cliente?")) return;
+    // Usamos una notificación simple para evitar alert()
+    const confirmation = window.prompt("Escribe 'ELIMINAR' para confirmar la eliminación de este cliente:");
+    if (confirmation !== 'ELIMINAR') {
+        showNotification("Cancelado", "Eliminación cancelada.", 'error');
+        return;
+    }
 
     try {
         await deleteDoc(doc(db, "clientes", id));
@@ -1153,6 +1190,66 @@ window.deleteItem = async function(id) {
     }
 }
 
+// CSV Export Logic (shared by both buttons)
+function exportToCsv(filename, list) {
+    const header = [
+        "ID", "Nombre", "Telefono", "Creacion", "Caducidad", "Usuario", 
+        "Contrasena", "Dispositivo", "Aplicacion", "Renovara", "Recomendaciones"
+    ];
+    
+    // Función para sanitizar un campo y envolverlo en comillas si contiene comas
+    const escapeCsv = (data) => {
+        if (data === null || data === undefined) return '';
+        let str = String(data);
+        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+            // Reemplazar comillas internas con doble comilla y envolver en comillas
+            return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+    };
+
+    const rows = list.map(item => [
+        escapeCsv(item.id),
+        escapeCsv(item.nombre),
+        escapeCsv(item.telefono),
+        escapeCsv(formatDate(item.creacion)),
+        escapeCsv(formatDate(item.caducidad)),
+        escapeCsv(item.usuario),
+        escapeCsv(item.contrasena),
+        escapeCsv(item.dispositivo),
+        escapeCsv(item.aplicacion),
+        escapeCsv(item.renovara ? 'Sí' : 'No'),
+        escapeCsv(item.recomendaciones ? item.recomendaciones.join('; ') : '')
+    ]);
+
+    let csvContent = header.join(",") + "\n";
+    rows.forEach(row => {
+        csvContent += row.join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    if (link.download !== undefined) { 
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showNotification("Exportación Exitosa", `Se ha descargado el archivo ${filename}.`, 'success');
+    } else {
+        showNotification("Error de Exportación", "Su navegador no soporta la descarga de archivos.", 'error');
+    }
+}
+
+// Attach export functionality to both buttons
+btnExport.addEventListener('click', () => {
+    exportToCsv('clientes_exportados.csv', cachedList);
+});
+btnExportSettings.addEventListener('click', () => {
+    exportToCsv('clientes_exportados.csv', cachedList);
+});
 
 </script>
 </body>
