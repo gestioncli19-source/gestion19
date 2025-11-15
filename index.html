@@ -8,33 +8,38 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
+    /* VARIABLES Y ESTILOS BASE (MÓVIL-FIRST) */
     :root{--bg:#0f1724;--card:#0b1220;--muted:#9aa4b2;--accent:#6ee7b7;--glass:rgba(255,255,255,0.03);--red:#ef4444;--green:#10b981;--yellow:#f59e0b;--whatsapp:#25d366;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
     *{box-sizing:border-box}
     body{margin:0;background:linear-gradient(180deg,#071022 0%, #07132a 100%);color:#e6eef6;min-height:100vh}
     .container{max-width:1100px;margin:0 auto;padding:18px}
-    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+    
+    /* CABECERA (Se ajusta a móvil por defecto, apilando elementos) */
+    header{display:flex;flex-direction: column; align-items: flex-start; gap:12px;margin-bottom:18px}
     .brand{display:flex;align-items:center;gap:12px}
     .logo{width:46px;height:46px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#013220;font-weight:700}
-    nav{margin-left:auto}
-    .menu{display:flex;gap:8px}
-    .menu button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer; transition: background 0.2s}
+    nav{margin-left:0; width: 100%;}
+    .menu{display:flex;gap:8px; flex-wrap: wrap;}
+    .menu button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer; transition: background 0.2s; flex-grow: 1;}
     .menu button:hover { background: rgba(255,255,255,0.05); }
     .menu button.active{background:var(--accent);color:#052018;border:none}
+    
     main{display:grid;grid-template-columns:1fr;gap:18px}
+    
+    /* GRID DE ESTADÍSTICAS (Por defecto: 1 columna, Desktop: 3 columnas) */
     .cards-col{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:18px;}
-    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+    
+    /* GRID DE CLIENTES (Por defecto: 1 columna, Desktop: 2+ columnas) */
+    .cards{display:grid;grid-template-columns:1fr;gap:12px} /* Dashboard Soon Exp */
+    .grid-clients{display:grid;grid-template-columns:1fr;gap:12px} /* Clientes List */
+    
     .stat{background:var(--glass);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
-    .stat-clickable {
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-    .stat-clickable:hover {
-        background: rgba(255,255,255,0.05);
-    }
+    .stat-clickable { cursor: pointer; transition: background 0.2s; }
+    .stat-clickable:hover { background: rgba(255,255,255,0.05); }
     .stat h3{margin:0;font-size:12px;color:var(--muted)}
     .stat p{margin:8px 0 0;font-size:20px;font-weight:600}
-    .grid-clients{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
-    /* NUEVO: Indicadores de estado en tarjetas */
+    
+    /* Estilos de Card */
     .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);position:relative}
     .card.status-red{border-left: 4px solid var(--red);}
     .card.status-yellow{border-left: 4px solid var(--yellow);}
@@ -43,13 +48,9 @@
     .card h4{margin:0 0 6px}
     .meta{font-size:12px;color:var(--muted);margin-bottom:8px}
     .tags{display:flex;gap:6px;flex-wrap:wrap}
-    .tag-label { 
-        background: rgba(110, 231, 183, 0.1); 
-        color: var(--accent);
-        font-size: 11px;
-        padding: 3px 6px;
-        border-radius: 4px;
-    }
+    .tag-label { background: rgba(110, 231, 183, 0.1); color: var(--accent); font-size: 11px; padding: 3px 6px; border-radius: 4px; }
+    
+    /* Botones y acciones (importante que envuelvan/wrap en móvil) */
     .btns{display:flex;gap:6px;margin-top:10px; flex-wrap: wrap;}
     .btn{padding:8px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:600; transition: opacity 0.2s}
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -62,16 +63,22 @@
     .btn.history{background:#0f172a;color:var(--accent); border: 1px solid var(--accent);} 
     .btn.whatsapp-alert{background:var(--whatsapp);color:#0f1724; font-weight: 700; border: none;} 
 
+    /* Formularios y Modales */
     .card-form{background:var(--card);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04)}
     form{display:grid;gap:10px}
     label{font-size:13px;color:var(--muted)}
     input[type=text],input[type=date],textarea,select,input[type=email],input[type=password]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
     textarea{min-height:90px;resize:vertical}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,23,0.6),rgba(2,6,23,0.6));z-index:50}
+    
+    /* Filas de formulario (Por defecto: 1 columna, Desktop: 2 columnas) */
+    .row{display:grid;grid-template-columns:1fr;gap:8px} 
+
+    /* Modales */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,23,0.8),rgba(2,6,23,0.8));z-index:50}
     .modal.show{display:flex}
     .modal-inner{width:96%;max-width:720px;background:var(--card);padding:16px;border-radius:12px}
-    /* ESTILOS DE NOTIFICACIÓN */
+
+    /* Notificaciones */
     #notifications-container { position: fixed; top: 18px; right: 18px; z-index: 100; display: flex; flex-direction: column; gap: 8px; }
     .toast { background: var(--card); color: #e6eef6; padding: 12px 18px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); min-width: 250px; max-width: 350px; opacity: 0; transition: opacity 0.3s, transform 0.3s; transform: translateY(-20px); }
     .toast.show { opacity: 1; transform: translateY(0); }
@@ -79,95 +86,64 @@
     .toast.error { border-left: 4px solid var(--red); }
     .toast strong { display: block; margin-bottom: 4px; font-size: 14px; }
     .toast p { margin: 0; font-size: 13px; color: var(--muted); }
-    /* Login Screen Styles */
-    #section-login {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: linear-gradient(180deg,#071022 0%, #07132a 100%);
-        align-items: center;
-        justify-content: center;
-        z-index: 90;
-    }
+    
+    /* Login */
+    #section-login { display: none; position: fixed; inset: 0; background: linear-gradient(180deg,#071022 0%, #07132a 100%); align-items: center; justify-content: center; z-index: 90; }
     #section-login.show { display: flex; }
-    .login-box {
-        background: var(--card);
-        padding: 30px;
-        border-radius: 16px;
-        max-width: 400px;
-        width: 90%;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        border: 1px solid rgba(255,255,255,0.05);
-    }
+    .login-box { background: var(--card); padding: 30px; border-radius: 16px; max-width: 400px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); }
     .login-box h2 { text-align: center; margin-top: 0; color: var(--accent); }
     #login-error-message { color: var(--red); font-size: 13px; text-align: center; margin-top: 5px; height: 18px; }
 
-    /* Dashboard: checkbox */
-    .exp-card .flex-end { display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
-    /* Estilos de Recomendaciones (etc) */
-    .dynamic-input-container {
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid rgba(255,255,255,0.04);
-        background: transparent;
-        position: relative; 
-    }
-    .tag-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-bottom: 8px;
-        min-height: 18px;
-    }
-    .recommendation-tag {
-        background: var(--accent);
-        color: #052018;
-        padding: 4px 8px;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        font-size: 13px;
-        font-weight: 600;
-        line-height: 1;
-    }
-    .recommendation-tag button {
-        background: none;
-        border: none;
-        color: #052018;
-        margin-left: 6px;
-        cursor: pointer;
-        font-weight: 700;
-        line-height: 1;
-        padding: 0;
-    }
-    .input-add-row {
-        display: flex;
-        gap: 8px;
-    }
-    .input-add-row input[type=text] {
-        flex-grow: 1;
-        padding: 6px 10px; 
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-    .input-add-row button {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        padding: 0;
-        font-size: 18px;
-        line-height: 1;
-    }
+    /* Estilos dinámicos (Recomendaciones) */
+    .dynamic-input-container { padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04); background: transparent; position: relative; }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; min-height: 18px; }
+    .recommendation-tag { background: var(--accent); color: #052018; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; font-size: 13px; font-weight: 600; line-height: 1; }
+    .recommendation-tag button { background: none; border: none; color: #052018; margin-left: 6px; cursor: pointer; font-weight: 700; line-height: 1; padding: 0; }
+    .input-add-row { display: flex; gap: 8px; }
+    .input-add-row input[type=text] { flex-grow: 1; padding: 6px 10px; border: 1px solid rgba(255,255,255,0.1); }
+    .input-add-row button { width: 32px; height: 32px; border-radius: 8px; padding: 0; font-size: 18px; line-height: 1; }
     footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
 
+    /* ************************************** */
+    /* DISEÑO ADAPTABLE (PC / PANTALLAS GRANDES) */
+    /* ************************************** */
     @media (min-width: 701px) {
+        /* HEADER: Cambia a horizontal */
+        header {
+            flex-direction: row;
+            align-items: center;
+        }
+        nav {
+            margin-left: auto;
+            width: auto;
+        }
+        .menu button {
+            flex-grow: 0; /* Desactiva flex-grow para que los botones no se estiren */
+        }
+        
+        /* DASHBOARD: 3 Columnas */
         .cards-col {
             grid-template-columns: repeat(3, 1fr);
         }
+        
+        /* CLIENTES: Multi-columna (Autoajustable) */
+        .cards{
+            grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+        }
+        .grid-clients {
+            grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
+        }
+        
+        /* FORMULARIOS: 2 Columnas */
+        .row{
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        /* MODAL: Ancho fijo para historial */
         .modal-inner.history { 
              max-width: 450px;
         }
     }
-    @media (max-width:700px){.row{grid-template-columns:1fr}.menu{display:flex;gap:6px}}
   </style>
 </head>
 
@@ -230,7 +206,7 @@
   <div class="card-form">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
       <h3>Clientes</h3>
-      </div>
+    </div>
     
     <input type="text" id="search-input" placeholder="Buscar por Nombre, Usuario o Aplicación..." style="margin-bottom: 12px;" />
 
@@ -429,14 +405,14 @@ const loginErrorMessage = document.getElementById('login-error-message');
 const navDashboard = document.getElementById('nav-dashboard');
 const navClientes = document.getElementById('nav-clientes');
 const navAdd = document.getElementById('nav-add');
-const navSettings = document.getElementById('nav-settings'); // NUEVO
-const navLogoutSettings = document.getElementById('nav-logout-settings'); // NUEVO: Cerrar sesión en Ajustes
+const navSettings = document.getElementById('nav-settings');
+const navLogoutSettings = document.getElementById('nav-logout-settings');
 
 // SECCIONES PRINCIPALES
 const sectionDashboard = document.getElementById('section-dashboard');
 const sectionClientes = document.getElementById('section-clientes');
 const sectionAdd = document.getElementById('section-add');
-const sectionSettings = document.getElementById('section-settings'); // NUEVO
+const sectionSettings = document.getElementById('section-settings');
 
 // ELEMENTOS CSV
 const btnImportCsv = document.getElementById('btn-import-csv'); 
@@ -545,7 +521,7 @@ function setActive(btn){
   sectionDashboard.style.display = 'none';
   sectionClientes.style.display = 'none';
   sectionAdd.style.display = 'none';
-  sectionSettings.style.display = 'none'; // NUEVO
+  sectionSettings.style.display = 'none';
 
   if(btn === navDashboard){
     sectionDashboard.style.display = 'block';
@@ -555,7 +531,7 @@ function setActive(btn){
   } else if (btn === navAdd){
     sectionAdd.style.display = 'block';
     setDefaultDates(); 
-  } else if (btn === navSettings){ // NUEVO
+  } else if (btn === navSettings){
     sectionSettings.style.display = 'block';
   }
 }
@@ -563,7 +539,7 @@ function setActive(btn){
 navDashboard.addEventListener('click', ()=>setActive(navDashboard));
 navClientes.addEventListener('click', ()=>setActive(navClientes));
 navAdd.addEventListener('click', ()=>setActive(navAdd));
-navSettings.addEventListener('click', ()=>setActive(navSettings)); // NUEVO
+navSettings.addEventListener('click', ()=>setActive(navSettings));
 
 // --- AUTENTICACIÓN Y GESTIÓN DE ESTADO ---
 
@@ -593,7 +569,7 @@ formLogin.addEventListener('submit', async (e) => {
     }
 });
 
-// Lógica de Logout (AHORA EN SECCIÓN AJUSTES)
+// Lógica de Logout
 navLogoutSettings.addEventListener('click', async () => {
     try {
         await signOut(auth);
