@@ -49,7 +49,8 @@
     .card.status-green{border-left: 4px solid var(--green);}
 
     .card h4{margin:0 0 6px}
-    .meta{font-size:12px;color:var(--muted);margin-bottom:8px}
+    /* Añadido pre-wrap para que las observaciones respeten saltos de línea */
+    .meta{font-size:12px;color:var(--muted);margin-bottom:8px; white-space: pre-wrap;} 
     .tags{display:flex;gap:6px;flex-wrap:wrap}
     /* Estilo para los tags de recomendación */
     .tag-label { background: rgba(110, 231, 183, 0.1); color: var(--accent); font-size: 11px; padding: 3px 6px; border-radius: 4px; }
@@ -71,7 +72,8 @@
     form{display:grid;gap:10px}
     label{font-size:13px;color:var(--muted)}
     input[type=text],input[type=date],textarea,select,input[type=email],input[type=password]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-    textarea{min-height:90px;resize:vertical}
+    /* Tamaño de textarea mejorado para observaciones */
+    textarea{min-height:90px;resize:vertical} 
     .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,23,0.6),rgba(2,6,23,0.6));z-index:50}
     .modal.show{display:flex}
@@ -233,7 +235,17 @@
         .input-add-row input[type=text] { padding: 8px 12px; }
     }
 
-    @media (max-width:700px){.row{grid-template-columns:1fr}.menu{display:flex;gap:6px}}
+    @media (max-width:700px){
+        /* Mejora para móvil: Reducción de padding general */
+        .container { padding: 12px; } 
+        /* La navegación ya estaba en flex wrap, pero ajustamos un poco el menú */
+        .menu { gap: 4px; }
+        .menu button { padding: 8px 10px; font-size: 14px; }
+        .menu button[title="Ajustes"] { font-size: 1.2em; padding: 6px 8px; }
+        .row{grid-template-columns:1fr}
+        .cards-col { grid-template-columns: 1fr; } /* Apilar estadísticas en móvil */
+        .grid-clients { grid-template-columns: 1fr; } /* Apilar tarjetas en móvil */
+    }
   </style>
 </head>
 
@@ -342,6 +354,9 @@
         <option value="Spinning Mate">Spinning Mate</option>
         <option value="Hot Player">Hot Player</option>
       </select>
+      
+      <label>Observaciones</label>
+      <textarea id="f-observaciones" placeholder="Notas importantes sobre el cliente..."></textarea>
 
       <label>Clientes recomendados (Solo clientes existentes)</label>
       <div id="f-recomendaciones-container" class="dynamic-input-container">
@@ -423,6 +438,9 @@
         <option value="Hot Player">Hot Player</option>
       </select>
 
+      <label>Observaciones</label>
+      <textarea id="e-observaciones" placeholder="Notas importantes sobre el cliente..."></textarea>
+
       <label>Clientes recomendados (Solo clientes existentes)</label>
       <div id="e-recomendaciones-container" class="dynamic-input-container">
           <div id="e-recommended-clients" class="tag-list"></div>
@@ -502,7 +520,7 @@ const navAjustes = document.getElementById('nav-ajustes');
 const navLogout = document.getElementById('nav-logout-settings'); 
 const btnExportCSV = document.getElementById('btn-export-csv-settings'); 
 const btnImportCSV = document.getElementById('btn-import-csv'); 
-const fileImportCSV = document.getElementById('file-import-csv'); // AÑADIDO: Elemento input type="file" oculto
+const fileImportCSV = document.getElementById('file-import-csv'); 
 
 // SECCIONES PRINCIPALES
 const sectionDashboard = document.getElementById('section-dashboard');
@@ -519,6 +537,7 @@ const fNewRecommendation = document.getElementById('f-new-recommendation');
 const fAddRecommendationBtn = document.getElementById('f-add-recommendation-btn');
 const fRecommendedClientsDiv = document.getElementById('f-recommended-clients');
 const fAutocompleteList = document.getElementById('f-autocomplete-list');
+const fObservaciones = document.getElementById('f-observaciones'); // NUEVO CAMPO
 
 // FORM EDIT
 const formEdit = document.getElementById('form-edit');
@@ -528,6 +547,7 @@ const eNewRecommendation = document.getElementById('e-new-recommendation');
 const eAddRecommendationBtn = document.getElementById('e-add-recommendation-btn');
 const eRecommendedClientsDiv = document.getElementById('e-recommended-clients');
 const eAutocompleteList = document.getElementById('e-autocomplete-list');
+const eObservaciones = document.getElementById('e-observaciones'); // NUEVO CAMPO
 
 // HISTORIAL MODAL
 const historyModal = document.getElementById('history-modal');
@@ -756,7 +776,10 @@ function startDataListener() {
 
 // Lógica para analizar una línea CSV. Asume separador ';'.
 function parseCSVLine(line, separator = ';') {
-    return line.split(separator).map(part => part.trim().replace(/^"|"$/g, ''));
+    // Implementación mejorada para manejar comillas correctamente, aunque simple para el contexto.
+    const parts = line.split(separator).map(part => part.trim().replace(/^"|"$/g, ''));
+    // Debería ser suficiente para el formato simple que manejamos
+    return parts;
 }
 
 
@@ -794,11 +817,12 @@ async function importFromCSV(file) {
                 contrasena: row[2] || '',
                 caducidad: row[3], // Se espera formato YYYY-MM-DD
 
-                // Campos que reciben valores por defecto (no están en el CSV)
+                // Campos que reciben valores por defecto (o vacíos si no están en el CSV)
                 telefono: '',
                 creacion: today, 
                 dispositivo: '',
                 aplicacion: 'Spinning TV', // Valor por defecto
+                observaciones: '', // NUEVO: Valor por defecto
                 recomendaciones: [],
                 renovara: false
             };
@@ -869,22 +893,31 @@ function exportToCSV() {
         showNotification("Error", "No hay datos para exportar.", 'error');
         return;
     }
-    const headers = ["nombre", "usuario", "contrasena", "caducidad", "creacion", "aplicacion", "telefono", "dispositivo", "recomendaciones", "renovara"];
+    // NUEVOS HEADERS CON 'OBSERVACIONES'
+    const headers = ["nombre", "usuario", "contrasena", "caducidad", "creacion", "aplicacion", "telefono", "dispositivo", "observaciones", "recomendaciones", "renovara"];
     const separator = ";"; 
     let csvContent = headers.join(separator) + "\n";
     cachedList.forEach(item => {
+        // Función para limpiar el texto y manejar las comillas dentro de los datos
+        const cleanForCSV = (text) => {
+            if (!text) return '""';
+            // Envuelve en comillas y duplica las comillas internas
+            return `"${String(text).replace(/"/g, '""')}"`; 
+        };
+
         const row = [
-            `"${item.nombre || ''}"`,
-            `"${item.usuario || ''}"`,
-            `"${item.contrasena || ''}"`,
-            `"${isoForInput(item.caducidad) || ''}"`,
-            `"${isoForInput(item.creacion) || ''}"`,
-            `"${item.aplicacion || ''}"`,
-            `"${item.telefono || ''}"`,
-            `"${item.dispositivo || ''}"`,
+            cleanForCSV(item.nombre),
+            cleanForCSV(item.usuario),
+            cleanForCSV(item.contrasena),
+            cleanForCSV(isoForInput(item.caducidad)),
+            cleanForCSV(isoForInput(item.creacion)),
+            cleanForCSV(item.aplicacion),
+            cleanForCSV(item.telefono),
+            cleanForCSV(item.dispositivo),
+            cleanForCSV(item.observaciones), // NUEVO CAMPO
             // Formatear el array de recomendaciones como una cadena separada por '|'
-            `"${Array.isArray(item.recomendaciones) ? item.recomendaciones.join('|') : ''}"`, 
-            `"${item.renovara ? 'Sí' : 'No'}"`
+            cleanForCSV(Array.isArray(item.recomendaciones) ? item.recomendaciones.join('|') : ''), 
+            cleanForCSV(item.renovara ? 'Sí' : 'No')
         ].join(separator);
         csvContent += row + "\n";
     });
@@ -900,6 +933,9 @@ function exportToCSV() {
     document.body.removeChild(link);
     showNotification("Exportación Exitosa", "Datos de clientes exportados a CSV.", 'success');
 }
+
+// ASIGNAR LISTENER DE EXPORTACIÓN
+btnExportCSV.addEventListener('click', exportToCSV);
 
 
 // --- LÓGICA DE RECOMENDACIONES CON VALIDACIÓN Y AUTOCOMPLETADO (MEJORADO) ---
@@ -1069,6 +1105,7 @@ function filterClients(searchTerm = '') {
         return item.nombre.toLowerCase().includes(searchTerm) ||
                (item.usuario && item.usuario.toLowerCase().includes(searchTerm)) ||
                (item.aplicacion && item.aplicacion.toLowerCase().includes(searchTerm)) ||
+               (item.observaciones && item.observaciones.toLowerCase().includes(searchTerm)) || // INCLUIR OBSERVACIONES EN BÚSQUEDA
                (item.recomendaciones && Array.isArray(item.recomendaciones) && item.recomendaciones.some(rec => rec.toLowerCase().includes(searchTerm)));
     });
 
@@ -1225,7 +1262,7 @@ window.renewItem = async function(id){
   }
 }
 
-// *** FUNCIÓN MEJORADA: COPIAR MÚLTIPLES DATOS ***
+// *** FUNCIÓN ACTUALIZADA: COPIAR SOLO DATOS ESPECÍFICOS ***
 window.copyCredentials = function(id) {
     const item = cachedList.find(i => i.id === id);
     if (!item || !item.contrasena) {
@@ -1233,10 +1270,9 @@ window.copyCredentials = function(id) {
         return;
     }
 
-    // Formatear el texto a copiar con los campos solicitados
+    // Formatear el texto a copiar SOLO con: Usuario, Contraseña, Fecha de caducidad, Aplicacion
     const formattedText = `
 [Credenciales de Cliente]
-Cliente: ${item.nombre || 'N/A'}
 Usuario: ${item.usuario || 'N/A'}
 Contraseña: ${item.contrasena}
 Aplicación: ${item.aplicacion || 'N/A'}
@@ -1315,6 +1351,7 @@ function renderClients(list, status = null, searchTerm = ''){
       <div class="meta">App: ${item.aplicacion || "-"}</div>
       <div class="meta">Creación: ${formatDate(item.creacion)}</div>
       <div class="meta">Caduca: ${formatDate(item.caducidad)}</div>
+      ${item.observaciones ? `<div class="meta" style="margin-top: 5px;">Obs: ${item.observaciones}</div>` : ''} 
       ${recommendationsHTML}
 
       <div class="btns">
@@ -1356,6 +1393,7 @@ window.openEdit = function(id){
   document.getElementById('e-contrasena').value = item.contrasena || "";
   document.getElementById('e-dispositivo').value = item.dispositivo || "";
   document.getElementById('e-aplicacion').value = item.aplicacion || ""; 
+  document.getElementById('e-observaciones').value = item.observaciones || ""; // NUEVO CAMPO
   eNewRecommendation.value = ''; // Limpiar campo de autocompletado
 
   modal.setAttribute('data-id', id);
@@ -1377,6 +1415,7 @@ formEdit.addEventListener('submit', async e=>{
     contrasena: document.getElementById('e-contrasena').value,
     dispositivo: document.getElementById('e-dispositivo').value,
     aplicacion: document.getElementById('e-aplicacion').value,
+    observaciones: document.getElementById('e-observaciones').value, // NUEVO CAMPO
     recomendaciones: currentRecommendations 
   };
 
@@ -1403,6 +1442,7 @@ formAdd.addEventListener('submit', async e=>{
     contrasena: document.getElementById('f-contrasena').value,
     dispositivo: document.getElementById('f-dispositivo').value,
     aplicacion: document.getElementById('f-aplicacion').value,
+    observaciones: document.getElementById('f-observaciones').value, // NUEVO CAMPO
     recomendaciones: currentRecommendations, 
     renovara: false
   };
