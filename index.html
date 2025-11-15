@@ -44,7 +44,7 @@
     .meta{font-size:12px;color:var(--muted);margin-bottom:8px}
     .tags{display:flex;gap:6px;flex-wrap:wrap}
     .tag-label { 
-        background: rgba(110, 231, 183, 0.1); /* Utilizar color accent con menor opacidad */
+        background: rgba(110, 231, 183, 0.1); 
         color: var(--accent);
         font-size: 11px;
         padding: 3px 6px;
@@ -104,7 +104,7 @@
 
     /* Dashboard: checkbox */
     .exp-card .flex-end { display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
-    /* ESTILOS: Campo de Recomendaciones Dinámico y Autocompletado */
+    /* Estilos de Recomendaciones (etc) */
     .dynamic-input-container {
         padding: 10px;
         border-radius: 8px;
@@ -157,30 +157,6 @@
         font-size: 18px;
         line-height: 1;
     }
-    /* Estilos Autocompletado */
-    .autocomplete-list {
-        position: absolute;
-        top: 100%;
-        left: 10px;
-        right: 50px; 
-        background: var(--card);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 8px;
-        max-height: 150px;
-        overflow-y: auto;
-        z-index: 60;
-        list-style: none;
-        padding: 0;
-        margin: 4px 0 0;
-    }
-    .autocomplete-list li {
-        padding: 8px 10px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-    .autocomplete-list li:hover, .autocomplete-list li.active {
-        background: var(--glass);
-    }
     footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
 
     @media (min-width: 701px) {
@@ -226,7 +202,7 @@
       <button id="nav-dashboard" class="active">Dashboard</button>
       <button id="nav-clientes">Clientes</button>
       <button id="nav-add">Añadir cliente</button>
-      <button id="nav-logout" class="btn delete" style="margin-left: 12px;">Cerrar Sesión</button>
+      <button id="nav-settings" style="margin-left: 12px;">⚙️ Ajustes</button>
     </div>
   </nav>
 </header>
@@ -254,8 +230,7 @@
   <div class="card-form">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
       <h3>Clientes</h3>
-      <button id="btn-export-csv" class="btn export">Exportar a CSV 📥</button>
-    </div>
+      </div>
     
     <input type="text" id="search-input" placeholder="Buscar por Nombre, Usuario o Aplicación..." style="margin-bottom: 12px;" />
 
@@ -308,7 +283,7 @@
           <div class="input-add-row">
               <input type="text" id="f-new-recommendation" placeholder="Nombre de cliente recomendado" />
               <button type="button" class="btn copy" id="f-add-recommendation-btn">+</button>
-              </div>
+          </div>
       </div>
 
       <div style="display:flex;gap:8px;margin-top:8px">
@@ -319,6 +294,24 @@
     </form>
   </div>
 </section>
+
+<section id="section-settings" style="display:none">
+  <div class="card-form">
+    <h3>⚙️ Opciones de Ajustes</h3>
+    
+    <p class="meta">Gestión de datos masiva:</p>
+    <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
+        <input type="file" id="csv-file-input" accept=".csv" style="display: none;" />
+        <button id="btn-import-csv" class="btn copy" style="flex-grow: 1;">Importar Clientes (CSV) ⬆️</button>
+        <button id="btn-export-csv" class="btn export" style="flex-grow: 1;">Exportar Clientes (CSV) 📥</button>
+    </div>
+    
+    <p class="meta" style="margin-top: 20px;">Sesión:</p>
+    <button id="nav-logout-settings" class="btn delete" style="width: 100%; font-weight: 700;">Cerrar Sesión</button>
+  </div>
+</section>
+
+
 </main>
 
 <footer></footer>
@@ -370,7 +363,7 @@
           <div class="input-add-row">
               <input type="text" id="e-new-recommendation" placeholder="Nombre de cliente recomendado" />
               <button type="button" class="btn copy" id="e-add-recommendation-btn">+</button>
-               </div>
+          </div>
       </div>
 
       <div style="display:flex;gap:8px;margin-top:8px;justify-content:space-between">
@@ -436,12 +429,19 @@ const loginErrorMessage = document.getElementById('login-error-message');
 const navDashboard = document.getElementById('nav-dashboard');
 const navClientes = document.getElementById('nav-clientes');
 const navAdd = document.getElementById('nav-add');
-const navLogout = document.getElementById('nav-logout');
+const navSettings = document.getElementById('nav-settings'); // NUEVO
+const navLogoutSettings = document.getElementById('nav-logout-settings'); // NUEVO: Cerrar sesión en Ajustes
 
 // SECCIONES PRINCIPALES
 const sectionDashboard = document.getElementById('section-dashboard');
 const sectionClientes = document.getElementById('section-clientes');
 const sectionAdd = document.getElementById('section-add');
+const sectionSettings = document.getElementById('section-settings'); // NUEVO
+
+// ELEMENTOS CSV
+const btnImportCsv = document.getElementById('btn-import-csv'); 
+const csvFileInput = document.getElementById('csv-file-input');
+const btnExportCsv = document.getElementById('btn-export-csv');
 
 // FORM ADD
 const formAdd = document.getElementById('form-add');
@@ -472,7 +472,7 @@ let currentRecommendations = [];
 let cachedClientNames = new Set(); 
 const col = collection(db, "clientes");
 let clientDataListener;
-let dataListenerActive = false; // Bandera para evitar múltiples listeners
+let dataListenerActive = false;
 
 // --- FUNCIONES AUXILIARES ---
 
@@ -523,7 +523,6 @@ function showNotification(title, message, type = 'success') {
 
 function setDefaultDates() {
     const today = new Date();
-    // Establecer por defecto a 3 meses
     const caducidad3Months = getNewCaducidad(today, 3); 
 
     fCreacion.value = isoForInput(today);
@@ -546,6 +545,7 @@ function setActive(btn){
   sectionDashboard.style.display = 'none';
   sectionClientes.style.display = 'none';
   sectionAdd.style.display = 'none';
+  sectionSettings.style.display = 'none'; // NUEVO
 
   if(btn === navDashboard){
     sectionDashboard.style.display = 'block';
@@ -555,14 +555,17 @@ function setActive(btn){
   } else if (btn === navAdd){
     sectionAdd.style.display = 'block';
     setDefaultDates(); 
+  } else if (btn === navSettings){ // NUEVO
+    sectionSettings.style.display = 'block';
   }
 }
 
 navDashboard.addEventListener('click', ()=>setActive(navDashboard));
 navClientes.addEventListener('click', ()=>setActive(navClientes));
 navAdd.addEventListener('click', ()=>setActive(navAdd));
+navSettings.addEventListener('click', ()=>setActive(navSettings)); // NUEVO
 
-// --- AUTENTICACIÓN Y GESTIÓN DE ESTADO (CRÍTICO PARA EL LOGIN) ---
+// --- AUTENTICACIÓN Y GESTIÓN DE ESTADO ---
 
 // Lógica de Login
 formLogin.addEventListener('submit', async (e) => {
@@ -574,7 +577,6 @@ formLogin.addEventListener('submit', async (e) => {
 
     try {
         await signInWithEmailAndPassword(auth, email, password);
-        // El onAuthStateChanged se encargará de mostrar la aplicación
         showNotification("Éxito", "Sesión iniciada correctamente.", 'success');
 
     } catch (error) {
@@ -591,12 +593,12 @@ formLogin.addEventListener('submit', async (e) => {
     }
 });
 
-// Lógica de Logout
-navLogout.addEventListener('click', async () => {
+// Lógica de Logout (AHORA EN SECCIÓN AJUSTES)
+navLogoutSettings.addEventListener('click', async () => {
     try {
         await signOut(auth);
         showNotification("Sesión cerrada", "Has cerrado la sesión.", 'success');
-        if (clientDataListener) clientDataListener(); // Detener listener de datos
+        if (clientDataListener) clientDataListener(); 
         dataListenerActive = false;
     } catch (error) {
         showNotification("Error", "No se pudo cerrar la sesión.", 'error');
@@ -604,13 +606,13 @@ navLogout.addEventListener('click', async () => {
     }
 });
 
-// Detector de Estado de Autenticación (CRÍTICO para cambiar de pantalla)
+
+// Detector de Estado de Autenticación
 onAuthStateChanged(auth, (user) => {
     if (user) {
         sectionLogin.classList.remove('show');
         appContainer.style.display = 'block';
         
-        // Inicia el listener de datos solo la primera vez
         if (!dataListenerActive) {
             startDataListener(); 
             dataListenerActive = true;
@@ -619,7 +621,7 @@ onAuthStateChanged(auth, (user) => {
     } else {
         sectionLogin.classList.add('show');
         appContainer.style.display = 'none';
-        setActive(navDashboard); // Reset a la vista del dashboard
+        setActive(navDashboard);
     }
 });
 
@@ -647,7 +649,152 @@ function startDataListener() {
     });
 }
 
-// --- RESTO DE LÓGICA (Filtros, Stats, Renovaciones, etc.) ---
+// --- LÓGICA CSV: EXPORTACIÓN ---
+function exportToCSV() {
+    if (cachedList.length === 0) {
+        showNotification("Error", "No hay datos para exportar.", 'error');
+        return;
+    }
+
+    // Cabeceras: Los campos que quieres exportar
+    const headers = ["nombre", "usuario", "contrasena", "caducidad", "creacion", "aplicacion", "telefono", "dispositivo", "recomendaciones"];
+    const separator = ";"; // Usamos punto y coma para mejor compatibilidad regional
+    
+    // Crear la cabecera CSV
+    let csvContent = headers.join(separator) + "\n";
+
+    // Mapear los datos de cada cliente
+    cachedList.forEach(item => {
+        // Aseguramos que los valores complejos o que contienen separadores van entre comillas
+        const row = [
+            `"${item.nombre || ''}"`,
+            `"${item.usuario || ''}"`,
+            `"${item.contrasena || ''}"`,
+            `"${isoForInput(item.caducidad) || ''}"`,
+            `"${isoForInput(item.creacion) || ''}"`,
+            `"${item.aplicacion || ''}"`,
+            `"${item.telefono || ''}"`,
+            `"${item.dispositivo || ''}"`,
+            // Recomendaciones: las convertimos a string separadas por | si son un array
+            `"${Array.isArray(item.recomendaciones) ? item.recomendaciones.join('|') : item.recomendaciones || ''}"` 
+        ].join(separator);
+        csvContent += row + "\n";
+    });
+
+    // Descargar el archivo
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute("href", url);
+    link.setAttribute("download", "clientes_export_" + new Date().toISOString().slice(0, 10) + ".csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showNotification("Exportación Exitosa", "Datos de clientes exportados a CSV.", 'success');
+}
+btnExportCsv.addEventListener('click', exportToCSV);
+
+// --- LÓGICA CSV: IMPORTACIÓN ---
+btnImportCsv.addEventListener('click', () => {
+    csvFileInput.click();
+});
+
+csvFileInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        importClientsFromCSV(file);
+    }
+    csvFileInput.value = ''; 
+});
+
+async function importClientsFromCSV(file) {
+    if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+        showNotification("Error", "Por favor, selecciona un archivo CSV (.csv).", 'error');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const csvText = e.target.result;
+        const lines = csvText.trim().split('\n');
+        
+        if (lines.length <= 1) {
+            showNotification("Error", "El archivo CSV está vacío o solo contiene cabeceras.", 'error');
+            return;
+        }
+
+        const headerLine = lines[0].toLowerCase().trim();
+        const separator = headerLine.includes(';') ? ';' : ','; // Detectar separador
+        
+        const headers = headerLine.split(separator).map(h => h.trim().replace(/['"]+/g, '')); // Limpiar comillas en cabeceras
+        const requiredHeaders = ['nombre', 'usuario', 'contrasena', 'caducidad'];
+
+        if (!requiredHeaders.every(h => headers.includes(h))) {
+            showNotification("Error", `Faltan columnas requeridas. Necesitas: ${requiredHeaders.join(', ')}.`, 'error');
+            return;
+        }
+
+        let importedCount = 0;
+        let errorCount = 0;
+        
+        for (let i = 1; i < lines.length; i++) {
+            // Usar una expresión simple para dividir, manejando comillas
+            const values = lines[i].match(/(".*?"|[^",;]+)(?=[,;]|\s*$)/g) || [];
+            if (values.length !== headers.length) continue; 
+
+            const clientData = {};
+            headers.forEach((header, index) => {
+                // Limpiar comillas sobrantes y el caracter pipe si se usó
+                clientData[header] = values[index].trim().replace(/^"|"$/g, '').replace(/\|/g, ',');
+            });
+
+            try {
+                const recomendacionesArray = clientData.recomendaciones ? clientData.recomendaciones.split(',').map(s => s.trim()).filter(s => s.length > 0) : [];
+                
+                const dataToSend = {
+                    nombre: clientData.nombre || 'Sin Nombre',
+                    usuario: clientData.usuario || '',
+                    contrasena: clientData.contrasena || '',
+                    caducidad: isoForInput(new Date(clientData.caducidad || getNewCaducidad(new Date(), 3))),
+                    creacion: isoForInput(new Date()),
+                    aplicacion: clientData.aplicacion || 'No especificada',
+                    telefono: clientData.telefono || '',
+                    dispositivo: clientData.dispositivo || '',
+                    recomendaciones: recomendacionesArray, 
+                    renovara: false
+                };
+                
+                const docRef = await addDoc(col, dataToSend);
+                
+                await addDoc(collection(db, "clientes", docRef.id, "renovaciones"), {
+                    fecha_renovacion: new Date().toISOString(),
+                    caducidad_anterior: 'Importación CSV',
+                    nueva_caducidad: dataToSend.caducidad,
+                    tipo_accion: 'Creación (Importación)',
+                    usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
+                });
+
+                importedCount++;
+
+            } catch (error) {
+                console.error("Error importando cliente:", clientData.nombre, error);
+                errorCount++;
+            }
+        }
+
+        if (errorCount === 0) {
+            showNotification("Importación Exitosa", `Se importaron ${importedCount} clientes.`, 'success');
+        } else {
+            showNotification("Importación Finalizada", `Se importaron ${importedCount} clientes con ${errorCount} errores. Revisa la consola.`, 'error');
+        }
+    };
+    reader.readAsText(file);
+}
+
+// --- RESTO DE LÓGICA (Funciones Auxiliares y Renderizado) ---
 
 function getExpiryStatus(caducidad) {
     if(!caducidad) return '';
@@ -692,7 +839,7 @@ function filterClients(searchTerm = '') {
         return item.nombre.toLowerCase().includes(searchTerm) ||
                (item.usuario && item.usuario.toLowerCase().includes(searchTerm)) ||
                (item.aplicacion && item.aplicacion.toLowerCase().includes(searchTerm)) ||
-               (item.recomendaciones && item.recomendaciones.some(rec => rec.toLowerCase().includes(searchTerm)));
+               (item.recomendaciones && Array.isArray(item.recomendaciones) && item.recomendaciones.some(rec => rec.toLowerCase().includes(searchTerm)));
     });
 
     renderClients(filteredList);
@@ -737,9 +884,8 @@ function renderDashboard(list){
   soon.forEach(item => {
     const isRenewing = item.renovara === true ? 'checked' : '';
     
-    // GENERACIÓN CONDICIONAL DEL BOTÓN WHATSAPP
     const whatsappBtn = item.telefono && item.telefono.length > 5 ? 
-        `<button class="btn whatsapp-alert" onclick="sendWhatsappAlert('${item.id}')">Avisar💬</button>` : '';
+        `<button class="btn whatsapp-alert" onclick="sendWhatsappAlert('${item.id}')">¡Avisar! 💬</button>` : '';
 
     const card = document.createElement('div');
     card.className = "card exp-card";
@@ -761,7 +907,6 @@ function renderDashboard(list){
   });
 }
 
-// *** FUNCIÓN WHATSAPP ***
 window.sendWhatsappAlert = function(id) {
     const item = cachedList.find(i => i.id === id);
     if (!item || !item.telefono || item.telefono.length < 6) {
@@ -770,7 +915,7 @@ window.sendWhatsappAlert = function(id) {
     }
 
     const message = encodeURIComponent(`Hola ${item.nombre || ''}. Tu suscripción va a caducar pronto, ¿vas a querer renovar? 🙂`);
-    const phone = item.telefono.replace(/\s/g, '').replace(/\+/g, ''); // Limpiar espacios y '+' por si acaso
+    const phone = item.telefono.replace(/\s/g, '').replace(/\+/g, '');
     
     const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
     
@@ -779,13 +924,12 @@ window.sendWhatsappAlert = function(id) {
     showNotification("Alerta enviada", `Se abrió WhatsApp para enviar mensaje a ${item.nombre}.`, 'success');
 }
 
-// *** FUNCIÓN MES GRATIS ***
 window.addFreeMonth = async function(id) {
     const item = cachedList.find(i => i.id === id);
     if(!item) return;
 
     const oldCaducidad = item.caducidad;
-    const newCaducidad = getNewCaducidad(oldCaducidad, 1); // Sumar 1 mes
+    const newCaducidad = getNewCaducidad(oldCaducidad, 1);
 
     try {
         await updateDoc(doc(db, "clientes", id), {
@@ -802,19 +946,18 @@ window.addFreeMonth = async function(id) {
 
         showNotification("Mes Gratis Añadido", `Cliente ${item.nombre} extendido por 1 mes.`, 'success');
     } catch (error) {
-        showNotification("Error", "No se pudo añadir el mes gratis. (Revisa reglas de Firestore)", 'error');
+        showNotification("Error", "No se pudo añadir el mes gratis.", 'error');
         console.error("Error adding free month:", error);
     }
 }
 
 
-// *** FUNCIÓN RENEW ITEM ***
 window.renewItem = async function(id){
   const item = cachedList.find(i => i.id === id);
   if(!item) return;
 
   const oldCaducidad = item.caducidad;
-  const newCaducidad = getNewCaducidad(oldCaducidad, 3); // Sumar 3 meses
+  const newCaducidad = getNewCaducidad(oldCaducidad, 3);
 
   try {
       await updateDoc(doc(db, "clientes", id), {
@@ -831,12 +974,11 @@ window.renewItem = async function(id){
 
       showNotification("Renovación Exitosa", "Cliente renovado por 3 meses y registro guardado.", 'success');
   } catch (error) {
-      showNotification("Error de Renovación", "No se pudo renovar el cliente. (Revisa reglas de Firestore)", 'error');
+      showNotification("Error de Renovación", "No se pudo renovar el cliente.", 'error');
       console.error("Error renewing item:", error);
   }
 }
 
-// Lógica de Recomendaciones (Dinámicas/Autocompletado)
 function getRecommendationTag(name, containerDiv) {
     const tag = document.createElement('span');
     tag.className = 'recommendation-tag';
@@ -866,13 +1008,10 @@ function renderRecommendedClients(recommendations, containerDiv, inputElementId,
             input.value = '';
         }
     };
-    
-    // Lógica de autocompletado aquí (omito el código completo para no hacerlo excesivamente largo)
-    // El autocompletado es complejo y no es la causa del problema de login.
 }
 
 
-// *** RENDERIZADO DE CLIENTES EN SECCIÓN CLIENTES (CORREGIDO) ***
+// *** RENDERIZADO DE CLIENTES EN SECCIÓN CLIENTES (CON CORRECCIÓN DE ARRAY) ***
 function renderClients(list){
   const clientsGrid = document.getElementById('clients-grid');
   clientsGrid.innerHTML = "";
@@ -880,25 +1019,19 @@ function renderClients(list){
   list.forEach(item => {
     let recommendationsHTML = '';
     
-    // ⬇️ LÓGICA DE CORRECCIÓN AÑADIDA AQUÍ ⬇️
+    // CORRECCIÓN: Aseguramos que el campo es un array
     let clientRecommendations = item.recomendaciones;
-
-    // 1. Si no es un array, intentamos convertirlo o lo ponemos vacío
     if (!Array.isArray(clientRecommendations)) {
         if (typeof clientRecommendations === 'string' && clientRecommendations.trim() !== '') {
-            // Si es un string, lo dividimos por comas (o el separador que uses) y limpiamos espacios
             clientRecommendations = clientRecommendations.split(',').map(s => s.trim()).filter(s => s.length > 0);
         } else {
-            // Si es null, undefined, o string vacío, lo dejamos como array vacío
             clientRecommendations = []; 
         }
     }
-    // ⬆️ FIN DE LÓGICA DE CORRECCIÓN ⬆️
 
-    if (clientRecommendations.length > 0) { // Usamos el nuevo array corregido
+    if (clientRecommendations.length > 0) { 
         recommendationsHTML = `<div class="tags" style="margin-top:8px">`;
         
-        // El error ocurría aquí, pero ahora 'clientRecommendations' es siempre un Array
         clientRecommendations.forEach(rec => {
             recommendationsHTML += `<span class="tag-label">${rec}</span>`;
         });
@@ -946,19 +1079,16 @@ window.deleteItem = async function(id) {
         await deleteDoc(doc(db, "clientes", id));
         showNotification("Eliminado", "Cliente eliminado con éxito.", 'success');
     } catch (error) {
-        showNotification("Error", "No se pudo eliminar el cliente. (Revisa reglas de Firestore)", 'error');
+        showNotification("Error", "No se pudo eliminar el cliente.", 'error');
         console.error("Error deleting item:", error);
     }
 }
 
-
-// *** ABRIR MODAL DE EDICIÓN (ACTUALIZADO CON CAMPO TELÉFONO) ***
 window.openEdit = function(id){
   const item = cachedList.find(i => i.id === id);
   if(!item) return;
 
   currentRecommendations = Array.isArray(item.recomendaciones) ? [...item.recomendaciones] : [];
-  // Asegurarse de que el renderizado de etiquetas se llama para el modal de edición
   renderRecommendedClients(currentRecommendations, eRecommendedClientsDiv, 'e-new-recommendation', 'e-add-recommendation-btn');
   
   document.getElementById('e-nombre').value = item.nombre;
@@ -975,7 +1105,6 @@ window.openEdit = function(id){
   document.getElementById('modal').classList.add('show');
 };
 
-// *** GUARDAR CAMBIOS EN MODAL (ACTUALIZADO CON CAMPO TELÉFONO) ***
 formEdit.addEventListener('submit', async e=>{
   e.preventDefault();
   const id = modal.getAttribute('data-id');
@@ -999,12 +1128,11 @@ formEdit.addEventListener('submit', async e=>{
       showNotification("Guardado", `Cambios en cliente ${data.nombre} guardados.`, 'success');
       currentRecommendations = [];
   } catch (error) {
-      showNotification("Error", "No se pudieron guardar los cambios. (Revisa reglas de Firestore)", 'error');
+      showNotification("Error", "No se pudieron guardar los cambios.", 'error');
       console.error("Error updating item:", error);
   }
 });
 
-// *** AÑADIR CLIENTE NUEVO (ACTUALIZADO CON CAMPO TELÉFONO Y FECHAS) ***
 formAdd.addEventListener('submit', async e=>{
   e.preventDefault();
 
@@ -1024,7 +1152,6 @@ formAdd.addEventListener('submit', async e=>{
   try {
       const docRef = await addDoc(col, data);
       
-      // Registrar la creación como la primera 'renovación'
       await addDoc(collection(db, "clientes", docRef.id, "renovaciones"), {
           fecha_renovacion: new Date().toISOString(),
           caducidad_anterior: 'Nuevo Cliente',
@@ -1040,7 +1167,7 @@ formAdd.addEventListener('submit', async e=>{
       currentRecommendations = [];
       document.getElementById('f-recommended-clients').innerHTML = '';
   } catch (error) {
-      showNotification("Error de Creación", "No se pudo añadir el nuevo cliente. (Revisa reglas de Firestore)", 'error');
+      showNotification("Error de Creación", "No se pudo añadir el nuevo cliente.", 'error');
       console.error("Error adding item:", error);
   }
 });
@@ -1061,7 +1188,6 @@ modalCancel.addEventListener('click', ()=>{
 window.openHistoryModal = async function(clientId) {
     document.getElementById('history-modal-title').textContent = `Historial de Renovaciones`;
     historyList.innerHTML = '<p style="text-align:center; color: var(--muted);">Cargando historial...</p>';
-    // Ocultar modal de edición y mostrar historial
     modal.classList.remove('show');
     historyModal.classList.add('show');
 
@@ -1078,7 +1204,7 @@ window.openHistoryModal = async function(clientId) {
         renderRenewalHistory(historyData, historyList);
     } catch (error) {
         console.error("Error al cargar historial:", error);
-        historyList.innerHTML = '<p style="text-align:center; color: var(--red);">Error al cargar el historial. (Verifica reglas de Firestore)</p>';
+        historyList.innerHTML = '<p style="text-align:center; color: var(--red);">Error al cargar el historial.</p>';
     }
 }
 
@@ -1086,7 +1212,6 @@ historyModalClose.addEventListener('click', () => {
     historyModal.classList.remove('show');
 });
 
-// FUNCIÓN PARA RENDERIZAR EL HISTORIAL
 function renderRenewalHistory(historyList, targetDiv) {
     targetDiv.innerHTML = '';
     if (historyList.length === 0) {
