@@ -12,7 +12,7 @@
     *{box-sizing:border-box}
     body{margin:0;background:linear-gradient(180deg,#071022 0%, #07132a 100%);color:#e6eef6;min-height:100vh}
     /* Aumento el ancho máximo y el padding para una mejor visualización en PC */
-    .container{max-width:1300px;margin:0 auto;padding:24px} 
+    .container{max-width:1400px;margin:0 auto;padding:24px} 
     header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
     .brand{display:flex;align-items:center;gap:12px}
     .logo{width:46px;height:46px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#013220;font-weight:700}
@@ -141,6 +141,7 @@
     .input-add-row {
         display: flex;
         gap: 8px;
+        position: relative;
     }
     .input-add-row input[type=text] {
         flex-grow: 1;
@@ -159,8 +160,8 @@
     .autocomplete-list {
         position: absolute;
         top: 100%;
-        left: 10px;
-        right: 50px; 
+        left: 0;
+        right: 40px; 
         background: var(--card);
         border: 1px solid rgba(255,255,255,0.1);
         border-radius: 8px;
@@ -170,11 +171,15 @@
         list-style: none;
         padding: 0;
         margin: 4px 0 0;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
     .autocomplete-list li {
         padding: 8px 10px;
         cursor: pointer;
         font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .autocomplete-list li:hover, .autocomplete-list li.active {
         background: var(--glass);
@@ -190,10 +195,10 @@
              max-width: 450px;
         }
     }
-    /* AJUSTES ADICIONALES PARA NAVEGADOR DE PC */
+    /* AJUSTES ADICIONALES PARA NAVEGADOR DE PC (Aún más ampliado) */
     @media (min-width: 1024px) { 
         body {
-            font-size: 1.05em; /* Escala general de texto */
+            font-size: 1.1em; /* Escala general de texto ligeramente mayor */
         }
         .container {
             padding: 30px; /* Más espacio alrededor */
@@ -207,12 +212,14 @@
         .card{padding:18px; border-radius:14px;}
         .card h4{font-size: 18px;}
         .meta{font-size:13px;} 
-        .grid-clients{grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+        .grid-clients{grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
         
         /* Ajuste de formularios y botones */
         .btn{padding:10px 14px; border-radius:10px; font-size: 15px;} 
+        .menu button { padding: 10px 16px; font-size: 15px; } /* Botones de menú más grandes */
         input[type=text],input[type=date],textarea,select,input[type=email],input[type=password]{padding:12px; font-size: 16px;}
         label{font-size:14px;}
+        .input-add-row input[type=text] { padding: 8px 12px; }
     }
 
     @media (max-width:700px){.row{grid-template-columns:1fr}.menu{display:flex;gap:6px}}
@@ -250,6 +257,7 @@
       <button id="nav-dashboard" class="active">Dashboard</button>
       <button id="nav-clientes">Clientes</button>
       <button id="nav-add">Añadir cliente</button>
+      <button id="nav-ajustes">Ajustes</button>
       <button id="nav-logout" class="btn delete" style="margin-left: 12px;">Cerrar Sesión</button>
     </div>
   </nav>
@@ -326,13 +334,14 @@
         <option value="Hot Player">Hot Player</option>
       </select>
 
-      <label>Clientes recomendados</label>
+      <label>Clientes recomendados (Solo clientes existentes)</label>
       <div id="f-recomendaciones-container" class="dynamic-input-container">
           <div id="f-recommended-clients" class="tag-list"></div>
           <div class="input-add-row">
-              <input type="text" id="f-new-recommendation" placeholder="Nombre de cliente recomendado" />
+              <input type="text" id="f-new-recommendation" placeholder="Escribe un nombre de cliente existente" />
               <button type="button" class="btn copy" id="f-add-recommendation-btn">+</button>
-              </div>
+              <ul id="f-autocomplete-list" class="autocomplete-list" style="display: none;"></ul>
+          </div>
       </div>
 
       <div style="display:flex;gap:8px;margin-top:8px">
@@ -343,6 +352,14 @@
     </form>
   </div>
 </section>
+
+<section id="section-ajustes" style="display:none">
+  <div class="card-form">
+    <h3>Ajustes de la Aplicación</h3>
+    <p class="meta">Próximamente se podrán configurar aquí las opciones de la aplicación.</p>
+  </div>
+</section>
+
 </main>
 
 <footer></footer>
@@ -388,13 +405,14 @@
         <option value="Hot Player">Hot Player</option>
       </select>
 
-      <label>Clientes recomendados</label>
+      <label>Clientes recomendados (Solo clientes existentes)</label>
       <div id="e-recomendaciones-container" class="dynamic-input-container">
           <div id="e-recommended-clients" class="tag-list"></div>
           <div class="input-add-row">
-              <input type="text" id="e-new-recommendation" placeholder="Nombre de cliente recomendado" />
+              <input type="text" id="e-new-recommendation" placeholder="Escribe un nombre de cliente existente" />
               <button type="button" class="btn copy" id="e-add-recommendation-btn">+</button>
-               </div>
+              <ul id="e-autocomplete-list" class="autocomplete-list" style="display: none;"></ul>
+           </div>
       </div>
 
       <div style="display:flex;gap:8px;margin-top:8px;justify-content:space-between">
@@ -441,7 +459,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
   authDomain: "gestioncandy-b9356.firebaseapp.com",
   projectId: "gestioncandy-b9356",
-  storageBucket: "gestioncandy-b9356.firebasestorage.app",
+  storageBucket: "gestioncandy-b9356.firebaseapp.com",
   messagingSenderId: "869982852654",
   appId: "1:869982852654:web:ac450321a746e62365f1bf"
 };
@@ -460,12 +478,14 @@ const loginErrorMessage = document.getElementById('login-error-message');
 const navDashboard = document.getElementById('nav-dashboard');
 const navClientes = document.getElementById('nav-clientes');
 const navAdd = document.getElementById('nav-add');
+const navAjustes = document.getElementById('nav-ajustes'); // NUEVO
 const navLogout = document.getElementById('nav-logout');
 
 // SECCIONES PRINCIPALES
 const sectionDashboard = document.getElementById('section-dashboard');
 const sectionClientes = document.getElementById('section-clientes');
 const sectionAdd = document.getElementById('section-add');
+const sectionAjustes = document.getElementById('section-ajustes'); // NUEVO
 
 // FORM ADD
 const formAdd = document.getElementById('form-add');
@@ -475,6 +495,7 @@ const fCaducidad = document.getElementById('f-caducidad');
 const fNewRecommendation = document.getElementById('f-new-recommendation');
 const fAddRecommendationBtn = document.getElementById('f-add-recommendation-btn');
 const fRecommendedClientsDiv = document.getElementById('f-recommended-clients');
+const fAutocompleteList = document.getElementById('f-autocomplete-list'); // NUEVO
 
 // FORM EDIT
 const formEdit = document.getElementById('form-edit');
@@ -483,6 +504,7 @@ const modalCancel = document.getElementById('modal-cancel');
 const eNewRecommendation = document.getElementById('e-new-recommendation');
 const eAddRecommendationBtn = document.getElementById('e-add-recommendation-btn');
 const eRecommendedClientsDiv = document.getElementById('e-recommended-clients');
+const eAutocompleteList = document.getElementById('e-autocomplete-list'); // NUEVO
 
 // HISTORIAL MODAL
 const historyModal = document.getElementById('history-modal');
@@ -568,6 +590,7 @@ function setActive(btn){
   sectionDashboard.style.display = 'none';
   sectionClientes.style.display = 'none';
   sectionAdd.style.display = 'none';
+  sectionAjustes.style.display = 'none'; // NUEVO
 
   if(btn === navDashboard){
     sectionDashboard.style.display = 'block';
@@ -583,14 +606,17 @@ function setActive(btn){
   } else if (btn === navAdd){
     sectionAdd.style.display = 'block';
     setDefaultDates(); 
+  } else if (btn === navAjustes) { // NUEVO
+    sectionAjustes.style.display = 'block';
   }
 }
 
 navDashboard.addEventListener('click', ()=>setActive(navDashboard));
 navClientes.addEventListener('click', ()=>setActive(navClientes));
 navAdd.addEventListener('click', ()=>setActive(navAdd));
+navAjustes.addEventListener('click', ()=>setActive(navAjustes)); // NUEVO
 
-// --- LÓGICA DE FILTRADO DEL DASHBOARD (NUEVO) ---
+// --- LÓGICA DE FILTRADO DEL DASHBOARD ---
 
 document.getElementById('stat-expired-link').addEventListener('click', () => filterClientsByStatus('expired'));
 document.getElementById('stat-3days-link').addEventListener('click', () => filterClientsByStatus('soon'));
@@ -692,6 +718,10 @@ function startDataListener() {
         updateStats(cachedList);
         renderDashboard(cachedList);
         filterClients(document.getElementById('search-input').value);
+        // Inicializar la lógica de recomendaciones después de cargar los nombres
+        setupRecommendationInput(fNewRecommendation, fAddRecommendationBtn, fRecommendedClientsDiv, fAutocompleteList);
+        setupRecommendationInput(eNewRecommendation, eAddRecommendationBtn, eRecommendedClientsDiv, eAutocompleteList);
+
     }, (error) => {
         console.error("Error al obtener datos:", error);
         showNotification("Error de Datos", "No se pudieron cargar los datos de Firestore.", 'error');
@@ -719,7 +749,8 @@ function exportToCSV() {
             `"${item.aplicacion || ''}"`,
             `"${item.telefono || ''}"`,
             `"${item.dispositivo || ''}"`,
-            `"${Array.isArray(item.recomendaciones) ? item.recomendaciones.join('|') : item.recomendaciones || ''}"` 
+            // Formatear el array de recomendaciones como una cadena separada por '|'
+            `"${Array.isArray(item.recomendaciones) ? item.recomendaciones.join('|') : ''}"` 
         ].join(separator);
         csvContent += row + "\n";
     });
@@ -734,6 +765,126 @@ function exportToCSV() {
     link.click();
     document.body.removeChild(link);
     showNotification("Exportación Exitosa", "Datos de clientes exportados a CSV.", 'success');
+}
+
+
+// --- LÓGICA DE RECOMENDACIONES CON VALIDACIÓN Y AUTOCOMPLETADO (MEJORADO) ---
+
+function getRecommendationTag(name, containerDiv, input) {
+    const tag = document.createElement('span');
+    tag.className = 'recommendation-tag';
+    tag.innerHTML = `${name}<button type="button" data-name="${name}">x</button>`;
+    
+    tag.querySelector('button').addEventListener('click', () => {
+        currentRecommendations = currentRecommendations.filter(r => r !== name);
+        containerDiv.removeChild(tag);
+        input.focus();
+    });
+    return tag;
+}
+
+function renderRecommendedClients(recommendations, containerDiv, input) {
+    containerDiv.innerHTML = '';
+    recommendations.forEach(rec => {
+        containerDiv.appendChild(getRecommendationTag(rec, containerDiv, input));
+    });
+}
+
+function addRecommendation(name, input, containerDiv, listDiv) {
+    name = name.trim();
+    if (!name) return;
+
+    // VALIDACIÓN CRÍTICA: El nombre DEBE existir en la lista de clientes
+    if (!cachedClientNames.has(name)) {
+        showNotification("Error de Recomendación", `El cliente "${name}" no existe en tu base de datos.`, 'error');
+        listDiv.style.display = 'none'; // Ocultar lista
+        return;
+    }
+    
+    if (name && !currentRecommendations.includes(name)) {
+        currentRecommendations.push(name);
+        containerDiv.appendChild(getRecommendationTag(name, containerDiv, input));
+        input.value = '';
+        listDiv.style.display = 'none'; // Ocultar lista
+        showNotification("Recomendación Añadida", `Cliente ${name} añadido a las recomendaciones.`, 'success');
+    }
+    input.value = '';
+}
+
+function setupRecommendationInput(input, addBtn, containerDiv, listDiv) {
+    let activeItem = -1;
+
+    // Asignar la función al botón de añadir
+    addBtn.onclick = () => addRecommendation(input.value, input, containerDiv, listDiv);
+
+    // Lógica de Autocompletado
+    input.addEventListener('input', () => {
+        const query = input.value.trim().toLowerCase();
+        listDiv.innerHTML = '';
+        listDiv.style.display = 'none';
+        activeItem = -1;
+
+        if (query.length < 2) return;
+
+        // Filtrar nombres que contengan la consulta y que NO estén ya seleccionados
+        const suggestions = Array.from(cachedClientNames)
+            .filter(name => name.toLowerCase().includes(query) && !currentRecommendations.includes(name))
+            .sort((a, b) => a.localeCompare(b));
+
+        if (suggestions.length > 0) {
+            suggestions.slice(0, 5).forEach((name, index) => {
+                const li = document.createElement('li');
+                li.textContent = name;
+                li.dataset.name = name;
+                
+                li.addEventListener('click', () => {
+                    input.value = name;
+                    addRecommendation(name, input, containerDiv, listDiv);
+                });
+                listDiv.appendChild(li);
+            });
+            listDiv.style.display = 'block';
+        }
+    });
+
+    // Manejar teclado para Autocompletado
+    input.addEventListener('keydown', (e) => {
+        const items = Array.from(listDiv.querySelectorAll('li'));
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            activeItem = (activeItem + 1) % items.length;
+            items.forEach((item, index) => {
+                item.classList.toggle('active', index === activeItem);
+                if (index === activeItem) input.value = item.dataset.name;
+            });
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            activeItem = (activeItem - 1 + items.length) % items.length;
+            items.forEach((item, index) => {
+                item.classList.toggle('active', index === activeItem);
+                if (index === activeItem) input.value = item.dataset.name;
+            });
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (activeItem !== -1) {
+                // Si hay un elemento activo, úsalo
+                addRecommendation(items[activeItem].dataset.name, input, containerDiv, listDiv);
+            } else {
+                // Si no hay, valida el texto actual del input
+                addRecommendation(input.value, input, containerDiv, listDiv);
+            }
+        }
+    });
+    
+    // Ocultar lista si el foco se pierde y no es un click en la lista
+    input.addEventListener('blur', () => {
+        setTimeout(() => {
+            if (document.activeElement.closest('.autocomplete-list') !== listDiv) {
+                listDiv.style.display = 'none';
+            }
+        }, 150);
+    });
 }
 
 
@@ -831,10 +982,11 @@ function renderDashboard(list){
     const isRenewing = item.renovara === true ? 'checked' : '';
     
     // LÓGICA DE CONDICIÓN PARA BOTÓN MES GRATIS
-    const isRecommendedByThree = Array.isArray(item.recomendaciones) && item.recomendaciones.length === 3;
+    const clientRecommendations = Array.isArray(item.recomendaciones) ? item.recomendaciones : [];
+    const isRecommendedByThree = clientRecommendations.length === 3;
     const freeMonthBtn = isRecommendedByThree ? 
         `<button class="btn free-month" onclick="addFreeMonth('${item.id}')">Mes gratis</button>` : 
-        `<button class="btn free-month" disabled title="Requiere 3 recomendaciones.">Mes gratis</button>`;
+        `<button class="btn free-month" disabled title="Requiere 3 recomendaciones válidas.">Mes gratis</button>`;
 
     const whatsappBtn = item.telefono && item.telefono.length > 5 ? 
         `<button class="btn whatsapp-alert" onclick="sendWhatsappAlert('${item.id}')">¡Avisar! 💬</button>` : '';
@@ -880,8 +1032,10 @@ window.addFreeMonth = async function(id) {
     const item = cachedList.find(i => i.id === id);
     if(!item) return;
     
+    const clientRecommendations = Array.isArray(item.recomendaciones) ? item.recomendaciones : [];
+    
     // DOBLE CHECK: Solo si tiene 3 recomendaciones
-    if (!Array.isArray(item.recomendaciones) || item.recomendaciones.length !== 3) {
+    if (clientRecommendations.length !== 3) {
          showNotification("Error", "La promoción de Mes Gratis requiere exactamente 3 clientes recomendados.", 'error');
          return;
     }
@@ -937,39 +1091,8 @@ window.renewItem = async function(id){
   }
 }
 
-function getRecommendationTag(name, containerDiv) {
-    const tag = document.createElement('span');
-    tag.className = 'recommendation-tag';
-    tag.innerHTML = `${name}<button type="button" data-name="${name}">x</button>`;
-    
-    tag.querySelector('button').addEventListener('click', () => {
-        currentRecommendations = currentRecommendations.filter(r => r !== name);
-        containerDiv.removeChild(tag);
-    });
-    return tag;
-}
 
-function renderRecommendedClients(recommendations, containerDiv, inputElementId, btnElementId) {
-    containerDiv.innerHTML = '';
-    recommendations.forEach(rec => {
-        containerDiv.appendChild(getRecommendationTag(rec, containerDiv));
-    });
-
-    const input = document.getElementById(inputElementId);
-    const addBtn = document.getElementById(btnElementId);
-    
-    addBtn.onclick = () => {
-        const name = input.value.trim();
-        if (name && !currentRecommendations.includes(name)) {
-            currentRecommendations.push(name);
-            containerDiv.appendChild(getRecommendationTag(name, containerDiv));
-            input.value = '';
-        }
-    };
-}
-
-
-// *** FUNCIÓN CLAVE: RENDERIZADO DE CLIENTES (MODIFICADA PARA FILTRO DE ESTADO) ***
+// *** FUNCIÓN CLAVE: RENDERIZADO DE CLIENTES ***
 function renderClients(list, status = null, searchTerm = ''){
   const clientsGrid = document.getElementById('clients-grid');
   const h3Element = document.getElementById('clients-header-h3');
@@ -1003,18 +1126,14 @@ function renderClients(list, status = null, searchTerm = ''){
     // CORRECCIÓN: Aseguramos que el campo es un array
     let clientRecommendations = item.recomendaciones;
     if (!Array.isArray(clientRecommendations)) {
-        if (typeof clientRecommendations === 'string' && clientRecommendations.trim() !== '') {
-            clientRecommendations = clientRecommendations.split(',').map(s => s.trim()).filter(s => s.length > 0);
-        } else {
-            clientRecommendations = []; 
-        }
+        clientRecommendations = []; 
     }
     
     // LÓGICA DE CONDICIÓN PARA BOTÓN MES GRATIS
     const isRecommendedByThree = clientRecommendations.length === 3;
     const freeMonthBtn = isRecommendedByThree ? 
         `<button class="btn free-month" onclick="addFreeMonth('${item.id}')">Mes gratis</button>` : 
-        `<button class="btn free-month" disabled title="Requiere 3 recomendaciones.">Mes gratis</button>`;
+        `<button class="btn free-month" disabled title="Requiere 3 recomendaciones válidas.">Mes gratis</button>`;
 
 
     if (clientRecommendations.length > 0) { 
@@ -1077,7 +1196,8 @@ window.openEdit = function(id){
   if(!item) return;
 
   currentRecommendations = Array.isArray(item.recomendaciones) ? [...item.recomendaciones] : [];
-  renderRecommendedClients(currentRecommendations, eRecommendedClientsDiv, 'e-new-recommendation', 'e-add-recommendation-btn');
+  // Usa la función de renderizado que ahora requiere el elemento input (e-new-recommendation)
+  renderRecommendedClients(currentRecommendations, eRecommendedClientsDiv, eNewRecommendation); 
   
   document.getElementById('e-nombre').value = item.nombre;
   document.getElementById('e-telefono').value = item.telefono || ""; 
@@ -1087,6 +1207,7 @@ window.openEdit = function(id){
   document.getElementById('e-contrasena').value = item.contrasena || "";
   document.getElementById('e-dispositivo').value = item.dispositivo || "";
   document.getElementById('e-aplicacion').value = item.aplicacion || ""; 
+  eNewRecommendation.value = ''; // Limpiar campo de autocompletado
 
   modal.setAttribute('data-id', id);
   document.getElementById('btn-history-open').onclick = () => openHistoryModal(id);
