@@ -397,7 +397,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
 import {
   getFirestore, collection, addDoc, doc, onSnapshot,
-  updateDoc, deleteDoc, query, orderBy, getDocs, where, runTransaction // <-- CORRECCIÓN APLICADA AQUÍ
+  updateDoc, deleteDoc, query, orderBy, getDocs, where
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
 
 import { 
@@ -421,16 +421,33 @@ const auth = getAuth(app);
 
 // --- ELEMENTOS UI DE LA APLICACIÓN ---
 const appContainer = document.getElementById('app-container'); 
-const sectionLogin = document.getElementById('section-login');
+
+// Login UI Elements (DECLARADOS EXPLICITAMENTE)
 const formLogin = document.getElementById('form-login');
 const loginEmail = document.getElementById('login-email');
 const loginPassword = document.getElementById('login-password');
 const loginErrorMessage = document.getElementById('login-error-message');
 const navLogout = document.getElementById('nav-logout');
+
+// Main UI Elements
 const navDashboard = document.getElementById('nav-dashboard');
 const navClientes = document.getElementById('nav-clientes');
 const navAdd = document.getElementById('nav-add');
+
+const sectionDashboard = document.getElementById('section-dashboard');
+const sectionClientes = document.getElementById('section-clientes');
+const sectionAdd = document.getElementById('section-add');
+
+const statTotal = document.getElementById('stat-total');
+const statToday3Days = document.getElementById('stat-today-3days');
+const statExpired = document.getElementById('stat-expired');
+const stat3DaysLink = document.getElementById('stat-3days-link');
+const statExpiredLink = document.getElementById('stat-expired-link');
+
+const searchInput = document.getElementById('search-input');
+
 const modal = document.getElementById('modal');
+const modalCancel = document.getElementById('modal-cancel');
 const historyModal = document.getElementById('history-modal');
 const historyModalClose = document.getElementById('history-modal-close');
 
@@ -440,14 +457,22 @@ const formAdd = document.getElementById('form-add');
 const fReset = document.getElementById('f-reset');
 const fCreacion = document.getElementById('f-creacion');
 const fCaducidad = document.getElementById('f-caducidad'); // Añadido
+const fAddRecommendationBtn = document.getElementById('f-add-recommendation-btn');
+const fNewRecommendation = document.getElementById('f-new-recommendation');
+const fRecommendedClientsDiv = document.getElementById('f-recommended-clients');
+
+// FORM EDIT
+const eAddRecommendationBtn = document.getElementById('e-add-recommendation-btn');
+const eNewRecommendation = document.getElementById('e-new-recommendation');
+const eRecommendedClientsDiv = document.getElementById('e-recommended-clients');
 
 
 // VARIABLES GLOBALES
 let cachedList = []; 
 let currentRecommendations = []; 
 let cachedClientNames = new Set(); 
-let currentUID = null; // Almacenará el UID del usuario logueado
 const col = collection(db, "clientes");
+let currentUID = null; // Variable para almacenar el UID del usuario actual
 
 // --- FUNCIONES AUXILIARES ---
 
@@ -531,235 +556,157 @@ function setActive(btn){
   }
 }
 
-function showSection(sectionId) {
-    document.querySelectorAll('section').forEach(s => s.style.display = 'none');
-    document.getElementById(sectionId).style.display = 'block';
-}
-
 document.getElementById('nav-dashboard').addEventListener('click', ()=>{
-    setActive(document.getElementById('nav-dashboard'));
-    showSection('section-dashboard');
+    setActive(navDashboard);
+    sectionDashboard.style.display = 'block';
+    sectionClientes.style.display = 'none';
+    sectionAdd.style.display = 'none';
 });
 
 document.getElementById('nav-clientes').addEventListener('click', ()=>{
-    setActive(document.getElementById('nav-clientes'));
-    showSection('section-clientes');
-    filterClients(document.getElementById('search-input').value);
+    setActive(navClientes);
+    sectionDashboard.style.display = 'none';
+    sectionClientes.style.display = 'block';
+    sectionAdd.style.display = 'none';
 });
 
 document.getElementById('nav-add').addEventListener('click', ()=>{
-    setActive(document.getElementById('nav-add'));
-    showSection('section-add');
+    setActive(navAdd);
+    sectionDashboard.style.display = 'none';
+    sectionClientes.style.display = 'none';
+    sectionAdd.style.display = 'block';
     setDefaultDates(); // Asegurar que las fechas se restablezcan al abrir
 });
 
-// --- AUTENTICACIÓN Y GESTIÓN DE ESTADO ---
+// --- CARGA DE CLIENTES EN TIEMPO REAL ---
 
-formLogin.addEventListener('submit', async e => {
-    e.preventDefault();
-    loginErrorMessage.textContent = "";
-
-    try {
-        await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
-        // La navegación la gestiona onAuthStateChanged
-    } catch (error) {
-        console.error("Login Error:", error);
-        loginErrorMessage.textContent = "Error de inicio de sesión. Credenciales incorrectas.";
-    }
-});
-
-navLogout.addEventListener('click', async () => {
-    try {
-        await signOut(auth);
-        showNotification("Sesión Cerrada", "Has cerrado tu sesión con éxito.", 'success');
-        // La navegación la gestiona onAuthStateChanged
-    } catch (error) {
-        console.error("Logout Error:", error);
-        showNotification("Error", "No se pudo cerrar la sesión.", 'error');
-    }
-});
-
-// ===============================================
-// === FUNCIÓN DE MIGRACIÓN (TEMPORAL: ELIMINAR DESPUÉS DE UN USO) ===
-// Ejecutar una única vez con el Usuario 1 logueado
-// ===============================================
-async function migrateOldClientsToCurrentUser(currentUserUID) {
-    console.log("========================================");
-    console.log("MIGRACIÓN INICIADA: Buscando clientes antiguos sin 'userId'.");
-    console.log(`UID a aplicar a documentos sin etiquetar: ${currentUserUID}`);
-
-    const clientsRef = collection(db, "clientes");
-
-    // Paso 1: Obtener todos los documentos que NO tienen el campo 'userId'
-    try {
-        // Usamos where('userId', '==', null) para encontrar documentos antiguos
-        const q = query(clientsRef, where("userId", "==", null));
-        const querySnapshot = await getDocs(q);
-        
-        if (querySnapshot.empty) {
-            console.log("MIGRACIÓN COMPLETADA: No se encontraron clientes antiguos sin 'userId'.");
-            console.log("========================================");
-            return;
-        }
-
-        const docsToUpdate = [];
-        querySnapshot.forEach(doc => {
-            docsToUpdate.push(doc);
-        });
-        
-        // Paso 2: Ejecutar la transacción para actualizar todos los documentos encontrados
-        let updatedCount = 0;
-        await runTransaction(db, async (transaction) => {
-            docsToUpdate.forEach(docSnapshot => {
-                const docRef = doc(db, "clientes", docSnapshot.id);
-                // La transacción garantiza atomicidad.
-                transaction.update(docRef, { userId: currentUserUID });
-                updatedCount++;
-            });
-        });
-        
-        console.log(`MIGRACIÓN COMPLETADA CON ÉXITO: Documentos actualizados con userId: ${updatedCount}`);
-        console.log("========================================");
-
-    } catch (error) {
-        // Manejo de errores específicos para dar instrucciones al usuario
-        if (error.code === 'permission-denied' || error.message.includes('permissions')) {
-            console.error("FALLO CRÍTICO EN LA MIGRACIÓN: FirebaseError: Missing or insufficient permissions.");
-            console.warn("IMPORTANTE: Las reglas de seguridad impidieron la lectura de documentos sin tu UID. RELAJA LAS REGLAS DE LECTURA TEMPORALMENTE (allow read: if request.auth != null;), recarga y vuelve a intentarlo.");
-        } else if (error.message.includes('index')) {
-             console.error(`Error al obtener datos: ${error.toString()}`);
-             console.warn("ERROR DE ÍNDICE: Se requiere un índice para esta consulta. Utiliza el enlace proporcionado en el error para crearlo.");
-        } else {
-            console.error("FALLO CRÍTICO EN LA MIGRACIÓN:", error);
-        }
-        console.log("========================================");
-    }
-}
-
-// ===============================================
-// === FIN DE FUNCIÓN DE MIGRACIÓN ===
-// ===============================================
-
-// --- CARGA DE CLIENTES EN TIEMPO REAL (Data Listener) ---
-
+// Función para iniciar la escucha de datos de Firestore
 function startDataListener(uid) {
-    const q = query(col, where("userId", "==", uid), orderBy("caducidad", "asc"));
-    
+    // La consulta ahora incluye el filtro por userId
+    const q = query(col, where("userId", "==", uid), orderBy("caducidad", "desc"));
+
     onSnapshot(q, (snapshot) => {
-        const list = [];
-        snapshot.forEach((doc) => {
-            list.push({ id: doc.id, ...doc.data() });
+        cachedList = [];
+        cachedClientNames.clear(); 
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const client = { id: doc.id, ...data };
+            cachedList.push(client);
+            cachedClientNames.add(client.nombre.toLowerCase());
         });
         
-        cachedList = list;
-        updateStats(list);
-        renderDashboard(list);
-        filterClients(document.getElementById('search-input').value);
-        
-        // Actualizar el set de nombres para el autocompletado
-        cachedClientNames = new Set(list.map(c => c.nombre));
+        // Llamar a las funciones de renderizado después de cargar los datos
+        updateStats(cachedList);
+        filterClients(searchInput.value);
+        renderDashboard(cachedList);
     }, (error) => {
-         // Comprobación específica del error de índice para el Data Listener
-         if (error.message.includes('index')) {
-            console.error(`Error al obtener datos: ${error.toString()}`);
-        } else {
-            console.error(`Error al obtener datos: ${error.toString()}`);
-        }
+        console.error("Error en la escucha de datos: ", error);
+        // Notificar al usuario si el error no es de permisos (que debería ser cubierto por authState)
+        showNotification("Error de Conexión", "No se pudieron cargar los datos. Revisa la consola y las reglas de Firestore.", 'error');
     });
 }
-
-
 
 // --- RESTO DE LÓGICA (Filtros y Stats) ---
 
 function getExpiryStatus(caducidad) {
-    if (!caducidad) return '';
+    if(!caducidad) return '';
+    const dateCaducidad = new Date(caducidad);
     const now = new Date();
-    const expiryDate = new Date(caducidad);
-    const diffTime = expiryDate.getTime() - now.getTime();
+    dateCaducidad.setHours(0,0,0,0);
+    now.setHours(0,0,0,0); 
+
+    const diffTime = dateCaducidad.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays < 0) return 'status-red';
-    if (diffDays <= 3) return 'status-yellow';
-    return 'status-green';
+    if (diffDays < 0) {
+        return 'status-red'; // Caducado
+    } else if (diffDays <= 7) {
+        return 'status-yellow'; // Próximo a caducar (7 días)
+    } else {
+        return 'status-green'; // Activo
+    }
 }
 
 function updateStats(list) {
     const now = new Date();
     now.setHours(0,0,0,0);
-    const limit = new Date(now);
-    limit.setDate(limit.getDate() + 3);
-    limit.setHours(23,59,59,999);
+    const limit3Days = new Date(now);
+    limit3Days.setDate(limit3Days.getDate() + 3);
+    limit3Days.setHours(23,59,59,999);
 
-    const expired = list.filter(i => {
-        if(!i.caducidad) return false;
+    const expiredCount = list.filter(i => {
+        if (!i.caducidad) return false;
         const d = new Date(i.caducidad);
+        d.setHours(0,0,0,0);
         return d < now;
-    });
+    }).length;
 
-    const soon = list.filter(i => {
-        if(!i.caducidad) return false;
+    const soonCount = list.filter(i => {
+        if (!i.caducidad) return false;
         const d = new Date(i.caducidad);
-        return d >= now && d <= limit;
-    });
+        d.setHours(0,0,0,0);
+        return d >= now && d <= limit3Days;
+    }).length;
 
-    document.getElementById('stat-total').textContent = list.length;
-    document.getElementById('stat-expired').textContent = expired.length;
-    document.getElementById('stat-today-3days').textContent = soon.length;
-    
-    // Configurar enlaces de filtrado
-    document.getElementById('stat-3days-link').onclick = () => filterByStatus('soon');
-    document.getElementById('stat-expired-link').onclick = () => filterByStatus('expired');
+    statTotal.textContent = list.length;
+    statToday3Days.textContent = soonCount;
+    statExpired.textContent = expiredCount;
 }
 
-function filterByStatus(status) {
-    let filteredList = [];
-    const now = new Date();
-    now.setHours(0,0,0,0);
-    const limit = new Date(now);
-    limit.setDate(limit.getDate() + 3);
-    limit.setHours(23,59,59,999);
-
-    if (status === 'soon') {
-        filteredList = cachedList.filter(i => {
-            if(!i.caducidad) return false;
-            const d = new Date(i.caducidad);
-            return d >= now && d <= limit;
-        });
-    } else if (status === 'expired') {
-        filteredList = cachedList.filter(i => {
-            if(!i.caducidad) return false;
-            const d = new Date(i.caducidad);
-            return d < now;
-        });
-    }
-    
-    // Navegar a la sección de clientes y renderizar la lista filtrada
-    setActive(navClientes);
-    showSection('section-clientes');
-    renderClients(filteredList);
-
-    // Limpiar el filtro de búsqueda para no interferir
-    const searchInput = document.getElementById('search-input');
-    searchInput.value = '';
-}
-
-// Implementación de Autocompletado (omito por brevedad, asumo que está funcional)
-// ... (Lógica de Autocompletado)
-
-// Función de búsqueda y renderizado de la lista principal
 function filterClients(searchText) {
-    const term = searchText.toLowerCase();
+    const term = searchText.toLowerCase().trim();
+    if (!term) {
+        renderClients(cachedList);
+        return;
+    }
     const filtered = cachedList.filter(item => 
         item.nombre.toLowerCase().includes(term) ||
-        item.usuario.toLowerCase().includes(term) ||
-        item.aplicacion.toLowerCase().includes(term)
+        (item.usuario && item.usuario.toLowerCase().includes(term)) ||
+        (item.aplicacion && item.aplicacion.toLowerCase().includes(term)) ||
+        (item.telefono && item.telefono.replace(/\s/g, '').includes(term.replace(/\s/g, '')))
     );
     renderClients(filtered);
 }
 
-document.getElementById('search-input').addEventListener('input', (e) => {
-    filterClients(e.target.value);
+searchInput.addEventListener('input', (e) => filterClients(e.target.value));
+
+stat3DaysLink.addEventListener('click', () => {
+    const now = new Date();
+    now.setHours(0,0,0,0);
+    const limit3Days = new Date(now);
+    limit3Days.setDate(limit3Days.getDate() + 3);
+    limit3Days.setHours(23,59,59,999);
+
+    const filtered = cachedList.filter(i => {
+        if (!i.caducidad) return false;
+        const d = new Date(i.caducidad);
+        d.setHours(0,0,0,0);
+        return d >= now && d <= limit3Days;
+    });
+    
+    // Cambiar a la vista de clientes y filtrar
+    navClientes.click(); 
+    searchInput.value = ''; // Limpiar la búsqueda
+    renderClients(filtered);
+    showNotification("Filtro Aplicado", "Mostrando clientes que caducan en 3 días.", 'success');
+});
+
+statExpiredLink.addEventListener('click', () => {
+    const now = new Date();
+    now.setHours(0,0,0,0);
+
+    const filtered = cachedList.filter(i => {
+        if (!i.caducidad) return false;
+        const d = new Date(i.caducidad);
+        d.setHours(0,0,0,0);
+        return d < now;
+    });
+
+    // Cambiar a la vista de clientes y filtrar
+    navClientes.click(); 
+    searchInput.value = ''; // Limpiar la búsqueda
+    renderClients(filtered);
+    showNotification("Filtro Aplicado", "Mostrando clientes caducados.", 'success');
 });
 
 
@@ -809,6 +756,24 @@ function renderDashboard(list){
     dashboardSoonExp.appendChild(card);
   });
 }
+
+// Función para cambiar el estado 'renovara' directamente
+window.toggleRenovara = async function(checkbox) {
+    const id = checkbox.getAttribute('data-id');
+    const newState = checkbox.checked;
+
+    try {
+        await updateDoc(doc(db, "clientes", id), {
+            renovara: newState
+        });
+        showNotification("Estado Actualizado", `Cliente actualizado a 'Renovará: ${newState ? 'Sí' : 'No'}'.`, 'success');
+    } catch (error) {
+        showNotification("Error", "No se pudo actualizar el estado.", 'error');
+        console.error("Error toggling renovara:", error);
+        checkbox.checked = !newState; // Revertir el estado visual en caso de fallo
+    }
+}
+
 
 // *** FUNCIÓN WHATSAPP (NUEVA) ***
 window.sendWhatsappAlert = function(id) {
@@ -889,22 +854,6 @@ window.renewItem = async function(id){
   }
 }
 
-// Lógica para el checkbox "Renovará"
-window.toggleRenovara = async function(checkbox) {
-    const id = checkbox.dataset.id;
-    const isChecked = checkbox.checked;
-
-    try {
-        await updateDoc(doc(db, "clientes", id), {
-            renovara: isChecked
-        });
-    } catch (error) {
-        showNotification("Error", "No se pudo actualizar el estado de 'Renovará'.", 'error');
-        console.error("Error toggling renovara:", error);
-    }
-}
-
-
 // *** RENDERIZADO DE CLIENTES EN SECCIÓN CLIENTES (ACTUALIZADO CON BOTÓN MES GRATIS) ***
 function renderClients(list){
   const clientsGrid = document.getElementById('clients-grid');
@@ -912,11 +861,10 @@ function renderClients(list){
 
   list.forEach(item => {
     let recommendationsHTML = '';
-    
-    if (item.recomendaciones && item.recomendaciones.length > 0) {
-        recommendationsHTML = `<div class="tags" style="margin-bottom: 8px;">`;
+    if(item.recomendaciones && item.recomendaciones.length > 0) {
+        recommendationsHTML = `<div class="tags" style="margin-top:8px">`;
         item.recomendaciones.forEach(rec => {
-            recommendationsHTML += `<span class="recommendation-tag" style="background: var(--glass); color: var(--accent); font-weight: 400;">${rec}</span>`;
+            recommendationsHTML += `<span class="recommendation-tag" style="background:var(--card); color: var(--accent); border: 1px solid rgba(110, 231, 183, 0.3); font-weight:400; padding:2px 6px;">${rec}</span>`;
         });
         recommendationsHTML += `</div>`;
     }
@@ -945,34 +893,29 @@ function renderClients(list){
   });
 }
 
-// Lógica de Autocompletado para el campo de recomendaciones
-// (Omitida por brevedad, asumo que es funcional y se conecta a `cachedClientNames`)
-
-// Lógica de Copiar Contraseña
+// Función para copiar la contraseña
 window.copyPassword = function(id) {
     const item = cachedList.find(i => i.id === id);
-    if (!item || !item.contrasena) {
+    if (item && item.contrasena) {
+        navigator.clipboard.writeText(item.contrasena)
+            .then(() => {
+                showNotification("Copiado", `Contraseña de ${item.nombre} copiada al portapapeles.`, 'success');
+            })
+            .catch(err => {
+                console.error('Error al copiar: ', err);
+                showNotification("Error", "No se pudo copiar la contraseña.", 'error');
+            });
+    } else {
         showNotification("Error", "Contraseña no disponible.", 'error');
-        return;
     }
-    
-    navigator.clipboard.writeText(item.contrasena)
-        .then(() => {
-            showNotification("Copiado", `Contraseña de ${item.nombre} copiada al portapapeles.`, 'success');
-        })
-        .catch(err => {
-            showNotification("Error", "Fallo al copiar.", 'error');
-            console.error('Could not copy text: ', err);
-        });
-};
+}
 
-
-// Lógica de Eliminar Cliente
+// Función para eliminar un cliente
 window.deleteItem = async function(id) {
-    if (!confirm("¿Estás seguro de que quieres eliminar este cliente? Esta acción es irreversible.")) {
+    if (!confirm('¿Estás seguro de que quieres eliminar este cliente? Esta acción es irreversible.')) {
         return;
     }
-    
+
     try {
         await deleteDoc(doc(db, "clientes", id));
         showNotification("Eliminado", "Cliente eliminado con éxito.", 'success');
@@ -980,17 +923,125 @@ window.deleteItem = async function(id) {
         showNotification("Error", "No se pudo eliminar el cliente. (Revisa reglas de Firestore)", 'error');
         console.error("Error deleting item:", error);
     }
-};
+}
+
+
+// Autocompletado y gestión de tags de recomendaciones
+function setupRecommendationEvents(addBtn, inputField, tagsDiv) {
+    
+    // Función para renderizar los tags
+    const renderTags = () => {
+        tagsDiv.innerHTML = '';
+        currentRecommendations.forEach((tag, index) => {
+            const tagElement = document.createElement('span');
+            tagElement.className = 'recommendation-tag';
+            tagElement.innerHTML = `${tag} <button type="button" data-index="${index}">x</button>`;
+            tagsDiv.appendChild(tagElement);
+        });
+    };
+
+    // Evento para añadir tag
+    addBtn.onclick = () => {
+        const value = inputField.value.trim();
+        if (value && !currentRecommendations.includes(value)) {
+            currentRecommendations.push(value);
+            inputField.value = '';
+            renderTags();
+        }
+    };
+
+    // Evento para eliminar tag
+    tagsDiv.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            const index = e.target.getAttribute('data-index');
+            currentRecommendations.splice(index, 1);
+            renderTags();
+        }
+    });
+
+    return renderTags;
+}
+
+const renderAddTags = setupRecommendationEvents(fAddRecommendationBtn, fNewRecommendation, fRecommendedClientsDiv);
+const renderEditTags = setupRecommendationEvents(eAddRecommendationBtn, eNewRecommendation, eRecommendedClientsDiv);
+
+
+// Autocompletado (solo para el formulario Añadir)
+let autocompleteList = null;
+
+function createAutocompleteList(inputField, container) {
+    if (autocompleteList) autocompleteList.remove();
+
+    autocompleteList = document.createElement('ul');
+    autocompleteList.className = 'autocomplete-list';
+    container.appendChild(autocompleteList);
+
+    // Posicionar justo debajo del input
+    const inputRect = inputField.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    autocompleteList.style.top = `${inputRect.bottom - containerRect.top + 5}px`;
+    autocompleteList.style.width = `${inputRect.width}px`;
+
+    return autocompleteList;
+}
+
+function updateAutocomplete(inputField, container, renderTagsFn) {
+    const term = inputField.value.trim().toLowerCase();
+    
+    if (term.length < 2) {
+        if (autocompleteList) autocompleteList.remove();
+        autocompleteList = null;
+        return;
+    }
+
+    // Filtra los nombres de todos los clientes (excepto los ya añadidos)
+    const suggestions = Array.from(cachedClientNames)
+        .filter(name => name.includes(term) && !currentRecommendations.includes(name));
+
+    if (suggestions.length === 0) {
+        if (autocompleteList) autocompleteList.remove();
+        autocompleteList = null;
+        return;
+    }
+
+    if (!autocompleteList) {
+        autocompleteList = createAutocompleteList(inputField, container);
+    }
+
+    autocompleteList.innerHTML = '';
+    suggestions.slice(0, 5).forEach(name => {
+        const item = document.createElement('li');
+        item.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+        item.onclick = () => {
+            currentRecommendations.push(name);
+            inputField.value = '';
+            renderTagsFn();
+            autocompleteList.remove();
+            autocompleteList = null;
+        };
+        autocompleteList.appendChild(item);
+    });
+}
+
+// Event Listeners para Autocompletado
+fNewRecommendation.addEventListener('input', () => updateAutocomplete(fNewRecommendation, document.getElementById('f-recomendaciones-container'), renderAddTags));
+eNewRecommendation.addEventListener('input', () => updateAutocomplete(eNewRecommendation, document.getElementById('e-recomendaciones-container'), renderEditTags));
+document.addEventListener('click', (e) => {
+    if (autocompleteList && !e.target.closest('.dynamic-input-container')) {
+        autocompleteList.remove();
+        autocompleteList = null;
+    }
+});
+
 
 // *** ABRIR MODAL DE EDICIÓN (ACTUALIZADO CON CAMPO TELÉFONO) ***
 window.openEdit = function(id){
   const item = cachedList.find(i => i.id === id);
   if(!item) return;
 
-  // Lógica para cargar y renderizar recomendaciones
-  currentRecommendations = item.recomendaciones || [];
-  renderRecommendations(currentRecommendations, document.getElementById('e-recommended-clients'), 'e-recomendaciones-container');
-
+  currentRecommendations = item.recomendaciones ? [...item.recomendaciones] : [];
+  renderEditTags(); // Renderizar tags en el modal de edición
+  
   document.getElementById('e-nombre').value = item.nombre;
   document.getElementById('e-telefono').value = item.telefono || ""; // NUEVO
   document.getElementById('e-creacion').value = isoForInput(item.creacion);
@@ -1005,52 +1056,10 @@ window.openEdit = function(id){
   document.getElementById('modal').classList.add('show');
 };
 
-// Lógica de Recomendaciones (Add/Remove)
-function renderRecommendations(list, targetDiv, containerId) {
-    targetDiv.innerHTML = '';
-    list.forEach((tag, index) => {
-        const tagSpan = document.createElement('span');
-        tagSpan.className = 'recommendation-tag';
-        tagSpan.innerHTML = `${tag} <button type="button" data-index="${index}">x</button>`;
-        tagSpan.querySelector('button').onclick = () => removeRecommendation(containerId, index);
-        targetDiv.appendChild(tagSpan);
-    });
-}
-
-function removeRecommendation(containerId, index) {
-    if (containerId.startsWith('f-')) {
-        currentRecommendations.splice(index, 1);
-        renderRecommendations(currentRecommendations, document.getElementById('f-recommended-clients'), 'f-recomendaciones-container');
-    } else {
-        currentRecommendations.splice(index, 1);
-        renderRecommendations(currentRecommendations, document.getElementById('e-recommended-clients'), 'e-recomendaciones-container');
-    }
-}
-
-function addRecommendation(containerId) {
-    let inputId = containerId.startsWith('f-') ? 'f-new-recommendation' : 'e-new-recommendation';
-    let targetDivId = containerId.startsWith('f-') ? 'f-recommended-clients' : 'e-recommended-clients';
-    
-    const input = document.getElementById(inputId);
-    const newRec = input.value.trim();
-    if (newRec && !currentRecommendations.includes(newRec)) {
-        currentRecommendations.push(newRec);
-        renderRecommendations(currentRecommendations, document.getElementById(targetDivId), containerId);
-        input.value = '';
-    }
-}
-
-document.getElementById('f-add-recommendation-btn').addEventListener('click', () => addRecommendation('f-recomendaciones-container'));
-document.getElementById('e-add-recommendation-btn').addEventListener('click', () => addRecommendation('e-recomendaciones-container'));
-
-// Lógica de Modales
-document.getElementById('modal-cancel').addEventListener('click', () => {
-    document.getElementById('modal').classList.remove('show');
+// Cierra modal al hacer click en Cancelar
+modalCancel.addEventListener('click', ()=>{
+    modal.classList.remove('show');
     currentRecommendations = [];
-});
-
-document.getElementById('history-modal-close').addEventListener('click', () => {
-    historyModal.classList.remove('show');
 });
 
 // *** GUARDAR CAMBIOS EN MODAL (ACTUALIZADO CON CAMPO TELÉFONO) ***
@@ -1097,7 +1106,7 @@ formAdd.addEventListener('submit', async e=>{
     aplicacion: document.getElementById('f-aplicacion').value,
     recomendaciones: currentRecommendations, 
     renovara: false,
-    userId: currentUID // IMPORTANTE: Asignar el UID al crear
+    userId: currentUID // IMPORTANTE: ASIGNAR EL UID
   };
 
   try {
@@ -1161,60 +1170,89 @@ function renderRenewalHistory(historyList, targetDiv) {
     targetDiv.innerHTML = html;
 }
 
-// Lógica para abrir el modal de historial
+// Función para abrir el modal de historial
 async function openHistoryModal(clientId) {
     const historyListDiv = document.getElementById('history-list');
     historyListDiv.innerHTML = '<p style="text-align:center; color: var(--muted);">Cargando historial...</p>';
     
+    // Abrir el modal antes de la carga (para mostrar el spinner)
+    historyModal.classList.add('show');
+    modal.classList.remove('show'); // Cerrar modal de edición
+
     try {
-        const historyRef = collection(db, "clientes", clientId, "renovaciones");
-        const q = query(historyRef, orderBy("fecha_renovacion", "desc"));
+        const q = query(collection(db, "clientes", clientId, "renovaciones"), orderBy("fecha_renovacion", "desc"));
         const snapshot = await getDocs(q);
-        
         const historyList = [];
         snapshot.forEach(doc => {
             historyList.push(doc.data());
         });
         
         renderRenewalHistory(historyList, historyListDiv);
-        historyModal.classList.add('show');
+
     } catch (error) {
-        historyListDiv.innerHTML = '<p style="text-align:center; color: var(--red);">Error al cargar el historial.</p>';
-        console.error("Error fetching history:", error);
+        historyListDiv.innerHTML = '<p style="text-align:center; color: var(--red);">Error al cargar el historial. Revisa las reglas de seguridad.</p>';
+        console.error("Error fetching renewal history:", error);
+        showNotification("Error", "No se pudo cargar el historial.", 'error');
     }
 }
 
-// Lógica de Exportar a CSV
-document.getElementById('btn-export-csv').addEventListener('click', () => {
-    const headers = ['Nombre', 'Teléfono', 'Creación', 'Caducidad', 'Usuario', 'Contraseña', 'Dispositivo', 'Aplicación', 'Recomendaciones'];
-    let csv = headers.join(',') + '\n';
-
-    cachedList.forEach(item => {
-        const recomendaciones = item.recomendaciones ? item.recomendaciones.join('; ') : '';
-        const row = [
-            item.nombre,
-            item.telefono || '',
-            isoForInput(item.creacion),
-            isoForInput(item.caducidad),
-            item.usuario || '',
-            item.contrasena || '',
-            item.dispositivo || '',
-            item.aplicacion || '',
-            recomendaciones
-        ].map(field => `"${field.toString().replace(/"/g, '""')}"`).join(',');
-        csv += row + '\n';
-    });
-
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'clientes_export.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showNotification("Exportado", "Datos de clientes exportados a CSV.", 'success');
+// Lógica de cierre de modal de historial
+historyModalClose.addEventListener('click', () => {
+    historyModal.classList.remove('show');
+    // historyListDiv.innerHTML = ''; // Limpiar si es necesario
 });
+
+// --- AUTENTICACIÓN Y GESTIÓN DE ESTADO ---
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUID = user.uid;
+        document.getElementById('section-login').classList.remove('show');
+        appContainer.style.display = 'block';
+        startDataListener(currentUID); // Inicia la escucha de datos del usuario
+        document.getElementById('nav-dashboard').click(); // Navega al dashboard
+    } else {
+        currentUID = null;
+        document.getElementById('section-login').classList.add('show');
+        appContainer.style.display = 'none';
+        // Limpiar la lista de clientes si el usuario cierra sesión
+        document.getElementById('clients-grid').innerHTML = '';
+        document.getElementById('dashboard-soon-exp').innerHTML = '';
+    }
+});
+
+
+// --- MANEJADORES DE EVENTOS DE LOGIN/LOGOUT (MOVIDOS AL FINAL PARA SEGURIDAD) ---
+
+formLogin.addEventListener('submit', async e => {
+    e.preventDefault();
+    
+    // *** LÍNEA DE DEBUGGING AÑADIDA ***
+    console.log('*** INICIO DE INTENTO DE LOGIN. Buscando credenciales... ***');
+    
+    loginErrorMessage.textContent = "";
+
+    try {
+        await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
+        // onAuthStateChanged se encarga de la navegación
+        console.log('Login exitoso. onAuthStateChanged tomará el control.');
+    } catch (error) {
+        // El error no lo lanza la red, sino Firebase, por eso no había error en consola
+        console.error("Login Error:", error);
+        loginErrorMessage.textContent = "Error de inicio de sesión. Credenciales incorrectas o usuario no existe.";
+    }
+});
+
+navLogout.addEventListener('click', async () => {
+    try {
+        await signOut(auth);
+        showNotification("Sesión Cerrada", "Has cerrado tu sesión con éxito.", 'success');
+    } catch (error) {
+        console.error("Logout Error:", error);
+        showNotification("Error", "No se pudo cerrar la sesión.", 'error');
+    }
+});
+
 </script>
 </body>
 </html>
