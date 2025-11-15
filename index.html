@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gestor de Clientes</title>
+  
+  <!-- 1. Enlace a tu hoja de estilos CSS -->
+  <link rel="stylesheet" href="style.css">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<section id="section-login" class="show">
+  <div class="login-box">
+    <h2>Gestor de Clientes</h2>
+    <form id="form-login">
+      <label for="login-email">Email</label>
+      <input type="email" id="login-email" required />
+
+      <label for="login-password" style="margin-top: 10px;">Contraseña</label>
+      <input type="password" id="login-password" required />
+
+      <div id="login-error-message"></div>
+
+      <button type="submit" class="btn edit" style="width: 100%; margin-top: 15px;">Iniciar Sesión</button>
+    </form>
+  </div>
+</section>
+
+<div class="container" id="app-container" style="display:none;">
+
+<header>
+  <div class="brand">
+    <div class="logo">GC</div>
+    <div><div style="font-weight:700">Gestor Clientes</div></div>
+  </div>
+  <nav>
+    <div class="menu">
+      <button id="nav-dashboard" class="active">Dashboard</button>
+      <button id="nav-clientes">Clientes</button>
+      <button id="nav-add">Añadir cliente</button>
+      <button id="nav-logout" class="btn delete" style="margin-left: 12px;">Cerrar Sesión</button>
+    </div>
+  </nav>
+</header>
+
+<main>
+
+<section id="section-dashboard">
+  <div class="cards-col">
+    <div class="stat">
+      <h3>Total clientes</h3><p id="stat-total">—</p>
+    </div>
+    <div class="stat stat-clickable" id="stat-3days-link" title="Haz clic para filtrar clientes.">
+      <h3>Caducan en 3 días</h3><p id="stat-today-3days">—</p>
+    </div>
+    <div class="stat stat-clickable" id="stat-expired-link" title="Haz clic para filtrar clientes.">
+      <h3>Cliente caducado</h3><p id="stat-expired">—</p>
+    </div>
+  </div>
+  <div id="dashboard-soon-exp" class="cards" style="margin-top: 18px">
+    <p class="meta" style="grid-column: 1 / -1; margin-bottom: 0;">Clientes que caducan en los próximos 3 días:</p>
+  </div>
+</section>
+
+<section id="section-clientes" style="display:none">
+  <div class="card-form">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h3>Clientes</h3>
+      <button id="btn-export-csv" class="btn export">Exportar a CSV 📥</button>
+    </div>
+    
+    <input type="text" id="search-input" placeholder="Buscar por Nombre, Usuario o Aplicación..." style="margin-bottom: 12px;" />
+
+    <div id="clients-grid" class="grid-clients" style="margin-top:10px"></div>
+  </div>
+</section>
+
+<section id="section-add" style="display:none">
+  <div class="card-form">
+    <h3>Añadir cliente</h3>
+    <form id="form-add">
+
+      <label>Nombre</label>
+      <input type="text" id="f-nombre" required />
+      
+      <label>Teléfono (Ej: 34600123456)</label>
+      <input type="text" id="f-telefono" value="+34" placeholder="Código de país + número (sin espacios)" />
+
+      <div class="row">
+        <div>
+          <label>Fecha de creación</label>
+          <input type="date" id="f-creacion" required />
+        </div>
+        <div>
+          <label>Caducidad</label>
+          <input type="date" id="f-caducidad" required />
+        </div>
+      </div>
+
+      <label>Usuario</label>
+      <input type="text" id="f-usuario" />
+
+      <label>Contraseña</label>
+      <input type="text" id="f-contrasena" />
+
+      <label>Dispositivo utilizado</label>
+      <input type="text" id="f-dispositivo" />
+
+      <label>Aplicación</label>
+      <select id="f-aplicacion">
+        <option value="Spinning TV">Spinning TV</option>
+        <option value="Spinning IBO">Spinning IBO</option>
+        <option value="Spinning Mate">Spinning Mate</option>
+        <option value="Hot Player">Hot Player</option>
+      </select>
+
+      <label>Clientes recomendados</label>
+      <div id="f-recomendaciones-container" class="dynamic-input-container">
+          <div id="f-recommended-clients" class="tag-list"></div>
+          <div class="input-add-row">
+              <input type="text" id="f-new-recommendation" placeholder="Nombre de cliente recomendado" />
+              <button type="button" class="btn copy" id="f-add-recommendation-btn">+</button>
+              </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button type="submit" class="btn edit">Guardar</button>
+        <button type="button" id="f-reset" class="btn copy">Reset</button>
+      </div>
+
+    </form>
+  </div>
+</section>
+</main>
+
+<footer></footer>
+
+</div>
+
+<div id="modal" class="modal">
+  <div class="modal-inner">
+    <h3 id="modal-title">Editar cliente</h3>
+    <form id="form-edit">
+
+      <label>Nombre</label>
+      <input type="text" id="e-nombre" required />
+      
+      <label>Teléfono (Ej: 34600123456)</label>
+      <input type="text" id="e-telefono" placeholder="Código de país + número (sin espacios)" />
+
+      <div class="row">
+        <div>
+          <label>Fecha de creación</label>
+          <input type="date" id="e-creacion" required />
+        </div>
+        <div>
+          <label>Caducidad</label>
+          <input type="date" id="e-caducidad" required />
+        </div>
+      </div>
+
+      <label>Usuario</label>
+      <input type="text" id="e-usuario" />
+
+      <label>Contraseña</label>
+      <input type="text" id="e-contrasena" />
+
+      <label>Dispositivo utilizado</label>
+      <input type="text" id="e-dispositivo" />
+
+      <label>Aplicación</label>
+      <select id="e-aplicacion">
+        <option value="Spinning TV">Spinning TV</option>
+        <option value="Spinning IBO">Spinning IBO</option>
+        <option value="Spinning Mate">Spinning Mate</option>
+        <option value="Hot Player">Hot Player</option>
+      </select>
+
+      <label>Clientes recomendados</label>
+      <div id="e-recomendaciones-container" class="dynamic-input-container">
+          <div id="e-recommended-clients" class="tag-list"></div>
+          <div class="input-add-row">
+              <input type="text" id="e-new-recommendation" placeholder="Nombre de cliente recomendado" />
+              <button type="button" class="btn copy" id="e-add-recommendation-btn">+</button>
+               </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:8px;justify-content:space-between">
+        <button type="button" id="btn-history-open" class="btn history">Ver Historial</button>
+        <div style="display:flex;gap:8px;">
+          <button type="button" id="modal-cancel" class="btn copy">Cancelar</button>
+          <button type="submit" class="btn edit">Guardar cambios</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="history-modal" class="modal">
+  <div class="modal-inner history">
+    <h3 id="history-modal-title">Historial de Renovaciones</h3>
+    <div id="history-list" style="max-height: 400px; overflow-y: auto;">
+        </div>
+    <div style="text-align: right; margin-top: 15px;">
+        <button type="button" id="history-modal-close" class="btn copy">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div id="notifications-container"></div>
+
+
+<!-- 2. Enlace a tu lógica JavaScript -->
+<!-- "type=module" es CRÍTICO porque tu script usa "import" -->
+<script type="module" src="script.js"></script>
+
+</body>
+</html>
