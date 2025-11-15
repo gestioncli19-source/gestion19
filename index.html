@@ -669,43 +669,6 @@ function startDataListener(uid) {
 }
 
 
-// --- MANEJADOR DE ESTADO DE AUTENTICACIÓN ---
-
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        currentUID = user.uid;
-        sectionLogin.classList.remove('show');
-        appContainer.style.display = 'block';
-        
-        // *******************************************************
-        // *** LLAMADA A LA FUNCIÓN DE MIGRACIÓN (TEMPORAL) ***
-        // *** ELIMINAR ESTA LÍNEA TRAS LA MIGRACIÓN EXITOSA ***
-        migrateOldClientsToCurrentUser(currentUID); 
-        // *******************************************************
-        
-        startDataListener(currentUID);
-        
-        // Mostrar dashboard por defecto al iniciar sesión
-        setActive(navDashboard);
-        showSection('section-dashboard');
-    } else {
-        currentUID = null;
-        sectionLogin.classList.add('show');
-        appContainer.style.display = 'none';
-        
-        // Limpiar campos de login
-        loginEmail.value = '';
-        loginPassword.value = '';
-        loginErrorMessage.textContent = '';
-        
-        // Limpiar datos
-        cachedList = [];
-        updateStats([]);
-        renderDashboard([]);
-        renderClients([]);
-    }
-});
-
 
 // --- RESTO DE LÓGICA (Filtros y Stats) ---
 
