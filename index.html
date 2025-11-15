@@ -12,1245 +12,1067 @@
     *{box-sizing:border-box}
     body{margin:0;background:linear-gradient(180deg,#071022 0%, #07132a 100%);color:#e6eef6;min-height:100vh}
     .container{max-width:1100px;margin:0 auto;padding:18px}
-    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:46px;height:46px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#013220;font-weight:700}
-    nav{margin-left:auto}
-    .menu{display:flex;gap:8px}
-    .menu button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer; transition: background 0.2s}
-    .menu button:hover { background: rgba(255,255,255,0.05); }
-    .menu button.active{background:var(--accent);color:#052018;border:none}
-    main{display:grid;grid-template-columns:1fr;gap:18px}
-    .cards-col{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:18px;}
-    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-    .stat{background:var(--glass);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
-    .stat-clickable {
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-    .stat-clickable:hover {
-        background: rgba(255,255,255,0.05);
-    }
-    .stat h3{margin:0;font-size:12px;color:var(--muted)}
-    .stat p{margin:8px 0 0;font-size:20px;font-weight:600}
-    .grid-clients{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+    header{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--glass);margin-bottom:20px}
+    header h1{font-size:24px;margin:0}
+    .nav{display:flex;gap:10px}
+    .btn{padding:10px 15px;border-radius:8px;cursor:pointer;font-weight:600;transition:background-color .2s, box-shadow .2s;border:none;white-space:nowrap;font-size:14px}
+    .btn:hover{box-shadow:0 0 15px rgba(110, 231, 183, 0.3)}
+    .nav-link{background-color:transparent;color:var(--muted);position:relative}
+    .nav-link:hover{color:#fff;background-color:var(--glass)}
+    .nav-link.active{color:var(--accent);font-weight:700}
+    .nav-link.active::after{content:'';position:absolute;bottom:-10px;left:0;width:100%;height:3px;background-color:var(--accent);border-radius:2px}
+
+    /* Dashboard Styling */
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:20px;margin-bottom:30px}
+    .stat{background-color:var(--card);padding:20px;border-radius:12px;box-shadow:0 4px 6px rgba(0,0,0,0.2);border-left:5px solid var(--accent);transition:transform .2s}
+    .stat:hover{transform:translateY(-3px)}
+    .stat-title{font-size:14px;color:var(--muted);margin-bottom:10px;text-transform:uppercase}
+    .stat-value{font-size:28px;font-weight:700}
+    .stat-description{font-size:12px;color:var(--muted);margin-top:5px}
     
-    /* Color de las tarjetas de clientes */
-    .card{
-        background:linear-gradient(180deg, #152238, #182845); /* Tonalidad azul oscura */
-        padding:14px;
-        border-radius:12px;
-        border:1px solid rgba(255, 255, 255, 0.1); /* Borde más sutil */
-        position:relative
+    /* 1. Dashboard Visualization (Clientes por caducar en fila) */
+    .expiring-clients-box {
+        background-color: var(--card);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        margin-top: 20px;
+        border-left: 5px solid var(--yellow);
     }
-
-    .card.status-red{border-left: 4px solid var(--red);}
-    .card.status-yellow{border-left: 4px solid var(--yellow);}
-    .card.status-green{border-left: 4px solid var(--green);}
-
-    .card h4{margin:0 0 6px}
-    .meta{font-size:12px;color:var(--muted);margin-bottom:8px}
-    .tags{display:flex;gap:6px;flex-wrap:wrap}
-    .btns{display:flex;gap:6px;margin-top:10px; flex-wrap: wrap;}
-    .btn{padding:8px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:600; transition: opacity 0.2s}
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn.edit{background:#1f2937;color:#e6eef6}
-    .btn.renew{background:#064e3b;color:var(--accent)}
-    .btn.free-month{background:#0b2e3b;color:var(--accent); border: 1px solid rgba(110, 231, 183, 0.3);} 
-    .btn.copy{background:#0b1220;color:var(--muted);border:1px solid rgba(255,255,255,0.03)}
-    .btn.delete{background:#3b0b0b;color:#ffcfcf}
-    .btn.export{background:var(--yellow);color:#212108;}
-    .btn.history{background:#0f172a;color:var(--accent); border: 1px solid var(--accent);} 
-    .btn.whatsapp-alert{background:var(--whatsapp);color:#0f1724; font-weight: 700; border: none;} 
-
-    .card-form{background:var(--card);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04)}
-    form{display:grid;gap:10px}
-    label{font-size:13px;color:var(--muted)}
-    input[type=text],input[type=date],textarea,select,input[type=email],input[type=password]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
-    textarea{min-height:90px;resize:vertical}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,23,0.6),rgba(2,6,23,0.6));z-index:50}
-    .modal.show{display:flex}
-    /* Ajuste del modal de edición para PC y móvil */
-    .modal-inner{
-        width:96%;
-        max-width:720px;
-        background:var(--card);
-        padding:16px;
-        border-radius:12px;
-        max-height: 90vh; /* Permite que ocupe hasta el 90% de la altura de la vista */
-        overflow-y: auto; /* Habilita el scroll interno si el contenido es demasiado largo */
+    .expiring-clients-box h3 {
+        color: var(--yellow);
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 20px;
     }
-    /* ESTILOS DE NOTIFICACIÓN */
-    #notifications-container { position: fixed; top: 18px; right: 18px; z-index: 100; display: flex; flex-direction: column; gap: 8px; }
-    .toast { background: var(--card); color: #e6eef6; padding: 12px 18px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); min-width: 250px; max-width: 350px; opacity: 0; transition: opacity 0.3s, transform 0.3s; transform: translateY(-20px); }
-    .toast.show { opacity: 1; transform: translateY(0); }
-    .toast.success { border-left: 4px solid var(--green); }
-    .toast.error { border-left: 4px solid var(--red); }
-    .toast strong { display: block; margin-bottom: 4px; font-size: 14px; }
-    .toast p { margin: 0; font-size: 13px; color: var(--muted); }
-    /* Login Screen Styles */
-    #section-login {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: linear-gradient(180deg,#071022 0%, #07132a 100%);
-        align-items: center;
-        justify-content: center;
-        z-index: 90;
+    #expiring-clients-container {
+        display: flex; /* Display in a row */
+        overflow-x: auto; /* Enable horizontal scrolling */
+        gap: 15px;
+        padding: 5px 0;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
     }
-    #section-login.show { display: flex; }
-    .login-box {
-        background: var(--card);
-        padding: 30px;
-        border-radius: 16px;
-        max-width: 400px;
-        width: 90%;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        border: 1px solid rgba(255,255,255,0.05);
+    #expiring-clients-container::-webkit-scrollbar {
+        display: none; /* Chrome, Safari */
     }
-    .login-box h2 { text-align: center; margin-top: 0; color: var(--accent); }
-    #login-error-message { color: var(--red); font-size: 13px; text-align: center; margin-top: 5px; height: 18px; }
-
-    /* Dashboard: checkbox */
-    .exp-card .flex-end { display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
-    /* ESTILOS: Campo de Recomendaciones Dinámico y Autocompletado */
-    .dynamic-input-container {
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid rgba(255,255,255,0.04);
-        background: transparent;
-        position: relative; 
+    .expiring-client-card {
+        min-width: 280px; /* Fixed width for each card */
+        padding: 15px;
+        background-color: #2a1e12; /* Unique dark background */
+        color: #fff; 
+        border: 1px solid var(--yellow);
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        flex-shrink: 0;
     }
-    .tag-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-bottom: 8px;
-        min-height: 18px;
-    }
-    .recommendation-tag {
-        background: var(--accent);
-        color: #052018;
-        padding: 4px 8px;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        font-size: 13px;
-        font-weight: 600;
-        line-height: 1;
-    }
-    .recommendation-tag button {
-        background: none;
-        border: none;
-        color: #052018;
-        margin-left: 6px;
-        cursor: pointer;
+    .expiring-client-card h5 {
+        margin: 0 0 5px 0;
         font-weight: 700;
-        line-height: 1;
-        padding: 0;
+        font-size: 16px;
+        color: var(--yellow);
     }
-    .input-add-row {
-        display: flex;
-        gap: 8px;
+    .expiring-client-card .detail {
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 3px;
     }
-    .input-add-row input[type=text] {
-        flex-grow: 1;
-        padding: 6px 10px; 
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-    .input-add-row button {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        padding: 0;
-        font-size: 18px;
-        line-height: 1;
-    }
-    /* Estilos Autocompletado */
-    .autocomplete-list {
-        position: absolute;
-        top: 100%;
-        left: 10px;
-        right: 50px; 
-        background: var(--card);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 8px;
-        max-height: 150px;
-        overflow-y: auto;
-        z-index: 60;
-        list-style: none;
-        padding: 0;
-        margin: 4px 0 0;
-    }
-    .autocomplete-list li {
-        padding: 8px 10px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-    .autocomplete-list li:hover, .autocomplete-list li.active {
-        background: var(--glass);
-    }
-    footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
+
+    /* Clients Grid Styling */
+    .clients-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:20px;padding-top:20px}
+    .card{padding:20px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.3);display:flex;flex-direction:column}
     
-    .settings-link { color: var(--accent); text-decoration: none; display: block; padding: 10px 15px; border-radius: 8px; background: rgba(110, 231, 183, 0.1); margin-bottom: 10px; transition: background 0.2s;}
-    .settings-link:hover { background: rgba(110, 231, 183, 0.2); }
-    .settings-link.external { background: #152238; border: 1px solid rgba(255,255,255,0.06);}
-    .settings-link.external:hover { background: #1a2942; }
+    /* 4. Client Card Colors */
+    .card-color-1 { background-color: #1a2a40; border-left: 5px solid #6366f1; } /* Indigo */
+    .card-color-2 { background-color: #1a3028; border-left: 5px solid #10b981; } /* Teal/Green */
+    .card-color-3 { background-color: #2a1e12; border-left: 5px solid #f97316; } /* Orange */
+    .card-color-4 { background-color: #241a2c; border-left: 5px solid #e879f9; } /* Violet */
+    .card-color-5 { background-color: #172535; border-left: 5px solid #3b82f6; } /* Blue */
 
-    @media (min-width: 701px) {
-        .cards-col {
-            grid-template-columns: repeat(3, 1fr);
+    .card h4{margin-top:0;font-size:18px;color:#fff}
+    .card .meta{font-size:13px;color:var(--muted);margin-bottom:5px}
+    .card .status-active{color:var(--green);font-weight:600}
+    .card .status-inactive{color:var(--red);font-weight:600}
+    .card .status-expiring{color:var(--yellow);font-weight:600}
+    .card .recs-list{margin-top:10px;padding-top:10px;border-top:1px solid var(--glass)}
+    .card .recs-list p{font-size:14px;font-weight:600;color:var(--accent);margin-top:0;margin-bottom:5px}
+    .card .recs-list ul{list-style:none;padding:0;margin:0}
+    .card .recs-list li{font-size:12px;color:var(--muted);margin-bottom:3px}
+    .card .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+    .card .btns .btn{padding:8px 12px;font-size:12px;font-weight:500;background-color:var(--glass);color:var(--accent)}
+    .card .btns .btn:hover{background-color:rgba(255,255,255,0.08)}
+    .card .btns .edit{color:#3b82f6}
+    .card .btns .delete{color:var(--red)}
+
+    /* Modal Styling */
+    .modal{display:none;position:fixed;z-index:500;left:0;top:0;width:100%;height:100%;overflow:auto;background-color:rgba(0,0,0,0.8);justify-content:center;align-items:center;padding:20px}
+    
+    /* 3. Edit Modal Responsiveness */
+    .modal-content{
+        background-color: var(--card);
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        width: 90%;
+        max-width: 700px; /* Increased max width for more form space */
+        max-height: 90vh; /* Critical for responsiveness on mobile/PC */
+        overflow-y: auto; /* Critical for responsiveness on mobile/PC */
+        position: relative;
+    }
+
+    .modal-content .close-btn{color:var(--muted);float:right;font-size:28px;font-weight:700;line-height:1;transition:color .2s}
+    .modal-content .close-btn:hover,.modal-content .close-btn:focus{color:#fff;text-decoration:none;cursor:pointer}
+    .modal-content h3{margin-top:0;color:var(--accent)}
+    .modal-form{display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:15px;margin-top:20px}
+    .form-group{display:flex;flex-direction:column}
+    .form-group label{margin-bottom:5px;font-size:14px;color:var(--muted)}
+    .modal-form input, .modal-form textarea{padding:10px;border-radius:6px;border:1px solid var(--glass);background-color:#1e293b;color:#e6eef6;font-size:14px;width:100%;}
+    .modal-form button[type="submit"]{grid-column:1 / -1;background-color:var(--accent);color:var(--bg);font-weight:700;margin-top:15px}
+    .modal-form button[type="submit"]:hover{background-color:#50e0a5}
+
+    /* Recommendations & History inside Modal */
+    #edit-recommendations-list { margin-top: 15px; }
+    #edit-recommendations-list h4 { margin: 10px 0; font-size: 16px; color: var(--accent); }
+    #recommendation-inputs-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px; }
+    .rec-input-group { display: flex; gap: 10px; align-items: center; }
+    .rec-input-group input { flex-grow: 1; }
+    .rec-input-group button { background-color: var(--red); color: white; padding: 5px 10px; font-size: 12px; }
+
+    /* Notification Styling */
+    #notification{position:fixed;bottom:20px;right:20px;background-color:var(--card);color:#fff;padding:15px 25px;border-radius:8px;box-shadow:0 5px 15px rgba(0,0,0,0.5);opacity:0;transition:opacity .3s, transform .3s;transform:translateY(20px);z-index:600;min-width:250px}
+    #notification.show{opacity:1;transform:translateY(0)}
+    #notification h4{margin-top:0;margin-bottom:5px;font-size:16px}
+    #notification p{margin:0;font-size:14px}
+    .notif-success{border-left:5px solid var(--green)}
+    .notif-error{border-left:5px solid var(--red)}
+    .notif-warning{border-left:5px solid var(--yellow)}
+
+    /* History section style */
+    .history-entry{background-color:var(--card);padding:15px;border-radius:8px;border-left:4px solid var(--accent);margin-bottom:10px}
+    .history-entry strong{color:#fff;font-size:15px}
+    .history-entry div{font-size:12px;color:var(--muted);margin-top:5px}
+
+    /* Tutorial Section Styling (7. Tutorial Content) */
+    .tutorial-content {
+        display: grid;
+        gap: 30px;
+        padding-top: 20px;
+    }
+    .tutorial-step {
+        background-color: var(--card);
+        padding: 25px;
+        border-radius: 12px;
+        border: 1px solid var(--glass);
+    }
+    .tutorial-step h3 {
+        color: var(--accent);
+        margin-top: 0;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+    .tutorial-step ul {
+        list-style: none;
+        padding-left: 0;
+    }
+    .tutorial-step li {
+        margin-bottom: 5px;
+        font-size: 14px;
+        color: var(--muted);
+    }
+    .tutorial-step li strong {
+        color: #e6eef6;
+    }
+
+    @media (max-width: 768px) {
+        .nav{overflow-x:auto;padding-bottom:5px}
+        .container{padding:10px}
+        .stats-grid{grid-template-columns:1fr}
+        .modal-content { max-width: 95%; padding: 20px; }
+        .modal-form{grid-template-columns:1fr}
+    }
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, serverTimestamp, arrayUnion, arrayRemove, setLogLevel, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    setLogLevel('Debug');
+
+    // Global variables (from Canvas environment)
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+    let app, db, auth, userId = null;
+    let clientList = [];
+
+    // --- FIREBASE INITIALIZATION AND AUTHENTICATION ---
+    async function initializeFirebase() {
+        if (!firebaseConfig.apiKey) {
+            console.error("Firebase configuration is missing or invalid.");
+            document.getElementById('loading').innerText = 'Error: Configuración de Firebase no disponible.';
+            return;
         }
-        .modal-inner.history { 
-             max-width: 450px;
+
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+
+            // Set persistence to local (optional but recommended for web apps)
+            await setPersistence(auth, browserLocalPersistence);
+
+            if (initialAuthToken) {
+                await signInWithCustomToken(auth, initialAuthToken);
+            } else {
+                await signInAnonymously(auth);
+            }
+
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    userId = user.uid;
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('main-content').style.display = 'block';
+                    document.getElementById('user-id-display').innerText = `ID de Usuario: ${userId}`;
+                    startListeners();
+                } else {
+                    console.log("No user signed in.");
+                    document.getElementById('loading').innerText = 'Esperando autenticación...';
+                }
+            });
+        } catch (error) {
+            console.error("Error during Firebase initialization or authentication:", error);
+            document.getElementById('loading').innerText = `Error: ${error.message}`;
         }
     }
-    @media (max-width:700px){.row{grid-template-columns:1fr}.menu{display:flex;gap:6px}}
-  </style>
-</head>
 
+    // --- UTILITIES ---
+
+    // Utility for custom confirmation (replacing alert/confirm)
+    let confirmResolve;
+
+    function customConfirm(title, message) {
+        document.getElementById('confirm-title').innerText = title;
+        document.getElementById('confirm-message').innerText = message;
+        document.getElementById('confirmation-modal').style.display = 'flex';
+
+        return new Promise((resolve) => {
+            confirmResolve = resolve;
+        });
+    }
+
+    // Event listeners for the confirmation buttons
+    document.getElementById('confirm-yes').addEventListener('click', () => {
+        document.getElementById('confirmation-modal').style.display = 'none';
+        if (confirmResolve) confirmResolve(true);
+    });
+
+    document.getElementById('confirm-no').addEventListener('click', () => {
+        document.getElementById('confirmation-modal').style.display = 'none';
+        if (confirmResolve) confirmResolve(false);
+    });
+    
+    function formatDate(timestamp) {
+        if (!timestamp) return '-';
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    let notificationTimeout;
+    function showNotification(title, message, type = 'success') {
+        const notif = document.getElementById('notification');
+        const notifTitle = document.getElementById('notification-title');
+        const notifMessage = document.getElementById('notification-message');
+
+        clearTimeout(notificationTimeout);
+
+        notif.className = `notif-${type}`;
+        notifTitle.innerText = title;
+        notifMessage.innerText = message;
+        notif.classList.add('show');
+
+        notificationTimeout = setTimeout(() => {
+            notif.classList.remove('show');
+        }, 4000);
+    }
+
+    window.showSection = function(sectionId) {
+        document.querySelectorAll('section').forEach(section => {
+            section.classList.add('hidden');
+        });
+        document.getElementById(sectionId).classList.remove('hidden');
+
+        document.querySelectorAll('.nav-link').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`.nav-link[onclick="showSection('${sectionId}')"]`).classList.add('active');
+
+        // Special handling for client section to reset search
+        if (sectionId === 'clients-section') {
+            document.getElementById('search-input').value = '';
+            renderClients(clientList);
+        }
+    }
+
+    window.logout = async function() {
+        if (auth && auth.currentUser) {
+            await auth.signOut();
+            showNotification("Sesión cerrada", "Has cerrado la sesión.", 'warning');
+            window.location.reload();
+        }
+    }
+
+    // --- FIRESTORE COLLECTION REFERENCE ---
+    function getClientsCollectionRef() {
+        return collection(db, `artifacts/${appId}/users/${userId}/clientes`);
+    }
+    
+    function getHistoryCollectionRef() {
+        return collection(db, `artifacts/${appId}/users/${userId}/historial_renovaciones`);
+    }
+
+    // --- CRUD FUNCTIONS ---
+
+    window.saveClient = async function(event) {
+        event.preventDefault();
+        const form = event.target;
+        const clientId = form['f-client-id'].value;
+        const isNew = !clientId;
+        
+        const recommendations = [];
+        document.querySelectorAll('.rec-input-group input').forEach(input => {
+            if (input.value.trim()) {
+                recommendations.push(input.value.trim());
+            }
+        });
+
+        const clientData = {
+            nombre: form['f-nombre'].value,
+            usuario: form['f-usuario'].value,
+            contrasena: form['f-contrasena'].value,
+            aplicacion: form['f-aplicacion'].value,
+            telefono: form['f-telefono'].value,
+            caducidad: new Date(form['f-caducidad'].value),
+            notas: form['f-notas'].value,
+            recomendaciones: recommendations,
+            fecha_ultima_renovacion: isNew ? new Date() : (clientList.find(c => c.id === clientId)?.fecha_ultima_renovacion || new Date()),
+        };
+
+        try {
+            if (isNew) {
+                // Add creation date only for new clients
+                clientData.creacion = serverTimestamp();
+                await addDoc(getClientsCollectionRef(), clientData);
+                showNotification("Creado", "Cliente registrado con éxito.", 'success');
+
+                // Record creation in history
+                await saveRenewalHistory(null, null, clientData.caducidad, 'Creación de Cliente', clientData.usuario, clientData);
+            } else {
+                // Update client
+                await updateDoc(doc(db, `artifacts/${appId}/users/${userId}/clientes`, clientId), clientData);
+                showNotification("Guardado", "Cliente actualizado con éxito.", 'success');
+            }
+            document.getElementById('modal-client').style.display = 'none';
+        } catch (error) {
+            console.error("Error al guardar cliente:", error);
+            showNotification("Error", "No se pudo guardar el cliente.", 'error');
+        }
+    }
+
+    window.deleteItem = async function(id) {
+        // Replace confirm() with customConfirm()
+        const confirmed = await customConfirm("Confirmar Eliminación", "¿Estás seguro de que quieres eliminar este cliente? Esta acción es irreversible.");
+        if (!confirmed) return;
+
+        try {
+            await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/clientes`, id));
+            showNotification("Eliminado", "Cliente eliminado con éxito.", 'success');
+        } catch (error) {
+            console.error("Error al eliminar cliente:", error);
+            showNotification("Error", "No se pudo eliminar el cliente.", 'error');
+        }
+    }
+    
+    window.renewItem = async function(id) {
+        const clientData = clientList.find(c => c.id === id);
+        if (!clientData) {
+            showNotification("Error", "Cliente no encontrado para renovar.", 'error');
+            return;
+        }
+
+        // Replace confirm() with customConfirm()
+        const confirmed = await customConfirm("Confirmar Renovación", `¿Deseas renovar a ${clientData.nombre} por 30 días?`);
+        if (!confirmed) return;
+
+        try {
+            const currentCaducidad = clientData.caducidad.toDate();
+            const newCaducidad = new Date(currentCaducidad);
+            newCaducidad.setDate(currentCaducidad.getDate() + 30);
+            
+            // Save history (must be before updateDoc)
+            await saveRenewalHistory(id, currentCaducidad, newCaducidad, 'Renovación Manual (30 días)', clientData.usuario);
+
+            await updateDoc(doc(db, `artifacts/${appId}/users/${userId}/clientes`, id), {
+                caducidad: newCaducidad,
+                fecha_ultima_renovacion: new Date(),
+            });
+            showNotification("Renovado", `${clientData.nombre} renovado con éxito. Nueva caducidad: ${formatDate(newCaducidad)}.`, 'success');
+        } catch (error) {
+            console.error("Error al renovar:", error);
+            showNotification("Error", "No se pudo renovar el cliente.", 'error');
+        }
+    }
+
+    // 5. Free Month Condition
+    window.addFreeMonth = async function(id) {
+        const clientData = clientList.find(c => c.id === id);
+        if (!clientData) {
+            showNotification("Error", "Cliente no encontrado.", 'error');
+            return;
+        }
+
+        // CHECK CONDITION: Must have 3 or more recommendations
+        if (!clientData.recomendaciones || clientData.recomendaciones.length < 3) {
+            showNotification("Condición no cumplida", "Para aplicar el 'Mes Gratis', el cliente debe tener al menos 3 recomendaciones registradas.", 'warning');
+            return;
+        }
+
+        const confirmed = await customConfirm("Confirmar Mes Gratis", `¿Deseas aplicar el Mes Gratis (30 días) a ${clientData.nombre}?`);
+        if (!confirmed) return;
+
+        try {
+            const currentCaducidad = clientData.caducidad.toDate();
+            const newCaducidad = new Date(currentCaducidad);
+            newCaducidad.setDate(currentCaducidad.getDate() + 30); // Add 30 days
+            
+            // Save history
+            await saveRenewalHistory(id, currentCaducidad, newCaducidad, 'Mes Gratis por Recomendación (30 días)', clientData.usuario);
+
+            // Update Firestore
+            await updateDoc(doc(db, `artifacts/${appId}/users/${userId}/clientes`, id), {
+                caducidad: newCaducidad,
+                fecha_ultima_renovacion: new Date(),
+            });
+
+            showNotification("Renovado", `Mes gratis aplicado a ${clientData.nombre}. Nueva caducidad: ${formatDate(newCaducidad)}.`, 'success');
+        } catch (error) {
+            console.error("Error al aplicar mes gratis:", error);
+            showNotification("Error", "No se pudo aplicar el mes gratis.", 'error');
+        }
+    }
+
+
+    window.saveRenewalHistory = async function(clientId, oldCaducidad, newCaducidad, actionType, clientUser, clientData = null) {
+        try {
+            const historyEntry = {
+                fecha_renovacion: serverTimestamp(),
+                caducidad_anterior: oldCaducidad,
+                nueva_caducidad: newCaducidad,
+                tipo_accion: actionType,
+                cliente_id: clientId,
+                usuario: clientUser,
+            };
+
+            // If it's a creation action, add full client details for reference
+            if (actionType === 'Creación de Cliente' && clientData) {
+                historyEntry.details = clientData;
+            }
+
+            await addDoc(getHistoryCollectionRef(), historyEntry);
+        } catch (error) {
+            console.error("Error al guardar historial de renovación:", error);
+            // Non-blocking error, just log it.
+        }
+    }
+
+
+    // --- MODAL FUNCTIONS ---
+
+    window.openNewClientModal = function() {
+        const modal = document.getElementById('modal-client');
+        document.getElementById('f-client-id').value = '';
+        document.getElementById('f-modal-title').innerText = 'Nuevo Cliente';
+        document.getElementById('f-nombre').value = '';
+        document.getElementById('f-usuario').value = '';
+        document.getElementById('f-contrasena').value = '';
+        document.getElementById('f-aplicacion').value = '';
+        
+        // 6. Phone Number Default Value
+        document.getElementById('f-telefono').value = '+34'; 
+        
+        // Default caducidad to 30 days from now
+        const defaultCaducidad = new Date();
+        defaultCaducidad.setDate(defaultCaducidad.getDate() + 30);
+        document.getElementById('f-caducidad').valueAsDate = defaultCaducidad;
+        
+        document.getElementById('f-notas').value = '';
+        document.getElementById('edit-recommendations-list').style.display = 'none'; // Hide recs for new client
+        renderRecommendationInputs([]); // Clear and render empty recs
+        modal.style.display = 'flex';
+        document.getElementById('client-form-submit').innerText = 'Crear Cliente';
+    }
+
+    window.openEdit = function(id) {
+        const modal = document.getElementById('modal-client');
+        const clientData = clientList.find(c => c.id === id);
+
+        if (!clientData) {
+            showNotification("Error", "Cliente no encontrado para edición.", 'error');
+            return;
+        }
+
+        document.getElementById('f-client-id').value = id;
+        document.getElementById('f-modal-title').innerText = `Editar Cliente: ${clientData.nombre}`;
+        document.getElementById('f-nombre').value = clientData.nombre || '';
+        document.getElementById('f-usuario').value = clientData.usuario || '';
+        document.getElementById('f-contrasena').value = clientData.contrasena || '';
+        document.getElementById('f-aplicacion').value = clientData.aplicacion || '';
+        
+        // 6. Phone Number Default Value: load existing or default to +34
+        document.getElementById('f-telefono').value = clientData.telefono || '+34';
+
+        // Set date input value
+        const caducidadDate = clientData.caducidad.toDate();
+        document.getElementById('f-caducidad').valueAsDate = caducidadDate;
+
+        document.getElementById('f-notas').value = clientData.notas || '';
+        document.getElementById('edit-recommendations-list').style.display = 'block';
+        
+        renderRecommendationInputs(clientData.recomendaciones || []);
+        
+        modal.style.display = 'flex';
+        document.getElementById('client-form-submit').innerText = 'Guardar Cambios';
+    }
+
+    window.closeModal = function() {
+        document.getElementById('modal-client').style.display = 'none';
+    }
+
+    // --- RECOMMENDATION MANAGEMENT ---
+
+    function renderRecommendationInputs(recommendations) {
+        const container = document.getElementById('recommendation-inputs-container');
+        container.innerHTML = '';
+        
+        // Render existing recommendations
+        recommendations.forEach((rec, index) => {
+            const div = document.createElement('div');
+            div.className = 'rec-input-group';
+            div.innerHTML = `
+                <input type="text" value="${rec}" placeholder="Nombre del recomendado #${index + 1}" data-index="${index}">
+                <button type="button" onclick="removeRecommendationInput(this)">X</button>
+            `;
+            container.appendChild(div);
+        });
+
+        // Add one empty input for adding a new one
+        addEmptyRecommendationInput();
+    }
+    
+    function addEmptyRecommendationInput() {
+        const container = document.getElementById('recommendation-inputs-container');
+        const count = container.children.length + 1;
+        const div = document.createElement('div');
+        div.className = 'rec-input-group new-rec';
+        div.innerHTML = `
+            <input type="text" value="" placeholder="Nombre del recomendado #${count}">
+            <button type="button" onclick="removeRecommendationInput(this)">X</button>
+        `;
+        container.appendChild(div);
+    }
+    
+    window.removeRecommendationInput = function(button) {
+        const container = document.getElementById('recommendation-inputs-container');
+        const inputGroup = button.closest('.rec-input-group');
+        container.removeChild(inputGroup);
+        // Ensure there is always an empty slot if we remove one that wasn't the last one
+        if (container.children.length === 0 || !container.lastElementChild.querySelector('input').value) {
+            addEmptyRecommendationInput();
+        }
+    }
+    
+    document.addEventListener('input', (e) => {
+        if (e.target.closest('.rec-input-group')) {
+            const container = document.getElementById('recommendation-inputs-container');
+            const lastInput = container.lastElementChild.querySelector('input');
+            if (e.target === lastInput && lastInput.value.trim() !== '') {
+                // If the last input is filled, add a new empty one
+                addEmptyRecommendationInput();
+            }
+        }
+    });
+
+    // --- DATA RENDERING ---
+
+    function calculateStatus(caducidadTimestamp) {
+        if (!caducidadTimestamp) return 'inactive'; // Safety check
+        const today = new Date();
+        const caducidadDate = caducidadTimestamp.toDate();
+        const diffTime = caducidadDate.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 0) return 'inactive';
+        if (diffDays <= 3) return 'expiring';
+        return 'active';
+    }
+
+    // 1. Dashboard Visualization (Part 2: JS implementation)
+    function renderDashboard(data) {
+        document.getElementById('total-clients-value').innerText = data.totalClients;
+        document.getElementById('active-clients-value').innerText = data.activeClients;
+        document.getElementById('expiring-clients-value').innerText = data.expiringClients.length;
+        document.getElementById('inactive-clients-value').innerText = data.inactiveClients;
+
+        const expiringClientsContainer = document.getElementById('expiring-clients-container');
+        expiringClientsContainer.innerHTML = ''; 
+
+        if (data.expiringClients.length === 0) {
+            expiringClientsContainer.innerHTML = '<p style="margin: 0; padding: 15px; color: var(--muted);">No hay clientes a punto de caducar (próximos 3 días).</p>';
+            expiringClientsContainer.style.display = 'block';
+            expiringClientsContainer.style.overflowX = 'hidden';
+            expiringClientsContainer.style.padding = '0';
+        } else {
+            // Apply row style
+            expiringClientsContainer.style.display = 'flex';
+            expiringClientsContainer.style.overflowX = 'auto';
+            expiringClientsContainer.style.padding = '5px 0';
+
+            data.expiringClients.forEach(client => {
+                const card = document.createElement('div');
+                card.className = 'expiring-client-card';
+                card.innerHTML = `
+                    <h5>${client.nombre}</h5>
+                    <div class="detail">Usuario: ${client.usuario || '-'}</div>
+                    <div class="detail">App: ${client.aplicacion || '-'}</div>
+                    <div class="detail">Caduca: ${formatDate(client.caducidad)}</div>
+                    <div class="detail">Teléfono: ${client.telefono || '-'}</div>
+                    <button class="btn btn-sm" style="margin-top: 10px; background-color: var(--yellow); color: var(--bg); font-weight: 700;" onclick="openEdit('${client.id}')">Ver/Editar</button>
+                `;
+                expiringClientsContainer.appendChild(card);
+            });
+        }
+    }
+    
+    // 4. Client Card Colors: Color array for cycling
+    const cardColors = ['card-color-1', 'card-color-2', 'card-color-3', 'card-color-4', 'card-color-5'];
+
+    window.renderClients = function(clients) {
+        const clientsGrid = document.getElementById('clients-grid');
+        clientsGrid.innerHTML = '';
+
+        if (clients.length === 0) {
+            clientsGrid.innerHTML = '<p style="text-align:center; color: var(--muted); padding: 50px 0;">No se encontraron clientes.</p>';
+            return;
+        }
+
+        clients.forEach((item, index) => {
+            const status = calculateStatus(item.caducidad);
+            const statusClass = `status-${status}`;
+            const colorClass = cardColors[index % cardColors.length]; // 4. Cycle colors
+
+            const recommendationsHTML = item.recomendaciones && item.recomendaciones.length > 0
+                ? `<div class="recs-list">
+                    <p>Recomendaciones (${item.recomendaciones.length}):</p>
+                    <ul>
+                        ${item.recomendaciones.map(rec => `<li>${rec}</li>`).join('')}
+                    </ul>
+                </div>`
+                : '';
+                
+            const whatsappBtn = item.telefono 
+                ? `<button class="btn whatsapp" style="background-color: var(--whatsapp); color: white;" onclick="window.open('https://wa.me/${item.telefono.replace('+', '')}', '_blank')">WhatsApp</button>`
+                : '';
+
+            const card = document.createElement('div');
+            card.className = `card ${statusClass} ${colorClass}`; // Add color class
+            card.innerHTML = `
+                <h4>${item.nombre}</h4>
+                <div class="meta">Usuario: ${item.usuario || "-"}</div>
+                <div class="meta">Teléfono: ${item.telefono || "-"}</div>
+                <div class="meta">App: ${item.aplicacion || "-"}</div>
+                <div class="meta">Creación: ${formatDate(item.creacion)}</div>
+                <div class="meta">Caduca: <span class="${statusClass}">${formatDate(item.caducidad)}</span></div>
+                ${recommendationsHTML}
+
+                <div class="btns">
+                    <button class="btn edit" onclick="openEdit('${item.id}')">Editar</button>
+                    <button class="btn renew" onclick="renewItem('${item.id}')">Renovar</button>
+                    <button class="btn free-month" onclick="addFreeMonth('${item.id}')">Mes gratis</button>
+                    <button class="btn copy" onclick="copyPassword('${item.id}')">Copiar</button>
+                    ${whatsappBtn}
+                    <button class="btn delete" onclick="deleteItem('${item.id}')">Eliminar</button>
+                </div>
+            `;
+            clientsGrid.appendChild(card);
+        });
+    }
+
+    // 2. Copy Functionality
+    window.copyPassword = async function(id) {
+        const clientData = clientList.find(c => c.id === id);
+        if (!clientData) {
+            showNotification("Error", "Cliente no encontrado para copiar.", 'error');
+            return;
+        }
+
+        const copyText = `
+        Usuario: ${clientData.usuario || 'N/A'}
+        Contraseña: ${clientData.contrasena || 'N/A'}
+        Aplicación: ${clientData.aplicacion || 'N/A'}
+        Fecha de caducidad: ${formatDate(clientData.caducidad)}
+        `.trim().replace(/\n\s+/g, '\n'); // Clean up whitespace
+
+        try {
+            // Using document.execCommand('copy') for better compatibility in iframes
+            const textarea = document.createElement('textarea');
+            textarea.value = copyText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            showNotification("Copiado", "Usuario, Contraseña, Aplicación y Caducidad copiados al portapapeles.", 'success');
+        } catch (err) {
+            console.error('Error al copiar:', err);
+            showNotification("Error al Copiar", "No se pudo copiar el texto automáticamente. Inténtalo manualmente.", 'error');
+        }
+    };
+
+
+    window.filterClients = function() {
+        const query = document.getElementById('search-input').value.toLowerCase();
+        const filteredClients = clientList.filter(client => 
+            client.nombre.toLowerCase().includes(query) ||
+            client.usuario.toLowerCase().includes(query) ||
+            client.aplicacion.toLowerCase().includes(query) ||
+            client.telefono?.toLowerCase().includes(query)
+        );
+        renderClients(filteredClients);
+    }
+    
+    // --- HISTORY RENDERING ---
+
+    function renderHistory(historyList) {
+        const historyContainer = document.getElementById('history-list');
+        historyContainer.innerHTML = '';
+        
+        if (historyList.length === 0) {
+            historyContainer.innerHTML = '<p style="text-align:center; color: var(--muted); padding: 50px 0;">No se encontraron registros en el historial.</p>';
+            return;
+        }
+
+        historyList
+            .sort((a, b) => b.fecha_renovacion.toDate().getTime() - a.fecha_renovacion.toDate().getTime()) // Sort by date desc
+            .forEach(rec => {
+            const actionType = rec.tipo_accion || 'Renovación Manual';
+            let color;
+            if (actionType.includes('Gratis')) {
+                color = 'var(--yellow)';
+            } else if (actionType.includes('Creación')) {
+                color = 'var(--green)';
+            } else {
+                color = 'var(--accent)';
+            }
+            
+            const clientInfo = rec.cliente_id 
+                ? `ID Cliente: ${rec.cliente_id}` 
+                : (rec.details?.nombre ? `Cliente: ${rec.details.nombre}` : 'Cliente Desconocido');
+
+            const entry = document.createElement('div');
+            entry.className = 'history-entry';
+            entry.style.borderLeftColor = color;
+            entry.innerHTML = `
+                <strong>${actionType}</strong> - ${rec.usuario || 'N/A'}
+                <div style="font-size: 13px;">
+                    ${clientInfo} <br/>
+                    Fecha de Acción: ${formatDate(rec.fecha_renovacion)}<br/>
+                    ${rec.caducidad_anterior ? `Caducidad Anterior: ${formatDate(rec.caducidad_anterior)}<br/>` : ''}
+                    Nueva Caducidad: ${formatDate(rec.nueva_caducidad)}
+                </div>
+            `;
+            historyContainer.appendChild(entry);
+        });
+    }
+
+    // --- FIRESTORE LISTENERS ---
+
+    function startListeners() {
+        // Clients Listener
+        onSnapshot(query(getClientsCollectionRef()), (snapshot) => {
+            const today = new Date();
+            const threeDaysFromNow = new Date();
+            threeDaysFromNow.setDate(today.getDate() + 3);
+
+            let totalClients = 0;
+            let activeClients = 0;
+            let inactiveClients = 0;
+            let expiringClients = [];
+            clientList = []; // Reset global list
+
+            snapshot.docs.forEach(doc => {
+                const data = { id: doc.id, ...doc.data() };
+                clientList.push(data);
+                
+                totalClients++;
+                const status = calculateStatus(data.caducidad);
+                if (status === 'active') activeClients++;
+                if (status === 'inactive') inactiveClients++;
+                if (status === 'expiring') expiringClients.push(data);
+            });
+
+            const dashboardData = { totalClients, activeClients, inactiveClients, expiringClients };
+            renderDashboard(dashboardData);
+            
+            // Only render clients if we are on the clients section
+            if (!document.getElementById('clients-section').classList.contains('hidden')) {
+                renderClients(clientList);
+            }
+        });
+        
+        // History Listener
+        onSnapshot(query(getHistoryCollectionRef()), (snapshot) => {
+            const historyList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            // Only render history if we are on the history section
+            if (!document.getElementById('history-section').classList.contains('hidden')) {
+                renderHistory(historyList);
+            }
+        });
+    }
+
+    // --- START APP ---
+    initializeFirebase();
+
+  </script>
+</head>
 <body>
 
-<section id="section-login" class="show">
-  <div class="login-box">
-    <h2>Gestor de Clientes</h2>
-    <form id="form-login">
-      <label for="login-email">Email</label>
-      <input type="email" id="login-email" required />
+  <div id="loading" style="text-align:center; padding:50px; color:var(--accent);">Cargando aplicación y autenticando...</div>
 
-      <label for="login-password" style="margin-top: 10px;">Contraseña</label>
-      <input type="password" id="login-password" required />
-
-      <div id="login-error-message"></div>
-
-      <button type="submit" class="btn edit" style="width: 100%; margin-top: 15px;">Iniciar Sesión</button>
-    </form>
-  </div>
-</section>
-
-<div class="container" id="app-container" style="display:none;">
-
-<header>
-  <div class="brand">
-    <div class="logo">GC</div>
-    <div><div style="font-weight:700">Gestor Clientes</div></div>
-  </div>
-  <nav>
-    <div class="menu">
-      <button id="nav-dashboard" class="active">Dashboard</button>
-      <button id="nav-clientes">Clientes</button>
-      <button id="nav-add">Añadir cliente</button>
-      <!-- Nuevo botón de AJUSTES -->
-      <button id="nav-settings">Ajustes</button>
-      <button id="nav-logout" class="btn delete" style="margin-left: 12px;">Cerrar Sesión</button>
-    </div>
-  </nav>
-</header>
-
-<main>
-
-<section id="section-dashboard">
-  <div class="cards-col">
-    <div class="stat">
-      <h3>Total clientes</h3><p id="stat-total">—</p>
-    </div>
-    <div class="stat stat-clickable" id="stat-3days-link" title="Haz clic para filtrar clientes.">
-      <h3>Caducan en 3 días</h3><p id="stat-today-3days">—</p>
-    </div>
-    <div class="stat stat-clickable" id="stat-expired-link" title="Haz clic para filtrar clientes.">
-      <h3>Cliente caducado</h3><p id="stat-expired">—</p>
-    </div>
-  </div>
-  <div id="dashboard-soon-exp" class="cards" style="margin-top: 18px">
-    <p class="meta" style="grid-column: 1 / -1; margin-bottom: 0;">Clientes que caducan en los próximos 3 días:</p>
-  </div>
-</section>
-
-<section id="section-clientes" style="display:none">
-  <div class="card-form">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-      <h3>Clientes</h3>
-      <button id="btn-export-csv" class="btn export">Exportar a CSV 📥</button>
-    </div>
-    
-    <input type="text" id="search-input" placeholder="Buscar por Nombre, Usuario o Aplicación..." style="margin-bottom: 12px;" />
-
-    <div id="clients-grid" class="grid-clients" style="margin-top:10px"></div>
-  </div>
-</section>
-
-<section id="section-add" style="display:none">
-  <div class="card-form">
-    <h3>Añadir cliente</h3>
-    <form id="form-add">
-
-      <label>Nombre</label>
-      <input type="text" id="f-nombre" required />
+  <div id="main-content" style="display:none;">
+    <div class="container">
+      <header>
+        <h1>Gestor de Clientes</h1>
+        <div class="nav">
+          <button class="btn nav-link active" onclick="showSection('dashboard-section')">Dashboard</button>
+          <button class="btn nav-link" onclick="showSection('clients-section')">Clientes</button>
+          <button class="btn nav-link" onclick="showSection('new-client-section')">Nuevo Cliente</button>
+          <!-- 7. New Tutorial Button -->
+          <button class="btn nav-link" onclick="showSection('tutorial-section')">Tutorial</button>
+          <button class="btn nav-link" onclick="showSection('history-section')">Historial</button>
+          <button class="btn nav-link" onclick="logout()">Salir</button>
+        </div>
+      </header>
       
-      <label>Teléfono (Ej: 34600123456)</label>
-      <input type="text" id="f-telefono" value="+34" placeholder="Código de país + número (sin espacios)" />
+      <p id="user-id-display" style="font-size:12px; color:var(--muted); margin-bottom: 20px;"></p>
 
-      <div class="row">
-        <div>
-          <label>Fecha de creación</label>
-          <input type="date" id="f-creacion" required />
+      <!-- DASHBOARD SECTION -->
+      <section id="dashboard-section" class="container">
+        <h2>Dashboard</h2>
+        <div class="stats-grid">
+          <div class="stat" style="border-left-color: var(--accent);">
+            <div class="stat-title">Total Clientes</div>
+            <div class="stat-value" id="total-clients-value">0</div>
+          </div>
+          <div class="stat" style="border-left-color: var(--green);">
+            <div class="stat-title">Clientes Activos</div>
+            <div class="stat-value" id="active-clients-value">0</div>
+          </div>
+          <div class="stat" style="border-left-color: var(--yellow);">
+            <div class="stat-title">Clientes por Caducar (3 días)</div>
+            <div class="stat-value" id="expiring-clients-value">0</div>
+          </div>
+          <div class="stat" style="border-left-color: var(--red);">
+            <div class="stat-title">Clientes Inactivos</div>
+            <div class="stat-value" id="inactive-clients-value">0</div>
+          </div>
         </div>
-        <div>
-          <label>Caducidad</label>
-          <input type="date" id="f-caducidad" required />
-        </div>
-      </div>
-
-      <label>Usuario</label>
-      <input type="text" id="f-usuario" />
-
-      <label>Contraseña</label>
-      <input type="text" id="f-contrasena" />
-
-      <label>Dispositivo utilizado</label>
-      <input type="text" id="f-dispositivo" />
-
-      <label>Aplicación</label>
-      <select id="f-aplicacion">
-        <option value="Spinning TV">Spinning TV</option>
-        <option value="Spinning IBO">Spinning IBO</option>
-        <option value="Spinning Mate">Spinning Mate</option>
-        <option value="Hot Player">Hot Player</option>
-      </select>
-
-      <label>Clientes recomendados</label>
-      <div id="f-recomendaciones-container" class="dynamic-input-container">
-          <div id="f-recommended-clients" class="tag-list"></div>
-          <div class="input-add-row">
-              <input type="text" id="f-new-recommendation" placeholder="Nombre de cliente recomendado" />
-              <button type="button" class="btn copy" id="f-add-recommendation-btn">+</button>
-              </div>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button type="submit" class="btn edit">Guardar</button>
-        <button type="button" id="f-reset" class="btn copy">Reset</button>
-      </div>
-
-    </form>
-  </div>
-</section>
-
-<!-- NUEVA SECCIÓN: AJUSTES -->
-<section id="section-settings" style="display:none">
-  <div class="card-form">
-    <h3>Ajustes y Ayuda</h3>
-    
-    <h4 style="margin-top: 20px; color: var(--accent);">Documentación</h4>
-    <!-- Enlace al nuevo archivo tutorial.html -->
-    <a href="tutorial.html" target="_blank" class="settings-link external">
-        Tutorial de Uso Completo (Abrir en nueva pestaña)
-    </a>
-
-    <h4 style="margin-top: 20px; color: var(--accent);">Copia de Seguridad</h4>
-     <p style="font-size: 14px; color: var(--muted); margin-bottom: 10px;">
-        Use esta opción para descargar todos sus datos en formato CSV para mantener un respaldo.
-    </p>
-    <button id="btn-export-csv-settings" class="btn export">Exportar Base de Datos a CSV 📥</button>
-
-  </div>
-</section>
-<!-- FIN NUEVA SECCIÓN -->
-
-</main>
-
-<footer></footer>
-
-</div>
-
-<div id="modal" class="modal">
-  <div class="modal-inner">
-    <h3 id="modal-title">Editar cliente</h3>
-    <form id="form-edit">
-
-      <label>Nombre</label>
-      <input type="text" id="e-nombre" required />
-      
-      <label>Teléfono (Ej: 34600123456)</label>
-      <input type="text" id="e-telefono" placeholder="Código de país + número (sin espacios)" />
-
-      <div class="row">
-        <div>
-          <label>Fecha de creación</label>
-          <input type="date" id="e-creacion" required />
-        </div>
-        <div>
-          <label>Caducidad</label>
-          <input type="date" id="e-caducidad" required />
-        </div>
-      </div>
-
-      <label>Usuario</label>
-      <input type="text" id="e-usuario" />
-
-      <label>Contraseña</label>
-      <input type="text" id="e-contrasena" />
-
-      <label>Dispositivo utilizado</label>
-      <input type="text" id="e-dispositivo" />
-
-      <label>Aplicación</label>
-      <select id="e-aplicacion">
-        <option value="Spinning TV">Spinning TV</option>
-        <option value="Spinning IBO">Spinning IBO</option>
-        <option value="Spinning Mate">Spinning Mate</option>
-        <option value="Hot Player">Hot Player</option>
-      </select>
-
-      <label>Clientes recomendados</label>
-      <div id="e-recomendaciones-container" class="dynamic-input-container">
-          <div id="e-recommended-clients" class="tag-list"></div>
-          <div class="input-add-row">
-              <input type="text" id="e-new-recommendation" placeholder="Nombre de cliente recomendado" />
-              <button type="button" class="btn copy" id="e-add-recommendation-btn">+</button>
-               </div>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:8px;justify-content:space-between">
-        <button type="button" id="btn-history-open" class="btn history">Ver Historial</button>
-        <div style="display:flex;gap:8px;">
-          <button type="button" id="modal-cancel" class="btn copy">Cancelar</button>
-          <button type="submit" class="btn edit">Guardar cambios</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
-
-<div id="history-modal" class="modal">
-  <div class="modal-inner history">
-    <h3 id="history-modal-title">Historial de Renovaciones</h3>
-    <div id="history-list" style="max-height: 400px; overflow-y: auto;">
-        </div>
-    <div style="text-align: right; margin-top: 15px;">
-        <button type="button" id="history-modal-close" class="btn copy">Cerrar</button>
-    </div>
-  </div>
-</div>
-
-<div id="notifications-container"></div>
-
-
-<script type="module">
-
-// --- CONFIG FIREBASE ---
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
-import {
-  getFirestore, collection, addDoc, doc, onSnapshot,
-  updateDoc, deleteDoc, query, orderBy, getDocs
-} from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
-
-import { 
-    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged 
-} from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
-
-
-// NOTA: Recuerda que debes reemplazar la configuración de Firebase con tus claves reales.
-const firebaseConfig = {
-  apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
-  authDomain: "gestioncandy-b9356.firebaseapp.com",
-  projectId: "gestioncandy-b9356",
-  storageBucket: "gestioncandy-b9356.firebasestorage.app",
-  messagingSenderId: "869982852654",
-  appId: "1:869982852654:web:ac450321a746e62365f1bf"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app); 
-
-// --- ELEMENTOS UI DE LA APLICACIÓN ---
-const appContainer = document.getElementById('app-container'); 
-const sections = {
-    'dashboard': document.getElementById('section-dashboard'),
-    'clientes': document.getElementById('section-clientes'),
-    'add': document.getElementById('section-add'),
-    'settings': document.getElementById('section-settings'), // Nueva sección
-};
-const modal = document.getElementById('modal'); 
-const historyModal = document.getElementById('history-modal');
-const formLogin = document.getElementById('form-login');
-const sectionLogin = document.getElementById('section-login');
-const loginEmail = document.getElementById('login-email');
-const loginPassword = document.getElementById('login-password');
-const loginErrorMsg = document.getElementById('login-error-message');
-
-
-// FORM ADD
-const formAdd = document.getElementById('form-add');
-const fReset = document.getElementById('f-reset');
-const fCreacion = document.getElementById('f-creacion');
-const fCaducidad = document.getElementById('f-caducidad'); 
-const fTelefono = document.getElementById('f-telefono'); 
-
-
-// EXPORT BUTTONS
-const btnExport = document.getElementById('btn-export-csv');
-const btnExportSettings = document.getElementById('btn-export-csv-settings');
-
-
-// VARIABLES GLOBALES
-let cachedList = []; 
-let currentRecommendations = []; 
-let cachedClientNames = new Set(); 
-let currentFilter = 'all'; // Para filtros de stats
-const col = collection(db, "clientes");
-
-
-// --- FUNCIONES AUXILIARES ---
-
-function getNewCaducidad(currentDate, months) {
-    let date = currentDate ? new Date(currentDate) : new Date();
-    // Clonar la fecha para evitar modificar la original antes de tiempo
-    let newDate = new Date(date);
-    
-    // Sumar meses
-    newDate.setMonth(newDate.getMonth() + months);
-    
-    // Si el día del mes cambia (ej: de 31 de Enero a Febrero), ajustamos al último día de Febrero
-    if (newDate.getDate() < date.getDate()) {
-        newDate.setDate(0); 
-    }
-
-    return newDate.toISOString();
-}
-
-function formatDate(d){
-  if(!d) return '-';
-  const dt = new Date(d);
-  if(isNaN(dt.getTime())) return d;
-  return dt.toLocaleDateString();
-}
-
-function isoForInput(d){
-  if(!d) return '';
-  const t = new Date(d);
-  if(isNaN(t.getTime())) return '';
-  const yyyy = t.getFullYear();
-  const mm = String(t.getMonth()+1).padStart(2,'0');
-  const dd = String(t.getDate()).padStart(2,'0');
-  return `${yyyy}-${mm}-${dd}`;
-}
-
-function showNotification(title, message, type = 'success') {
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.innerHTML = `<strong>${title}</strong><p>${message}</p>`;
-  
-  const notificationsContainer = document.getElementById('notifications-container');
-  notificationsContainer.appendChild(toast);
-  
-  setTimeout(() => {
-    toast.classList.add('show');
-  }, 10);
-
-  setTimeout(() => {
-    toast.classList.remove('show');
-    toast.addEventListener('transitionend', () => toast.remove());
-  }, 4000);
-}
-
-function setDefaultDates() {
-    const today = new Date();
-    const caducidad3Months = getNewCaducidad(today, 3);
-
-    fCreacion.value = isoForInput(today);
-    fCaducidad.value = isoForInput(caducidad3Months);
-    // fTelefono ya tiene el valor por defecto en el HTML: value="+34"
-}
-setDefaultDates(); 
-
-fCreacion.addEventListener('change', () => {
-    const newCreationDate = fCreacion.value;
-    if (newCreationDate) {
-        const newCaducidad = getNewCaducidad(newCreationDate, 3);
-        fCaducidad.value = isoForInput(newCaducidad);
-    }
-});
-
-
-function setActive(btn){
-  document.querySelectorAll('.menu button').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-// ** FUNCIÓN PARA CAMBIAR DE SECCIÓN Y GESTIONAR LA VISTA ** function switchSection(target) {
-    Object.keys(sections).forEach(key => {
-        sections[key].style.display = 'none';
-    });
-    // Todas las secciones usan display: grid excepto la de settings, que podría usar 'block' o 'grid'
-    sections[target].style.display = (target === 'settings') ? 'block' : 'grid'; 
-    const btn = document.getElementById(`nav-${target}`);
-    if(btn) setActive(btn);
-
-    // Si se va a clientes, se aplica el filtro actual.
-    if (target === 'clientes') {
-      filterClients(document.getElementById('search-input').value, currentFilter);
-    }
-}
-
-function getExpiryStatus(isoDate) {
-    if (!isoDate) return '';
-    const date = new Date(isoDate);
-    const now = new Date();
-    const diffTime = date.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays <= 0) return 'status-red';
-    if (diffDays <= 7) return 'status-yellow';
-    return 'status-green';
-}
-
-function getSoonToExpire(list) {
-    const now = new Date();
-    now.setHours(0,0,0,0);
-    const limit = new Date(now);
-    limit.setDate(limit.getDate() + 3);
-    limit.setHours(23,59,59,999);
-    return list.filter(i => {
-      if(!i.caducidad) return false;
-      const d = new Date(i.caducidad);
-      return d >= now && d <= limit;
-    });
-}
-
-function getExpired(list) {
-    const now = new Date();
-    now.setHours(0,0,0,0);
-    return list.filter(i => {
-        if(!i.caducidad) return false;
-        const d = new Date(i.caducidad);
-        // Si la caducidad es HOY o antes de HOY (00:00:00)
-        return d < now; 
-    });
-}
-
-
-// --- AUTENTICACIÓN Y GESTIÓN DE ESTADO ---
-
-function handleAuthStatus(user) {
-    if (user) {
-        sectionLogin.classList.remove('show');
-        appContainer.style.display = 'block';
-        loginErrorMsg.textContent = '';
-        switchSection('dashboard');
-    } else {
-        sectionLogin.classList.add('show');
-        appContainer.style.display = 'none';
-        // Limpiar inputs al cerrar sesión
-        loginEmail.value = '';
-        loginPassword.value = '';
-    }
-}
-
-// Oyente de estado de autenticación de Firebase
-onAuthStateChanged(auth, handleAuthStatus);
-
-// 1. Manejador de Login
-formLogin.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    loginErrorMsg.textContent = 'Iniciando sesión...';
-
-    try {
-        await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
-        // Éxito manejado por onAuthStateChanged
-    } catch (error) {
-        let message = "Error de inicio de sesión.";
-        if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-            message = "Usuario o contraseña incorrectos.";
-        } else if (error.code === 'auth/invalid-email') {
-            message = "Formato de email no válido.";
-        }
-        loginErrorMsg.textContent = message;
-        console.error("Login error:", error);
-    }
-});
-
-
-// 2. Manejador de Logout
-document.getElementById('nav-logout').addEventListener('click', async () => {
-    try {
-        await signOut(auth);
-        showNotification("Sesión Cerrada", "Has cerrado sesión correctamente.", 'success');
-        // El reset de UI es manejado por onAuthStateChanged
-    } catch (error) {
-        showNotification("Error", "No se pudo cerrar la sesión.", 'error');
-        console.error("Logout error:", error);
-    }
-});
-
-
-// 3. Oyentes de Navegación (INCLUYENDO AJUSTES)
-document.getElementById('nav-dashboard').addEventListener('click', ()=> switchSection('dashboard'));
-document.getElementById('nav-clientes').addEventListener('click', ()=> switchSection('clientes'));
-document.getElementById('nav-add').addEventListener('click', ()=>{
-    switchSection('add');
-    setDefaultDates(); 
-    fTelefono.value = '+34'; // Asegurar +34 al abrir
-});
-document.getElementById('nav-settings').addEventListener('click', ()=> switchSection('settings')); // Nuevo
-
-
-// --- CARGA DE CLIENTES EN TIEMPO REAL ---
-
-const unsubscribe = onSnapshot(col, (snapshot) => {
-    const list = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-    
-    cachedList = list;
-    cachedClientNames = new Set(list.map(i => i.nombre));
-
-    renderDashboard(list);
-    updateStats(list);
-    
-    // Si estamos en la vista de clientes, volvemos a renderizar para que se actualice.
-    if (sections.clientes.style.display !== 'none') {
-        filterClients(document.getElementById('search-input').value, currentFilter);
-    }
-}, (error) => {
-    console.error("Error fetching data: ", error);
-});
-
-
-// --- RESTO DE LÓGICA (Filtros y Stats) ---
-
-function updateStats(list) {
-    document.getElementById('stat-total').textContent = list.length;
-    const soon = getSoonToExpire(list);
-    document.getElementById('stat-today-3days').textContent = soon.length;
-    const expired = getExpired(list);
-    document.getElementById('stat-expired').textContent = expired.length;
-}
-
-// Filtros de Stats
-document.getElementById('stat-3days-link').addEventListener('click', () => {
-    currentFilter = 'soon';
-    document.getElementById('search-input').value = '';
-    switchSection('clientes');
-});
-document.getElementById('stat-expired-link').addEventListener('click', () => {
-    currentFilter = 'expired';
-    document.getElementById('search-input').value = '';
-    switchSection('clientes');
-});
-
-// Búsqueda
-document.getElementById('search-input').addEventListener('input', (e) => {
-    currentFilter = 'all';
-    filterClients(e.target.value);
-});
-
-
-function filterClients(searchTerm = '', filter = 'all') {
-    const normalizedSearch = searchTerm.toLowerCase();
-    let filteredList = cachedList;
-
-    if (filter === 'soon') {
-        filteredList = getSoonToExpire(cachedList);
-    } else if (filter === 'expired') {
-        filteredList = getExpired(cachedList);
-    }
-
-    const searchResults = filteredList.filter(item => {
-        return item.nombre?.toLowerCase().includes(normalizedSearch) ||
-               item.usuario?.toLowerCase().includes(normalizedSearch) ||
-               item.aplicacion?.toLowerCase().includes(normalizedSearch);
-    });
-
-    renderClients(searchResults);
-}
-
-
-// FUNCIÓN: RENDERIZADO DEL DASHBOARD ACTUALIZADO (VISUALIZACIÓN EN FILA Y ESTILO DISTINTO)
-window.toggleRenovara = async function(checkbox) {
-    const id = checkbox.dataset.id;
-    const newValue = checkbox.checked;
-    try {
-        await updateDoc(doc(db, "clientes", id), { renovara: newValue });
-        showNotification("Estado Actualizado", `Estado de 'Renovará' cambiado a ${newValue ? 'Sí' : 'No'}.`, 'success');
-    } catch (error) {
-        showNotification("Error", "No se pudo actualizar el estado de 'Renovará'.", 'error');
-        console.error("Error toggling renovara:", error);
-    }
-}
-
-function renderDashboard(list){
-  const soon = getSoonToExpire(list);
-
-  const dashboardSoonExp = document.getElementById('dashboard-soon-exp');
-  
-  // Encabezado de la sección
-  const header = `<p class="meta" style="grid-column: 1 / -1; margin-bottom: 0; color: var(--accent); font-weight: 600;">Clientes que caducan en los próximos 3 días (${soon.length}):</p>`;
-    
-  let cardsContainerHtml = '';
-  
-  if (soon.length === 0) {
-      cardsContainerHtml = '<p style="color: var(--muted); margin: 10px 0;">No hay clientes próximos a caducar.</p>';
-  } else {
-      let cardsHtml = '';
-      soon.forEach(item => {
-        const isRenewing = item.renovara === true ? 'checked' : '';
         
-        // Estilo de la tarjeta del dashboard (distinto al resto de la webapp)
-        const dashboardCardStyle = `background: #003027; border: 1px solid var(--accent);`;
-        
-        // Generación del Botón WhatsApp
-        const whatsappBtn = item.telefono && item.telefono.length > 5 ? 
-            `<button class="btn whatsapp-alert" onclick="sendWhatsappAlert('${item.id}')">¡Avisar! 💬</button>` : '';
-
-        cardsHtml += `
-            <div class="card exp-card status-red" style="flex-shrink: 0; min-width: 250px; ${dashboardCardStyle}">
-              <h4>${item.nombre}</h4>
-              <div class="meta" style="color: var(--accent); font-weight: 600;">Caduca: ${formatDate(item.caducidad)}</div>
-              <div class="flex-end">
-                <label for="renew-${item.id}">Renovará</label>
-                <input type="checkbox" id="renew-${item.id}" data-id="${item.id}" ${isRenewing} onclick="toggleRenovara(this)" />
-              </div>
-              <div class="btns">
-                <button class="btn renew" onclick="renewItem('${item.id}')">Renovar</button>
-                <button class="btn free-month" onclick="addFreeMonth('${item.id}')">Mes gratis</button>
-                <button class="btn copy" onclick="copyPassword('${item.id}')">Copiar</button>
-                ${whatsappBtn}
-              </div>
+        <!-- 1. Unique Visualization for Expiring Clients -->
+        <div class="expiring-clients-box">
+            <h3>Clientes a punto de Caducar</h3>
+            <div id="expiring-clients-container">
+                <!-- Clients expiring in 3 days will be rendered here in a row -->
             </div>
-        `;
-      });
-      
-      // Contenedor de scroll horizontal (visualización en fila)
-      cardsContainerHtml = `<div style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; margin-top: 10px;">${cardsHtml}</div>`;
-  }
-  
-  dashboardSoonExp.innerHTML = header + cardsContainerHtml;
-}
+        </div>
+      </section>
 
+      <!-- CLIENTS SECTION -->
+      <section id="clients-section" class="hidden container">
+        <h2>Gestión de Clientes</h2>
+        <input type="text" id="search-input" oninput="filterClients()" placeholder="Buscar por nombre, usuario, app o teléfono..." style="padding:10px; border-radius:8px; border:1px solid var(--glass); background-color:#1e293b; color:#e6eef6; width:100%; margin-bottom:20px;">
+        <div class="clients-grid" id="clients-grid">
+          <!-- Clients cards will be rendered here -->
+        </div>
+      </section>
 
-// FUNCIÓN COPYPASSWORD ACTUALIZADA
-window.copyPassword = function(id) {
-    const item = cachedList.find(i => i.id === id);
-    if (!item) return;
-
-    // Campos solicitados: Usuario, Contraseña, Aplicacion, Fecha de caducidad
-    const textToCopy = 
-        `Usuario: ${item.usuario || '-'}\n` +
-        `Contraseña: ${item.contrasena || '-'}\n` +
-        `Aplicación: ${item.aplicacion || '-'}\n` +
-        `Caducidad: ${formatDate(item.caducidad)}`;
-    
-    navigator.clipboard.writeText(textToCopy).then(() => {
-        showNotification("Copiado", "Usuario, Contraseña, Aplicación y Caducidad copiados.", 'success');
-    }).catch(err => {
-        showNotification("Error", "No se pudo copiar el texto. (Asegúrate de que la ventana está activa)", 'error');
-        console.error('Error al copiar: ', err);
-    });
-}
-
-// *** FUNCIÓN WHATSAPP ***
-window.sendWhatsappAlert = function(id) {
-    const item = cachedList.find(i => i.id === id);
-    if (!item || !item.telefono || item.telefono.length < 5) {
-        showNotification("Error", "Teléfono no válido o faltante.", 'error');
-        return;
-    }
-
-    const message = encodeURIComponent(`Hola ${item.nombre || ''}. Tu suscripción va a caducar pronto, ¿vas a querer renovar? 🙂`);
-    const phone = item.telefono.replace(/\s/g, '').replace('+', ''); // Limpiar espacios y quitar el +, WhatsApp lo añade si es necesario
-    
-    const whatsappUrl = `https://wa.me/${phone}?text=${message}`;
-    
-    window.open(whatsappUrl, '_blank');
-    
-    showNotification("Alerta enviada", `Se abrió WhatsApp para enviar mensaje a ${item.nombre}.`, 'success');
-}
-
-// FUNCIÓN MES GRATIS CON CONDICIÓN DE RECOMENDACIONES
-window.addFreeMonth = async function(id) {
-    const item = cachedList.find(i => i.id === id);
-    if(!item) return;
-
-    // Condición: Solo si tiene 3 o más recomendaciones
-    const recommendationsCount = item.recomendaciones ? item.recomendaciones.length : 0;
-    if (recommendationsCount < 3) {
-        showNotification("Acción Bloqueada", `Se requieren al menos 3 recomendaciones (${recommendationsCount} actuales) para el mes gratis.`, 'error');
-        return; 
-    }
-
-    const oldCaducidad = item.caducidad;
-    const newCaducidad = getNewCaducidad(oldCaducidad, 1); // Sumar 1 mes
-
-    try {
-        // 1. Actualizar el documento principal
-        await updateDoc(doc(db, "clientes", id), {
-            caducidad: newCaducidad
-        });
-
-        // 2. Registrar la acción en la subcolección 'renovaciones'
-        await addDoc(collection(db, "clientes", id, "renovaciones"), {
-            fecha_renovacion: new Date().toISOString(),
-            caducidad_anterior: oldCaducidad || 'Fecha no registrada',
-            nueva_caducidad: newCaducidad,
-            tipo_accion: 'Mes Gratis', // Diferenciar la acción
-            usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
-        });
-
-        showNotification("Mes Gratis Añadido", `Cliente ${item.nombre} extendido por 1 mes.`, 'success');
-    } catch (error) {
-        showNotification("Error", "No se pudo añadir el mes gratis. (Revisa reglas de Firestore)", 'error');
-        console.error("Error adding free month:", error);
-    }
-}
-
-
-// *** FUNCIÓN RENEW ITEM ACTUALIZADA PARA GUARDAR EL HISTORIAL Y TIPO DE ACCIÓN ***
-window.renewItem = async function(id){
-  const item = cachedList.find(i => i.id === id);
-  if(!item) return;
-
-  const oldCaducidad = item.caducidad;
-  const newCaducidad = getNewCaducidad(oldCaducidad, 3); // Sumar 3 meses
-
-  try {
-      // 1. Actualizar el documento principal
-      await updateDoc(doc(db, "clientes", id), {
-        caducidad: newCaducidad
-      });
-
-      // 2. Registrar la renovación en la subcolección 'renovaciones'
-      await addDoc(collection(db, "clientes", id, "renovaciones"), {
-          fecha_renovacion: new Date().toISOString(),
-          caducidad_anterior: oldCaducidad || 'Fecha no registrada',
-          nueva_caducidad: newCaducidad,
-          tipo_accion: 'Renovación Normal (+3 meses)', // Diferenciar la acción
-          usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
-      });
-
-      showNotification("Renovación Exitosa", "Cliente renovado por 3 meses y registro guardado.", 'success');
-  } catch (error) {
-      showNotification("Error de Renovación", "No se pudo renovar el cliente. (Revisa reglas de Firestore)", 'error');
-      console.error("Error renewing item:", error);
-  }
-}
-
-
-window.openEdit = function(id){
-    const item = cachedList.find(i => i.id === id);
-    if(!item) return;
-
-    // Carga de recomendaciones
-    currentRecommendations = [...(item.recomendaciones || [])];
-    renderRecommendations(currentRecommendations, document.getElementById('e-recommended-clients'), 'e');
-
-    document.getElementById('e-nombre').value = item.nombre;
-    // Valor por defecto "+34" si el campo está vacío
-    document.getElementById('e-telefono').value = item.telefono || "+34"; 
-    document.getElementById('e-creacion').value = isoForInput(item.creacion);
-    document.getElementById('e-caducidad').value = isoForInput(item.caducidad);
-    document.getElementById('e-usuario').value = item.usuario || "";
-    document.getElementById('e-contrasena').value = item.contrasena || "";
-    document.getElementById('e-dispositivo').value = item.dispositivo || "";
-    document.getElementById('e-aplicacion').value = item.aplicacion || ""; 
-
-    modal.setAttribute('data-id', id);
-    document.getElementById('btn-history-open').onclick = () => openHistoryModal(id);
-    document.getElementById('modal').classList.add('show');
-};
-
-document.getElementById('modal-cancel').addEventListener('click', () => {
-    modal.classList.remove('show');
-    currentRecommendations = [];
-});
-// ... (continúa con el resto de funciones JS)
-
-function renderRecommendations(recommendations, targetElement, prefix) {
-    targetElement.innerHTML = '';
-    recommendations.forEach((rec, index) => {
-        const tag = document.createElement('div');
-        tag.className = 'recommendation-tag';
-        tag.innerHTML = `${rec} <button type="button" onclick="removeRecommendation('${prefix}', ${index})">x</button>`;
-        targetElement.appendChild(tag);
-    });
-}
-window.removeRecommendation = function(prefix, index) {
-    currentRecommendations.splice(index, 1);
-    renderRecommendations(currentRecommendations, document.getElementById(`${prefix}-recommended-clients`), prefix);
-}
-
-// Logica de añadir recomendación (se duplica para f- y e-)
-const addRecommendationLogic = (prefix) => {
-    const input = document.getElementById(`${prefix}-new-recommendation`);
-    const container = document.getElementById(`${prefix}-recommended-clients`);
-    const addButton = document.getElementById(`${prefix}-add-recommendation-btn`);
-
-    addButton.onclick = () => {
-        const name = input.value.trim();
-        if (name && !currentRecommendations.includes(name)) {
-            currentRecommendations.push(name);
-            input.value = '';
-            renderRecommendations(currentRecommendations, container, prefix);
-        }
-    };
-};
-
-addRecommendationLogic('f');
-addRecommendationLogic('e');
-
-// GUARDAR CAMBIOS EN MODAL
-document.getElementById('form-edit').addEventListener('submit', async e=>{
-  e.preventDefault();
-  const id = modal.getAttribute('data-id');
-  if(!id) return;
-
-  const data = {
-    nombre: document.getElementById('e-nombre').value,
-    telefono: document.getElementById('e-telefono').value, 
-    creacion: document.getElementById('e-creacion').value,
-    caducidad: document.getElementById('e-caducidad').value,
-    usuario: document.getElementById('e-usuario').value,
-    contrasena: document.getElementById('e-contrasena').value,
-    dispositivo: document.getElementById('e-dispositivo').value,
-    aplicacion: document.getElementById('e-aplicacion').value,
-    recomendaciones: currentRecommendations 
-  };
-
-  try {
-      await updateDoc(doc(db, "clientes", id), data);
-      document.getElementById('modal').classList.remove('show');
-      showNotification("Guardado", `Cambios en cliente ${data.nombre} guardados.`, 'success');
-      currentRecommendations = [];
-  } catch (error) {
-      showNotification("Error", "No se pudieron guardar los cambios. (Revisa reglas de Firestore)", 'error');
-      console.error("Error updating item:", error);
-  }
-});
-
-// AÑADIR CLIENTE NUEVO
-formAdd.addEventListener('submit', async e=>{
-  e.preventDefault();
-
-  const data = {
-    nombre: document.getElementById('f-nombre').value,
-    telefono: document.getElementById('f-telefono').value, 
-    creacion: document.getElementById('f-creacion').value,
-    caducidad: document.getElementById('f-caducidad').value,
-    usuario: document.getElementById('f-usuario').value,
-    contrasena: document.getElementById('f-contrasena').value,
-    dispositivo: document.getElementById('f-dispositivo').value,
-    aplicacion: document.getElementById('f-aplicacion').value,
-    recomendaciones: currentRecommendations, 
-    renovara: false
-  };
-
-  try {
-      const docRef = await addDoc(col, data);
-      
-      // Registrar la creación como la primera 'renovación'
-      await addDoc(collection(db, "clientes", docRef.id, "renovaciones"), {
-          fecha_renovacion: new Date().toISOString(),
-          caducidad_anterior: 'Nuevo Cliente',
-          nueva_caducidad: data.caducidad,
-          tipo_accion: 'Creación (+3 meses)', 
-          usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
-      });
-      
-      showNotification("Cliente Creado", `El cliente ${data.nombre} ha sido añadido con éxito.`, 'success');
-      
-      formAdd.reset();
-      setDefaultDates(); 
-      currentRecommendations = [];
-      document.getElementById('f-recommended-clients').innerHTML = '';
-      document.getElementById('f-telefono').value = '+34'; // Resetear teléfono a +34
-  } catch (error) {
-      showNotification("Error de Creación", "No se pudo añadir el nuevo cliente. (Revisa reglas de Firestore)", 'error');
-      console.error("Error adding item:", error);
-  }
-});
-
-fReset.addEventListener('click', ()=> {
-    formAdd.reset();
-    setDefaultDates();
-    currentRecommendations = [];
-    document.getElementById('f-recommended-clients').innerHTML = '';
-    document.getElementById('f-telefono').value = '+34'; // Resetear teléfono a +34
-});
-
-// *** HISTORIAL ***
-window.openHistoryModal = async function(id) {
-    const item = cachedList.find(i => i.id === id);
-    if (!item) return;
-
-    document.getElementById('history-modal-title').textContent = `Historial de Renovaciones de ${item.nombre}`;
-
-    try {
-        const q = query(collection(db, "clientes", id, "renovaciones"), orderBy("fecha_renovacion", "desc"));
-        const snapshot = await getDocs(q);
-        const historyList = snapshot.docs.map(doc => doc.data());
-        
-        renderRenewalHistory(historyList, document.getElementById('history-list'));
-        historyModal.classList.add('show');
-    } catch (error) {
-        showNotification("Error", "No se pudo cargar el historial.", 'error');
-        console.error("Error fetching history:", error);
-    }
-}
-
-document.getElementById('history-modal-close').addEventListener('click', () => {
-    historyModal.classList.remove('show');
-});
-
-
-// FUNCIÓN PARA RENDERIZAR EL HISTORIAL (ACTUALIZADA CON TIPO DE ACCIÓN)
-function renderRenewalHistory(historyList, targetDiv) {
-    targetDiv.innerHTML = '';
-    if (historyList.length === 0) {
-        targetDiv.innerHTML = '<p style="text-align:center; color: var(--muted);">No se encontraron registros de renovación.</p>';
-        return;
-    }
-
-    let html = '<div style="display:grid; gap:10px;">';
-    historyList.forEach(rec => {
-        const actionType = rec.tipo_accion || 'Renovación Manual';
-        const color = actionType.includes('Gratis') ? 'var(--yellow)' : actionType.includes('Creación') ? 'var(--green)' : 'var(--accent)';
-
-        html += `
-            <div class="stat" style="border-left: 4px solid ${color}; padding:10px;">
-                <strong>${actionType}</strong>
-                <div style="font-size: 13px; color: var(--muted); margin-top: 5px;">
-                     Fecha de Registro: ${formatDate(rec.fecha_renovacion)}<br/>
-                     Caducidad anterior: ${formatDate(rec.caducidad_anterior)}<br/>
-                     Nueva Caducidad: ${formatDate(rec.nueva_caducidad)}
-                     ${rec.usuario ? `<br/>Usuario: ${rec.usuario.split('@')[0]}` : ''}
-                </div>
+      <!-- NEW CLIENT SECTION -->
+      <section id="new-client-section" class="hidden container">
+        <h2>Registrar Nuevo Cliente</h2>
+        <form id="new-client-form" class="modal-form" onsubmit="saveClient(event)" style="grid-template-columns: 1fr;">
+            <input type="hidden" id="f-client-id" name="f-client-id">
+            
+            <div class="form-group">
+                <label for="f-nombre">Nombre Completo</label>
+                <input type="text" id="f-nombre" required>
             </div>
-        `;
-    });
-    html += '</div>';
-    targetDiv.innerHTML = html;
-}
 
-// RENDERIZADO DE CLIENTES EN SECCIÓN CLIENTES 
-function renderClients(list){
-  const clientsGrid = document.getElementById('clients-grid');
-  clientsGrid.innerHTML = "";
+            <div class="form-group">
+                <label for="f-usuario">Usuario</label>
+                <input type="text" id="f-usuario" required>
+            </div>
 
-  list.forEach(item => {
-    let recommendationsHTML = '';
-    if (item.recomendaciones && item.recomendaciones.length > 0) {
-        recommendationsHTML = `<div class="meta" style="margin-top: 8px;">Recomendaciones (${item.recomendaciones.length}): ${item.recomendaciones.join(', ')}</div>`;
-    }
-    
-    const statusClass = getExpiryStatus(item.caducidad);
+            <div class="form-group">
+                <label for="f-contrasena">Contraseña</label>
+                <input type="text" id="f-contrasena" required>
+            </div>
 
-    const whatsappBtn = item.telefono && item.telefono.length > 5 ? 
-        `<button class="btn whatsapp-alert" onclick="sendWhatsappAlert('${item.id}')">Avisar 💬</button>` : '';
+            <div class="form-group">
+                <label for="f-aplicacion">Aplicación</label>
+                <input type="text" id="f-aplicacion" required>
+            </div>
 
-    const card = document.createElement('div');
-    card.className = `card ${statusClass}`;
-    card.innerHTML = `
-      <h4>${item.nombre}</h4>
-      <div class="meta">Teléfono: ${item.telefono || "-"}</div>
-      <div class="meta">App: ${item.aplicacion || "-"}</div>
-      <div class="meta">Creación: ${formatDate(item.creacion)}</div>
-      <div class="meta">Caduca: ${formatDate(item.caducidad)}</div>
-      ${recommendationsHTML}
+            <div class="form-group">
+                <label for="f-telefono">Teléfono (WhatsApp)</label>
+                <!-- 6. Phone Number Default Value: Added value="+34" -->
+                <input type="text" id="f-telefono" value="+34" required>
+            </div>
 
-      <div class="btns">
-        <button class="btn edit" onclick="openEdit('${item.id}')">Editar</button>
-        <button class="btn renew" onclick="renewItem('${item.id}')">Renovar</button>
-        <button class="btn free-month" onclick="addFreeMonth('${item.id}')">Mes gratis</button>
-        <button class="btn copy" onclick="copyPassword('${item.id}')">Copiar</button>
-        ${whatsappBtn}
-        <button class="btn delete" onclick="deleteItem('${item.id}')">Eliminar</button>
+            <div class="form-group">
+                <label for="f-caducidad">Fecha de Caducidad</label>
+                <input type="date" id="f-caducidad" required>
+            </div>
+            
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="f-notas">Notas Adicionales</label>
+                <textarea id="f-notas" rows="3"></textarea>
+            </div>
+
+            <button type="submit" class="btn" id="client-form-submit">Crear Cliente</button>
+        </form>
+      </section>
+      
+      <!-- HISTORY SECTION -->
+      <section id="history-section" class="hidden container">
+        <h2>Historial de Renovaciones y Acciones</h2>
+        <div id="history-list">
+            <!-- History entries will be rendered here -->
+        </div>
+      </section>
+
+      <!-- 7. TUTORIAL SECTION -->
+      <section id="tutorial-section" class="hidden container">
+        <h2>Guía de Uso del Gestor de Clientes</h2>
+        <p class="description" style="color: var(--accent); font-size: 1.1em;">Bienvenido al tutorial. Aquí aprenderás a usar todas las funciones de esta aplicación.</p>
+
+        <div class="tutorial-content">
+            <div class="tutorial-step">
+                <h3>1. El Dashboard</h3>
+                <p>El Dashboard es tu vista principal. Muestra estadísticas clave: clientes totales, activos, inactivos y la lista de clientes que están a punto de caducar (en los próximos 3 días).</p>
+                <p>La sección de clientes por caducar utiliza una <strong>visualización especial en fila horizontal (scrollable)</strong> con un color llamativo para que puedas acceder a la información más urgente de un vistazo.</p>
+            </div>
+            <div class="tutorial-step">
+                <h3>2. Gestión de Clientes</h3>
+                <p>En la pestaña "Clientes" puedes ver la lista completa. Las tarjetas tienen <strong>colores rotativos</strong> para mejorar la distinción. Cada tarjeta tiene botones de acción rápida:</p>
+                <ul>
+                    <li><strong>Editar:</strong> Abre el formulario de edición. La ventana de edición ha sido ajustada para ser <strong>completamente visible y responsive</strong> en cualquier dispositivo.</li>
+                    <li><strong>Renovar:</strong> Extiende la caducidad 30 días.</li>
+                    <li><strong>Mes gratis:</strong> Añade 30 días extra, **solo si el cliente tiene 3 o más recomendaciones registradas.**</li>
+                    <li><strong>Copiar:</strong> Copia la información esencial del cliente (Usuario, Contraseña, Aplicación, Caducidad) al portapapeles.</li>
+                    <li><strong>WhatsApp:</strong> Abre un chat directo con el cliente.</li>
+                    <li><strong>Eliminar:</strong> Borra el registro del cliente (requiere confirmación).</li>
+                </ul>
+            </div>
+            <div class="tutorial-step">
+                <h3>3. Nuevo Cliente</h3>
+                <p>Usa esta pestaña para registrar nuevos clientes. Recuerda que el campo "Teléfono" ya viene pre-escrito con <strong>+34</strong> por defecto.</p>
+            </div>
+            <div class="tutorial-step">
+                <h3>4. Historial</h3>
+                <p>Revisa todas las renovaciones, creaciones y acciones especiales (como "Mes Gratis") realizadas en la aplicación, con un registro detallado de los cambios de caducidad.</p>
+            </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Client/Edit Modal -->
+  <div id="modal-client" class="modal">
+    <!-- 3. Edit Modal Responsiveness: CSS improvements applied to .modal-content -->
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <h3 id="f-modal-title">Nuevo Cliente</h3>
+      
+      <form id="client-form" onsubmit="saveClient(event)">
+        <input type="hidden" id="f-client-id" name="f-client-id">
+        
+        <div class="modal-form">
+            <div class="form-group">
+                <label for="f-nombre">Nombre Completo</label>
+                <input type="text" id="f-nombre" required>
+            </div>
+
+            <div class="form-group">
+                <label for="f-usuario">Usuario</label>
+                <input type="text" id="f-usuario" required>
+            </div>
+
+            <div class="form-group">
+                <label for="f-contrasena">Contraseña</label>
+                <input type="text" id="f-contrasena" required>
+            </div>
+
+            <div class="form-group">
+                <label for="f-aplicacion">Aplicación</label>
+                <input type="text" id="f-aplicacion" required>
+            </div>
+
+            <div class="form-group">
+                <label for="f-telefono">Teléfono (WhatsApp)</label>
+                <!-- 6. Phone Number Default Value: Load from JS/HTML attribute -->
+                <input type="text" id="f-telefono" value="+34" required>
+            </div>
+
+            <div class="form-group">
+                <label for="f-caducidad">Fecha de Caducidad</label>
+                <input type="date" id="f-caducidad" required>
+            </div>
+            
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="f-notas">Notas Adicionales</label>
+                <textarea id="f-notas" rows="3"></textarea>
+            </div>
+        </div>
+        
+        <div id="edit-recommendations-list" style="margin-top: 25px; border-top: 1px solid var(--glass); padding-top: 15px;">
+            <h4>Clientes Recomendados</h4>
+            <div id="recommendation-inputs-container">
+                <!-- Recommendation inputs will be rendered here -->
+            </div>
+        </div>
+
+        <button type="submit" class="btn" id="client-form-submit" style="grid-column: 1 / -1; margin-top: 25px;">Guardar Cambios</button>
+      </form>
+    </div>
+  </div>
+  
+  <!-- Custom Confirmation Modal (Mandatory Replacement for confirm()) -->
+  <div id="confirmation-modal" class="modal" style="z-index: 1000; background-color: rgba(0, 0, 0, 0.7);">
+      <div class="modal-content" style="max-width: 400px; text-align: center; max-height: 90vh;">
+          <h3 id="confirm-title" style="color: var(--red);">Confirmación</h3>
+          <p id="confirm-message" style="margin-bottom: 25px; color: #fff;">¿Estás seguro de que quieres proceder?</p>
+          <button id="confirm-yes" class="btn" style="background-color: var(--red); margin-right: 10px; color: white;">Sí, estoy seguro</button>
+          <button id="confirm-no" class="btn" style="background-color: var(--muted); color: white;">Cancelar</button>
       </div>
-    `;
-    clientsGrid.appendChild(card);
-  });
-}
+  </div>
 
-window.deleteItem = async function(id) {
-    // Usamos una notificación simple para evitar alert()
-    const confirmation = window.prompt("Escribe 'ELIMINAR' para confirmar la eliminación de este cliente:");
-    if (confirmation !== 'ELIMINAR') {
-        showNotification("Cancelado", "Eliminación cancelada.", 'error');
-        return;
-    }
-
-    try {
-        await deleteDoc(doc(db, "clientes", id));
-        showNotification("Eliminado", "Cliente eliminado con éxito.", 'success');
-    } catch (error) {
-        showNotification("Error", "No se pudo eliminar el cliente. (Revisa reglas de Firestore)", 'error');
-        console.error("Error deleting item:", error);
-    }
-}
-
-// CSV Export Logic (shared by both buttons)
-function exportToCsv(filename, list) {
-    const header = [
-        "ID", "Nombre", "Telefono", "Creacion", "Caducidad", "Usuario", 
-        "Contrasena", "Dispositivo", "Aplicacion", "Renovara", "Recomendaciones"
-    ];
-    
-    // Función para sanitizar un campo y envolverlo en comillas si contiene comas
-    const escapeCsv = (data) => {
-        if (data === null || data === undefined) return '';
-        let str = String(data);
-        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-            // Reemplazar comillas internas con doble comilla y envolver en comillas
-            return `"${str.replace(/"/g, '""')}"`;
-        }
-        return str;
-    };
-
-    const rows = list.map(item => [
-        escapeCsv(item.id),
-        escapeCsv(item.nombre),
-        escapeCsv(item.telefono),
-        escapeCsv(formatDate(item.creacion)),
-        escapeCsv(formatDate(item.caducidad)),
-        escapeCsv(item.usuario),
-        escapeCsv(item.contrasena),
-        escapeCsv(item.dispositivo),
-        escapeCsv(item.aplicacion),
-        escapeCsv(item.renovara ? 'Sí' : 'No'),
-        escapeCsv(item.recomendaciones ? item.recomendaciones.join('; ') : '')
-    ]);
-
-    let csvContent = header.join(",") + "\n";
-    rows.forEach(row => {
-        csvContent += row.join(",") + "\n";
-    });
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    if (link.download !== undefined) { 
-        const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
-        link.setAttribute("download", filename);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showNotification("Exportación Exitosa", `Se ha descargado el archivo ${filename}.`, 'success');
-    } else {
-        showNotification("Error de Exportación", "Su navegador no soporta la descarga de archivos.", 'error');
-    }
-}
-
-// Attach export functionality to both buttons
-btnExport.addEventListener('click', () => {
-    exportToCsv('clientes_exportados.csv', cachedList);
-});
-btnExportSettings.addEventListener('click', () => {
-    exportToCsv('clientes_exportados.csv', cachedList);
-});
-
-</script>
+  <!-- Notification Message -->
+  <div id="notification">
+    <h4 id="notification-title"></h4>
+    <p id="notification-message"></p>
+  </div>
 </body>
 </html>
