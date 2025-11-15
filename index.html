@@ -762,6 +762,12 @@ onAuthStateChanged(auth, (user) => {
             startDataListener(); 
             dataListenerActive = true;
         }
+        
+        // ====================================================================
+        // === LLAMADA CRÍTICA PARA LA MIGRACIÓN (EJECUTAR UNA SOLA VEZ) ===
+        // ====================================================================
+        migrateOldClientsToCurrentUser();
+        
     } else {
         sectionLogin.classList.add('show');
         appContainer.style.display = 'none';
@@ -1610,6 +1616,74 @@ function renderRenewalHistory(historyList, targetDiv) {
     html += '</div>';
     targetDiv.innerHTML = html;
 }
+
+// ===============================================
+// === FUNCIÓN DE MIGRACIÓN (TEMPORAL: ELIMINAR DESPUÉS DE UN USO) ===
+// Ejecutar una única vez con el Usuario 1 logueado
+// ===============================================
+
+async function migrateOldClientsToCurrentUser() {
+    const user = auth.currentUser;
+    if (!user) {
+        // No debería pasar si se llama después de onAuthStateChanged
+        return; 
+    }
+
+    const userUid = user.uid;
+    console.log(`========================================`);
+    console.log(`MIGRACIÓN INICIADA: Buscando clientes antiguos sin 'userId'.`);
+    console.log(`UID a aplicar a documentos sin etiquetar: ${userUid}`);
+    
+    const clientesCol = col; 
+
+    try {
+        // Ojo: Si las reglas son muy estrictas, esta consulta podría fallar.
+        // Si falla, relajar temporalmente las reglas de lectura: allow read: if request.auth != null;
+        const snapshot = await getDocs(clientesCol); 
+        
+        let updateCount = 0;
+        let skipCount = 0;
+        
+        await db.runTransaction(async (transaction) => {
+            snapshot.forEach((document) => {
+                const data = document.data();
+                
+                // CRÍTICO: Si el documento NO tiene 'userId' o está vacío, lo actualizamos.
+                if (!data.hasOwnProperty('userId') || !data.userId || data.userId === '') {
+                    const clientRef = doc(db, "clientes", document.id);
+                    // Actualizar el documento para incluir el campo 'userId'
+                    transaction.update(clientRef, { userId: userUid }); 
+                    updateCount++;
+                } else {
+                    skipCount++;
+                }
+            });
+        });
+
+        console.log("========================================");
+        console.log(`MIGRACIÓN COMPLETADA CON ÉXITO:`);
+        console.log(`Documentos actualizados con userId: ${updateCount}`);
+        console.log(`Documentos omitidos (ya tenían userId): ${skipCount}`);
+        console.log("========================================");
+        
+        if(updateCount > 0) {
+            showNotification("Migración Completa", `Se han etiquetado ${updateCount} clientes antiguos. Recarga la página (F5).`, 'success');
+        } else {
+             showNotification("Migración de Datos", "No se encontraron clientes antiguos sin etiquetar.", 'yellow');
+        }
+        
+    } catch (error) {
+        console.error("FALLO CRÍTICO EN LA MIGRACIÓN:", error);
+        if (error.code === 'permission-denied') {
+             console.error("IMPORTANTE: Las reglas de seguridad impidieron la lectura de documentos sin tu UID. RELAJA LAS REGLAS DE LECTURA TEMPORALMENTE (allow read: if request.auth != null;), recarga y vuelve a intentarlo.");
+        }
+        showNotification("Fallo de Migración", "Hubo un error al etiquetar los clientes. Revisa la consola.", 'error');
+    }
+}
+
+// ===============================================
+// === FIN DE FUNCIÓN DE MIGRACIÓN ===
+// ===============================================
 
 </script>
 </body>
