@@ -8,38 +8,34 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
-    /* VARIABLES Y ESTILOS BASE (MÓVIL-FIRST) */
     :root{--bg:#0f1724;--card:#0b1220;--muted:#9aa4b2;--accent:#6ee7b7;--glass:rgba(255,255,255,0.03);--red:#ef4444;--green:#10b981;--yellow:#f59e0b;--whatsapp:#25d366;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
     *{box-sizing:border-box}
     body{margin:0;background:linear-gradient(180deg,#071022 0%, #07132a 100%);color:#e6eef6;min-height:100vh}
-    .container{max-width:1100px;margin:0 auto;padding:18px}
-    
-    /* CABECERA (Se ajusta a móvil por defecto, apilando elementos) */
-    header{display:flex;flex-direction: column; align-items: flex-start; gap:12px;margin-bottom:18px}
+    /* Aumento el ancho máximo y el padding para una mejor visualización en PC */
+    .container{max-width:1300px;margin:0 auto;padding:24px} 
+    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
     .brand{display:flex;align-items:center;gap:12px}
     .logo{width:46px;height:46px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#013220;font-weight:700}
-    nav{margin-left:0; width: 100%;}
-    .menu{display:flex;gap:8px; flex-wrap: wrap;}
-    .menu button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer; transition: background 0.2s; flex-grow: 1;}
+    nav{margin-left:auto}
+    .menu{display:flex;gap:8px}
+    .menu button{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 12px;border-radius:10px;color:var(--muted);cursor:pointer; transition: background 0.2s}
     .menu button:hover { background: rgba(255,255,255,0.05); }
     .menu button.active{background:var(--accent);color:#052018;border:none}
-    
     main{display:grid;grid-template-columns:1fr;gap:18px}
-    
-    /* GRID DE ESTADÍSTICAS (Por defecto: 1 columna, Desktop: 3 columnas) */
     .cards-col{display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:18px;}
-    
-    /* GRID DE CLIENTES (Por defecto: 1 columna, Desktop: 2+ columnas) */
-    .cards{display:grid;grid-template-columns:1fr;gap:12px} /* Dashboard Soon Exp */
-    .grid-clients{display:grid;grid-template-columns:1fr;gap:12px} /* Clientes List */
-    
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
     .stat{background:var(--glass);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
-    .stat-clickable { cursor: pointer; transition: background 0.2s; }
-    .stat-clickable:hover { background: rgba(255,255,255,0.05); }
+    .stat-clickable {
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .stat-clickable:hover {
+        background: rgba(255,255,255,0.05);
+    }
     .stat h3{margin:0;font-size:12px;color:var(--muted)}
     .stat p{margin:8px 0 0;font-size:20px;font-weight:600}
-    
-    /* Estilos de Card */
+    .grid-clients{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+    /* NUEVO: Indicadores de estado en tarjetas */
     .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);position:relative}
     .card.status-red{border-left: 4px solid var(--red);}
     .card.status-yellow{border-left: 4px solid var(--yellow);}
@@ -48,12 +44,13 @@
     .card h4{margin:0 0 6px}
     .meta{font-size:12px;color:var(--muted);margin-bottom:8px}
     .tags{display:flex;gap:6px;flex-wrap:wrap}
+    /* Estilo para los tags de recomendación */
     .tag-label { background: rgba(110, 231, 183, 0.1); color: var(--accent); font-size: 11px; padding: 3px 6px; border-radius: 4px; }
     
-    /* Botones y acciones (importante que envuelvan/wrap en móvil) */
     .btns{display:flex;gap:6px;margin-top:10px; flex-wrap: wrap;}
     .btn{padding:8px 10px;border-radius:8px;border:none;cursor:pointer;font-weight:600; transition: opacity 0.2s}
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    /* IMPORTANTE: Estilo para botón deshabilitado */
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; } 
     .btn.edit{background:#1f2937;color:#e6eef6}
     .btn.renew{background:#064e3b;color:var(--accent)}
     .btn.free-month{background:#0b2e3b;color:var(--accent); border: 1px solid rgba(110, 231, 183, 0.3);} 
@@ -63,22 +60,16 @@
     .btn.history{background:#0f172a;color:var(--accent); border: 1px solid var(--accent);} 
     .btn.whatsapp-alert{background:var(--whatsapp);color:#0f1724; font-weight: 700; border: none;} 
 
-    /* Formularios y Modales */
     .card-form{background:var(--card);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04)}
     form{display:grid;gap:10px}
     label{font-size:13px;color:var(--muted)}
     input[type=text],input[type=date],textarea,select,input[type=email],input[type=password]{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
     textarea{min-height:90px;resize:vertical}
-    
-    /* Filas de formulario (Por defecto: 1 columna, Desktop: 2 columnas) */
-    .row{display:grid;grid-template-columns:1fr;gap:8px} 
-
-    /* Modales */
-    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,23,0.8),rgba(2,6,23,0.8));z-index:50}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(rgba(2,6,23,0.6),rgba(2,6,23,0.6));z-index:50}
     .modal.show{display:flex}
     .modal-inner{width:96%;max-width:720px;background:var(--card);padding:16px;border-radius:12px}
-
-    /* Notificaciones */
+    /* ESTILOS DE NOTIFICACIÓN */
     #notifications-container { position: fixed; top: 18px; right: 18px; z-index: 100; display: flex; flex-direction: column; gap: 8px; }
     .toast { background: var(--card); color: #e6eef6; padding: 12px 18px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); min-width: 250px; max-width: 350px; opacity: 0; transition: opacity 0.3s, transform 0.3s; transform: translateY(-20px); }
     .toast.show { opacity: 1; transform: translateY(0); }
@@ -86,64 +77,145 @@
     .toast.error { border-left: 4px solid var(--red); }
     .toast strong { display: block; margin-bottom: 4px; font-size: 14px; }
     .toast p { margin: 0; font-size: 13px; color: var(--muted); }
-    
-    /* Login */
-    #section-login { display: none; position: fixed; inset: 0; background: linear-gradient(180deg,#071022 0%, #07132a 100%); align-items: center; justify-content: center; z-index: 90; }
+    /* Login Screen Styles */
+    #section-login {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(180deg,#071022 0%, #07132a 100%);
+        align-items: center;
+        justify-content: center;
+        z-index: 90;
+    }
     #section-login.show { display: flex; }
-    .login-box { background: var(--card); padding: 30px; border-radius: 16px; max-width: 400px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05); }
+    .login-box {
+        background: var(--card);
+        padding: 30px;
+        border-radius: 16px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.05);
+    }
     .login-box h2 { text-align: center; margin-top: 0; color: var(--accent); }
     #login-error-message { color: var(--red); font-size: 13px; text-align: center; margin-top: 5px; height: 18px; }
 
-    /* Estilos dinámicos (Recomendaciones) */
-    .dynamic-input-container { padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04); background: transparent; position: relative; }
-    .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; min-height: 18px; }
-    .recommendation-tag { background: var(--accent); color: #052018; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; font-size: 13px; font-weight: 600; line-height: 1; }
-    .recommendation-tag button { background: none; border: none; color: #052018; margin-left: 6px; cursor: pointer; font-weight: 700; line-height: 1; padding: 0; }
-    .input-add-row { display: flex; gap: 8px; }
-    .input-add-row input[type=text] { flex-grow: 1; padding: 6px 10px; border: 1px solid rgba(255,255,255,0.1); }
-    .input-add-row button { width: 32px; height: 32px; border-radius: 8px; padding: 0; font-size: 18px; line-height: 1; }
+    /* Dashboard: checkbox */
+    .exp-card .flex-end { display: flex; justify-content: flex-end; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+    /* ESTILOS: Campo de Recomendaciones Dinámico y Autocompletado */
+    .dynamic-input-container {
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.04);
+        background: transparent;
+        position: relative; 
+    }
+    .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 8px;
+        min-height: 18px;
+    }
+    .recommendation-tag {
+        background: var(--accent);
+        color: #052018;
+        padding: 4px 8px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1;
+    }
+    .recommendation-tag button {
+        background: none;
+        border: none;
+        color: #052018;
+        margin-left: 6px;
+        cursor: pointer;
+        font-weight: 700;
+        line-height: 1;
+        padding: 0;
+    }
+    .input-add-row {
+        display: flex;
+        gap: 8px;
+    }
+    .input-add-row input[type=text] {
+        flex-grow: 1;
+        padding: 6px 10px; 
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .input-add-row button {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        padding: 0;
+        font-size: 18px;
+        line-height: 1;
+    }
+    /* Estilos Autocompletado */
+    .autocomplete-list {
+        position: absolute;
+        top: 100%;
+        left: 10px;
+        right: 50px; 
+        background: var(--card);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        max-height: 150px;
+        overflow-y: auto;
+        z-index: 60;
+        list-style: none;
+        padding: 0;
+        margin: 4px 0 0;
+    }
+    .autocomplete-list li {
+        padding: 8px 10px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    .autocomplete-list li:hover, .autocomplete-list li.active {
+        background: var(--glass);
+    }
     footer{margin-top:20px;color:var(--muted);font-size:13px;text-align:center}
 
-    /* ************************************** */
-    /* DISEÑO ADAPTABLE (PC / PANTALLAS GRANDES) */
-    /* ************************************** */
+    /* MEDIA QUERIES PARA ADAPTACIÓN */
     @media (min-width: 701px) {
-        /* HEADER: Cambia a horizontal */
-        header {
-            flex-direction: row;
-            align-items: center;
-        }
-        nav {
-            margin-left: auto;
-            width: auto;
-        }
-        .menu button {
-            flex-grow: 0; /* Desactiva flex-grow para que los botones no se estiren */
-        }
-        
-        /* DASHBOARD: 3 Columnas */
         .cards-col {
             grid-template-columns: repeat(3, 1fr);
         }
-        
-        /* CLIENTES: Multi-columna (Autoajustable) */
-        .cards{
-            grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
-        }
-        .grid-clients {
-            grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
-        }
-        
-        /* FORMULARIOS: 2 Columnas */
-        .row{
-            grid-template-columns: 1fr 1fr;
-        }
-        
-        /* MODAL: Ancho fijo para historial */
         .modal-inner.history { 
              max-width: 450px;
         }
     }
+    /* AJUSTES ADICIONALES PARA NAVEGADOR DE PC */
+    @media (min-width: 1024px) { 
+        body {
+            font-size: 1.05em; /* Escala general de texto */
+        }
+        .container {
+            padding: 30px; /* Más espacio alrededor */
+        }
+        /* Ajuste de estadísticas */
+        .stat{padding:18px; border-radius:16px;}
+        .stat h3{font-size:14px;} 
+        .stat p{font-size:24px;} 
+
+        /* Ajuste de tarjetas y grid */
+        .card{padding:18px; border-radius:14px;}
+        .card h4{font-size: 18px;}
+        .meta{font-size:13px;} 
+        .grid-clients{grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+        
+        /* Ajuste de formularios y botones */
+        .btn{padding:10px 14px; border-radius:10px; font-size: 15px;} 
+        input[type=text],input[type=date],textarea,select,input[type=email],input[type=password]{padding:12px; font-size: 16px;}
+        label{font-size:14px;}
+    }
+
+    @media (max-width:700px){.row{grid-template-columns:1fr}.menu{display:flex;gap:6px}}
   </style>
 </head>
 
@@ -178,7 +250,7 @@
       <button id="nav-dashboard" class="active">Dashboard</button>
       <button id="nav-clientes">Clientes</button>
       <button id="nav-add">Añadir cliente</button>
-      <button id="nav-settings" style="margin-left: 12px;">⚙️ Ajustes</button>
+      <button id="nav-logout" class="btn delete" style="margin-left: 12px;">Cerrar Sesión</button>
     </div>
   </nav>
 </header>
@@ -204,8 +276,9 @@
 
 <section id="section-clientes" style="display:none">
   <div class="card-form">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-      <h3>Clientes</h3>
+    <div id="clients-header-controls" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+      <h3 id="clients-header-h3">Clientes</h3>
+      <button id="btn-export-csv" class="btn export">Exportar a CSV 📥</button>
     </div>
     
     <input type="text" id="search-input" placeholder="Buscar por Nombre, Usuario o Aplicación..." style="margin-bottom: 12px;" />
@@ -259,7 +332,7 @@
           <div class="input-add-row">
               <input type="text" id="f-new-recommendation" placeholder="Nombre de cliente recomendado" />
               <button type="button" class="btn copy" id="f-add-recommendation-btn">+</button>
-          </div>
+              </div>
       </div>
 
       <div style="display:flex;gap:8px;margin-top:8px">
@@ -270,24 +343,6 @@
     </form>
   </div>
 </section>
-
-<section id="section-settings" style="display:none">
-  <div class="card-form">
-    <h3>⚙️ Opciones de Ajustes</h3>
-    
-    <p class="meta">Gestión de datos masiva:</p>
-    <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
-        <input type="file" id="csv-file-input" accept=".csv" style="display: none;" />
-        <button id="btn-import-csv" class="btn copy" style="flex-grow: 1;">Importar Clientes (CSV) ⬆️</button>
-        <button id="btn-export-csv" class="btn export" style="flex-grow: 1;">Exportar Clientes (CSV) 📥</button>
-    </div>
-    
-    <p class="meta" style="margin-top: 20px;">Sesión:</p>
-    <button id="nav-logout-settings" class="btn delete" style="width: 100%; font-weight: 700;">Cerrar Sesión</button>
-  </div>
-</section>
-
-
 </main>
 
 <footer></footer>
@@ -339,7 +394,7 @@
           <div class="input-add-row">
               <input type="text" id="e-new-recommendation" placeholder="Nombre de cliente recomendado" />
               <button type="button" class="btn copy" id="e-add-recommendation-btn">+</button>
-          </div>
+               </div>
       </div>
 
       <div style="display:flex;gap:8px;margin-top:8px;justify-content:space-between">
@@ -381,11 +436,11 @@ import {
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
 
 
-// NOTA IMPORTANTE: Debes reemplazar la configuración de Firebase con tus claves reales.
+// NOTA: Recuerda que debes reemplazar la configuración de Firebase con tus claves reales.
 const firebaseConfig = {
-  apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8", // ⬅️ REEMPLAZAR
-  authDomain: "gestioncandy-b9356.firebaseapp.com", // ⬅️ REEMPLAZAR
-  projectId: "gestioncandy-b9356", // ⬅️ REEMPLAZAR
+  apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
+  authDomain: "gestioncandy-b9356.firebaseapp.com",
+  projectId: "gestioncandy-b9356",
   storageBucket: "gestioncandy-b9356.firebasestorage.app",
   messagingSenderId: "869982852654",
   appId: "1:869982852654:web:ac450321a746e62365f1bf"
@@ -396,7 +451,7 @@ const db = getFirestore(app);
 const auth = getAuth(app); 
 
 // --- ELEMENTOS UI DE LA APLICACIÓN ---
-const appContainer = document.getElementById('app-container');
+const appContainer = document.getElementById('app-container'); 
 const sectionLogin = document.getElementById('section-login');
 const formLogin = document.getElementById('form-login');
 const loginErrorMessage = document.getElementById('login-error-message');
@@ -405,19 +460,12 @@ const loginErrorMessage = document.getElementById('login-error-message');
 const navDashboard = document.getElementById('nav-dashboard');
 const navClientes = document.getElementById('nav-clientes');
 const navAdd = document.getElementById('nav-add');
-const navSettings = document.getElementById('nav-settings');
-const navLogoutSettings = document.getElementById('nav-logout-settings');
+const navLogout = document.getElementById('nav-logout');
 
 // SECCIONES PRINCIPALES
 const sectionDashboard = document.getElementById('section-dashboard');
 const sectionClientes = document.getElementById('section-clientes');
 const sectionAdd = document.getElementById('section-add');
-const sectionSettings = document.getElementById('section-settings');
-
-// ELEMENTOS CSV
-const btnImportCsv = document.getElementById('btn-import-csv'); 
-const csvFileInput = document.getElementById('csv-file-input');
-const btnExportCsv = document.getElementById('btn-export-csv');
 
 // FORM ADD
 const formAdd = document.getElementById('form-add');
@@ -440,7 +488,6 @@ const eRecommendedClientsDiv = document.getElementById('e-recommended-clients');
 const historyModal = document.getElementById('history-modal');
 const historyModalClose = document.getElementById('history-modal-close');
 const historyList = document.getElementById('history-list');
-
 
 // VARIABLES GLOBALES
 let cachedList = []; 
@@ -499,7 +546,7 @@ function showNotification(title, message, type = 'success') {
 
 function setDefaultDates() {
     const today = new Date();
-    const caducidad3Months = getNewCaducidad(today, 3); 
+    const caducidad3Months = getNewCaducidad(today, 3);
 
     fCreacion.value = isoForInput(today);
     fCaducidad.value = isoForInput(caducidad3Months);
@@ -521,56 +568,87 @@ function setActive(btn){
   sectionDashboard.style.display = 'none';
   sectionClientes.style.display = 'none';
   sectionAdd.style.display = 'none';
-  sectionSettings.style.display = 'none';
 
   if(btn === navDashboard){
     sectionDashboard.style.display = 'block';
   } else if (btn === navClientes){
     sectionClientes.style.display = 'block';
-    filterClients(document.getElementById('search-input').value);
+    // Cuando se navega a Clientes, si no hay un filtro activo, se renderiza la lista completa
+    if (!document.getElementById('search-input').value) {
+        // Al entrar a la pestaña Clientes sin búsqueda, resetea el filtro de estado
+        renderClients(cachedList, null); 
+    } else {
+        filterClients(document.getElementById('search-input').value);
+    }
   } else if (btn === navAdd){
     sectionAdd.style.display = 'block';
     setDefaultDates(); 
-  } else if (btn === navSettings){
-    sectionSettings.style.display = 'block';
   }
 }
 
 navDashboard.addEventListener('click', ()=>setActive(navDashboard));
 navClientes.addEventListener('click', ()=>setActive(navClientes));
 navAdd.addEventListener('click', ()=>setActive(navAdd));
-navSettings.addEventListener('click', ()=>setActive(navSettings));
+
+// --- LÓGICA DE FILTRADO DEL DASHBOARD (NUEVO) ---
+
+document.getElementById('stat-expired-link').addEventListener('click', () => filterClientsByStatus('expired'));
+document.getElementById('stat-3days-link').addEventListener('click', () => filterClientsByStatus('soon'));
+
+function filterClientsByStatus(status) {
+    const now = new Date();
+    now.setHours(0,0,0,0);
+    const limit3Days = new Date(now);
+    limit3Days.setDate(limit3Days.getDate() + 3);
+    limit3Days.setHours(23,59,59,999);
+
+    let filteredList = [];
+    if (status === 'expired') {
+        filteredList = cachedList.filter(i => {
+            if(!i.caducidad) return false;
+            const d = new Date(i.caducidad);
+            return d < now;
+        });
+    } else if (status === 'soon') {
+        filteredList = cachedList.filter(i => {
+            if(!i.caducidad) return false;
+            const d = new Date(i.caducidad);
+            return d >= now && d <= limit3Days;
+        });
+    }
+
+    // Limpiar la barra de búsqueda y activar la vista de Clientes
+    document.getElementById('search-input').value = '';
+    setActive(navClientes); 
+
+    // Renderizar con el filtro de estado activo
+    renderClients(filteredList, status); 
+}
+
 
 // --- AUTENTICACIÓN Y GESTIÓN DE ESTADO ---
 
-// Lógica de Login
 formLogin.addEventListener('submit', async (e) => {
     e.preventDefault();
     loginErrorMessage.textContent = ''; 
-
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
-
     try {
         await signInWithEmailAndPassword(auth, email, password);
         showNotification("Éxito", "Sesión iniciada correctamente.", 'success');
-
     } catch (error) {
         let errorMessage = "Error al iniciar sesión. Verifica el email y la contraseña.";
         console.error("Firebase Auth Error:", error.code, error.message);
-        
         if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
             errorMessage = "Credenciales inválidas. Usuario o contraseña incorrectos.";
         } else if (error.code === 'auth/invalid-email') {
             errorMessage = "Formato de correo electrónico inválido.";
         }
-        
         loginErrorMessage.textContent = errorMessage; 
     }
 });
 
-// Lógica de Logout
-navLogoutSettings.addEventListener('click', async () => {
+navLogout.addEventListener('click', async () => {
     try {
         await signOut(auth);
         showNotification("Sesión cerrada", "Has cerrado la sesión.", 'success');
@@ -582,18 +660,14 @@ navLogoutSettings.addEventListener('click', async () => {
     }
 });
 
-
-// Detector de Estado de Autenticación
 onAuthStateChanged(auth, (user) => {
     if (user) {
         sectionLogin.classList.remove('show');
         appContainer.style.display = 'block';
-        
         if (!dataListenerActive) {
             startDataListener(); 
             dataListenerActive = true;
         }
-        
     } else {
         sectionLogin.classList.add('show');
         appContainer.style.display = 'none';
@@ -609,7 +683,6 @@ function startDataListener() {
     clientDataListener = onSnapshot(q, (snapshot) => {
         cachedList = [];
         cachedClientNames.clear(); 
-
         snapshot.forEach(doc => {
             const data = { id: doc.id, ...doc.data() };
             cachedList.push(data);
@@ -626,22 +699,17 @@ function startDataListener() {
 }
 
 // --- LÓGICA CSV: EXPORTACIÓN ---
+document.getElementById('btn-export-csv').addEventListener('click', exportToCSV);
+
 function exportToCSV() {
     if (cachedList.length === 0) {
         showNotification("Error", "No hay datos para exportar.", 'error');
         return;
     }
-
-    // Cabeceras: Los campos que quieres exportar
     const headers = ["nombre", "usuario", "contrasena", "caducidad", "creacion", "aplicacion", "telefono", "dispositivo", "recomendaciones"];
-    const separator = ";"; // Usamos punto y coma para mejor compatibilidad regional
-    
-    // Crear la cabecera CSV
+    const separator = ";"; 
     let csvContent = headers.join(separator) + "\n";
-
-    // Mapear los datos de cada cliente
     cachedList.forEach(item => {
-        // Aseguramos que los valores complejos o que contienen separadores van entre comillas
         const row = [
             `"${item.nombre || ''}"`,
             `"${item.usuario || ''}"`,
@@ -651,124 +719,23 @@ function exportToCSV() {
             `"${item.aplicacion || ''}"`,
             `"${item.telefono || ''}"`,
             `"${item.dispositivo || ''}"`,
-            // Recomendaciones: las convertimos a string separadas por | si son un array
             `"${Array.isArray(item.recomendaciones) ? item.recomendaciones.join('|') : item.recomendaciones || ''}"` 
         ].join(separator);
         csvContent += row + "\n";
     });
 
-    // Descargar el archivo
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    
     link.setAttribute("href", url);
     link.setAttribute("download", "clientes_export_" + new Date().toISOString().slice(0, 10) + ".csv");
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
     showNotification("Exportación Exitosa", "Datos de clientes exportados a CSV.", 'success');
 }
-btnExportCsv.addEventListener('click', exportToCSV);
 
-// --- LÓGICA CSV: IMPORTACIÓN ---
-btnImportCsv.addEventListener('click', () => {
-    csvFileInput.click();
-});
-
-csvFileInput.addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (file) {
-        importClientsFromCSV(file);
-    }
-    csvFileInput.value = ''; 
-});
-
-async function importClientsFromCSV(file) {
-    if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
-        showNotification("Error", "Por favor, selecciona un archivo CSV (.csv).", 'error');
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-        const csvText = e.target.result;
-        const lines = csvText.trim().split('\n');
-        
-        if (lines.length <= 1) {
-            showNotification("Error", "El archivo CSV está vacío o solo contiene cabeceras.", 'error');
-            return;
-        }
-
-        const headerLine = lines[0].toLowerCase().trim();
-        const separator = headerLine.includes(';') ? ';' : ','; // Detectar separador
-        
-        const headers = headerLine.split(separator).map(h => h.trim().replace(/['"]+/g, '')); // Limpiar comillas en cabeceras
-        const requiredHeaders = ['nombre', 'usuario', 'contrasena', 'caducidad'];
-
-        if (!requiredHeaders.every(h => headers.includes(h))) {
-            showNotification("Error", `Faltan columnas requeridas. Necesitas: ${requiredHeaders.join(', ')}.`, 'error');
-            return;
-        }
-
-        let importedCount = 0;
-        let errorCount = 0;
-        
-        for (let i = 1; i < lines.length; i++) {
-            // Usar una expresión simple para dividir, manejando comillas
-            const values = lines[i].match(/(".*?"|[^",;]+)(?=[,;]|\s*$)/g) || [];
-            if (values.length !== headers.length) continue; 
-
-            const clientData = {};
-            headers.forEach((header, index) => {
-                // Limpiar comillas sobrantes y el caracter pipe si se usó
-                clientData[header] = values[index].trim().replace(/^"|"$/g, '').replace(/\|/g, ',');
-            });
-
-            try {
-                const recomendacionesArray = clientData.recomendaciones ? clientData.recomendaciones.split(',').map(s => s.trim()).filter(s => s.length > 0) : [];
-                
-                const dataToSend = {
-                    nombre: clientData.nombre || 'Sin Nombre',
-                    usuario: clientData.usuario || '',
-                    contrasena: clientData.contrasena || '',
-                    caducidad: isoForInput(new Date(clientData.caducidad || getNewCaducidad(new Date(), 3))),
-                    creacion: isoForInput(new Date()),
-                    aplicacion: clientData.aplicacion || 'No especificada',
-                    telefono: clientData.telefono || '',
-                    dispositivo: clientData.dispositivo || '',
-                    recomendaciones: recomendacionesArray, 
-                    renovara: false
-                };
-                
-                const docRef = await addDoc(col, dataToSend);
-                
-                await addDoc(collection(db, "clientes", docRef.id, "renovaciones"), {
-                    fecha_renovacion: new Date().toISOString(),
-                    caducidad_anterior: 'Importación CSV',
-                    nueva_caducidad: dataToSend.caducidad,
-                    tipo_accion: 'Creación (Importación)',
-                    usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
-                });
-
-                importedCount++;
-
-            } catch (error) {
-                console.error("Error importando cliente:", clientData.nombre, error);
-                errorCount++;
-            }
-        }
-
-        if (errorCount === 0) {
-            showNotification("Importación Exitosa", `Se importaron ${importedCount} clientes.`, 'success');
-        } else {
-            showNotification("Importación Finalizada", `Se importaron ${importedCount} clientes con ${errorCount} errores. Revisa la consola.`, 'error');
-        }
-    };
-    reader.readAsText(file);
-}
 
 // --- RESTO DE LÓGICA (Funciones Auxiliares y Renderizado) ---
 
@@ -790,17 +757,19 @@ function updateStats(list) {
     limit3Days.setDate(limit3Days.getDate() + 3);
     limit3Days.setHours(23,59,59,999);
 
-    const soonExpiring = list.filter(i => {
-        if(!i.caducidad) return false;
-        const d = new Date(i.caducidad);
-        return d >= now && d <= limit3Days;
-    }).length;
-
     const expired = list.filter(i => {
         if(!i.caducidad) return false;
         const d = new Date(i.caducidad);
         return d < now;
     }).length;
+
+    const soonExpiring = list.filter(i => {
+        if(!i.caducidad) return false;
+        const d = new Date(i.caducidad);
+        // Debe ser caducidad >= Hoy y caducidad <= 3 días, excluyendo los ya caducados
+        return d >= now && d <= limit3Days && d > now; 
+    }).length;
+
 
     document.getElementById('stat-total').textContent = list.length;
     document.getElementById('stat-today-3days').textContent = soonExpiring;
@@ -818,7 +787,8 @@ function filterClients(searchTerm = '') {
                (item.recomendaciones && Array.isArray(item.recomendaciones) && item.recomendaciones.some(rec => rec.toLowerCase().includes(searchTerm)));
     });
 
-    renderClients(filteredList);
+    // Al filtrar por búsqueda, el estado es nulo
+    renderClients(filteredList, null, searchTerm);
 }
 
 document.getElementById('search-input').addEventListener('input', () => filterClients());
@@ -837,17 +807,17 @@ window.toggleRenovara = async function(checkbox) {
 }
 
 
+// *** FUNCIÓN CLAVE: RENDERIZADO DEL DASHBOARD ***
 function renderDashboard(list){
   const now = new Date();
   now.setHours(0,0,0,0);
   const limit = new Date(now);
   limit.setDate(limit.getDate() + 3);
   limit.setHours(23,59,59,999);
-  
   const soon = list.filter(i => {
     if(!i.caducidad) return false;
     const d = new Date(i.caducidad);
-    return d >= now && d <= limit;
+    return d >= now && d <= limit && d > now;
   });
 
   const dashboardSoonExp = document.getElementById('dashboard-soon-exp');
@@ -860,6 +830,12 @@ function renderDashboard(list){
   soon.forEach(item => {
     const isRenewing = item.renovara === true ? 'checked' : '';
     
+    // LÓGICA DE CONDICIÓN PARA BOTÓN MES GRATIS
+    const isRecommendedByThree = Array.isArray(item.recomendaciones) && item.recomendaciones.length === 3;
+    const freeMonthBtn = isRecommendedByThree ? 
+        `<button class="btn free-month" onclick="addFreeMonth('${item.id}')">Mes gratis</button>` : 
+        `<button class="btn free-month" disabled title="Requiere 3 recomendaciones.">Mes gratis</button>`;
+
     const whatsappBtn = item.telefono && item.telefono.length > 5 ? 
         `<button class="btn whatsapp-alert" onclick="sendWhatsappAlert('${item.id}')">¡Avisar! 💬</button>` : '';
 
@@ -874,7 +850,7 @@ function renderDashboard(list){
       </div>
       <div class="btns">
         <button class="btn renew" onclick="renewItem('${item.id}')">Renovar</button>
-        <button class="btn free-month" onclick="addFreeMonth('${item.id}')">Mes gratis</button>
+        ${freeMonthBtn}
         <button class="btn copy" onclick="copyPassword('${item.id}')">Copiar</button>
         ${whatsappBtn}
       </div>
@@ -903,9 +879,15 @@ window.sendWhatsappAlert = function(id) {
 window.addFreeMonth = async function(id) {
     const item = cachedList.find(i => i.id === id);
     if(!item) return;
+    
+    // DOBLE CHECK: Solo si tiene 3 recomendaciones
+    if (!Array.isArray(item.recomendaciones) || item.recomendaciones.length !== 3) {
+         showNotification("Error", "La promoción de Mes Gratis requiere exactamente 3 clientes recomendados.", 'error');
+         return;
+    }
 
     const oldCaducidad = item.caducidad;
-    const newCaducidad = getNewCaducidad(oldCaducidad, 1);
+    const newCaducidad = getNewCaducidad(oldCaducidad, 1); // Sumar 1 mes
 
     try {
         await updateDoc(doc(db, "clientes", id), {
@@ -916,7 +898,7 @@ window.addFreeMonth = async function(id) {
             fecha_renovacion: new Date().toISOString(),
             caducidad_anterior: oldCaducidad || 'Fecha no registrada',
             nueva_caducidad: newCaducidad,
-            tipo_accion: 'Mes Gratis',
+            tipo_accion: 'Mes Gratis (3 Recom.)', // Diferenciar la acción
             usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
         });
 
@@ -933,7 +915,7 @@ window.renewItem = async function(id){
   if(!item) return;
 
   const oldCaducidad = item.caducidad;
-  const newCaducidad = getNewCaducidad(oldCaducidad, 3);
+  const newCaducidad = getNewCaducidad(oldCaducidad, 3); // Sumar 3 meses
 
   try {
       await updateDoc(doc(db, "clientes", id), {
@@ -944,7 +926,7 @@ window.renewItem = async function(id){
           fecha_renovacion: new Date().toISOString(),
           caducidad_anterior: oldCaducidad || 'Fecha no registrada',
           nueva_caducidad: newCaducidad,
-          tipo_accion: 'Renovación Normal (+3 meses)',
+          tipo_accion: 'Renovación Normal (+3 meses)', 
           usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
       });
 
@@ -987,11 +969,34 @@ function renderRecommendedClients(recommendations, containerDiv, inputElementId,
 }
 
 
-// *** RENDERIZADO DE CLIENTES EN SECCIÓN CLIENTES (CON CORRECCIÓN DE ARRAY) ***
-function renderClients(list){
+// *** FUNCIÓN CLAVE: RENDERIZADO DE CLIENTES (MODIFICADA PARA FILTRO DE ESTADO) ***
+function renderClients(list, status = null, searchTerm = ''){
   const clientsGrid = document.getElementById('clients-grid');
+  const h3Element = document.getElementById('clients-header-h3');
+
+  // 1. Manejar el título y el estilo según el filtro de estado
+  h3Element.textContent = 'Clientes';
+  h3Element.style.color = 'inherit';
+
+  if (status === 'expired') {
+      h3Element.textContent = `Clientes Caducados 🔴 (${list.length})`;
+      h3Element.style.color = 'var(--red)';
+  } else if (status === 'soon') {
+      h3Element.textContent = `Clientes que Caducan Pronto (3 días) 🟡 (${list.length})`;
+      h3Element.style.color = 'var(--yellow)';
+  } else if (searchTerm) {
+      h3Element.textContent = `Clientes (Resultados de Búsqueda: ${list.length})`;
+  } else {
+      h3Element.textContent = `Clientes (${list.length})`;
+  }
+
+  // 2. Renderizar las tarjetas
   clientsGrid.innerHTML = "";
-  
+  if (list.length === 0) {
+       clientsGrid.innerHTML = `<p style="grid-column: 1 / -1; color: var(--muted); margin-top: 10px;">${searchTerm ? 'No se encontraron resultados para la búsqueda.' : status ? 'No hay clientes en este estado.' : 'No hay clientes registrados.'}</p>`;
+  }
+
+
   list.forEach(item => {
     let recommendationsHTML = '';
     
@@ -1004,6 +1009,13 @@ function renderClients(list){
             clientRecommendations = []; 
         }
     }
+    
+    // LÓGICA DE CONDICIÓN PARA BOTÓN MES GRATIS
+    const isRecommendedByThree = clientRecommendations.length === 3;
+    const freeMonthBtn = isRecommendedByThree ? 
+        `<button class="btn free-month" onclick="addFreeMonth('${item.id}')">Mes gratis</button>` : 
+        `<button class="btn free-month" disabled title="Requiere 3 recomendaciones.">Mes gratis</button>`;
+
 
     if (clientRecommendations.length > 0) { 
         recommendationsHTML = `<div class="tags" style="margin-top:8px">`;
@@ -1029,7 +1041,7 @@ function renderClients(list){
       <div class="btns">
         <button class="btn edit" onclick="openEdit('${item.id}')">Editar</button>
         <button class="btn renew" onclick="renewItem('${item.id}')">Renovar</button>
-        <button class="btn free-month" onclick="addFreeMonth('${item.id}')">Mes gratis</button>
+        ${freeMonthBtn}
         <button class="btn copy" onclick="copyPassword('${item.id}')">Copiar</button>
         <button class="btn delete" onclick="deleteItem('${item.id}')">Eliminar</button>
       </div>
@@ -1132,7 +1144,7 @@ formAdd.addEventListener('submit', async e=>{
           fecha_renovacion: new Date().toISOString(),
           caducidad_anterior: 'Nuevo Cliente',
           nueva_caducidad: data.caducidad,
-          tipo_accion: 'Creación (+3 meses)',
+          tipo_accion: 'Creación (+3 meses)', 
           usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
       });
       
