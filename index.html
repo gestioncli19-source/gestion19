@@ -12,222 +12,193 @@
     *{box-sizing:border-box}
     body{margin:0;background:linear-gradient(180deg,#071022 0%, #07132a 100%);color:#e6eef6;min-height:100vh}
     .container{max-width:1100px;margin:0 auto;padding:18px}
-    header{display:flex;align-items:center;justify-content:space-between;padding:10px 0;margin-bottom:20px;border-bottom:1px solid var(--glass)}
+    header{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--glass);margin-bottom:20px}
     header h1{font-size:1.8rem;font-weight:700;color:var(--accent);margin:0}
-    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:30px}
-    .stat{background-color:var(--card);padding:15px;border-radius:12px;box-shadow:0 4px 6px rgba(0,0,0,0.2);border:1px solid var(--glass);transition:transform 0.2s}
+    
+    /* Nav/Menu Styles */
+    .nav{display:flex;gap:10px; flex-wrap: wrap;}
+    .btn{padding:10px 15px;border:none;border-radius:8px;font-weight:600;cursor:pointer;transition:background-color .2s, box-shadow .2s;white-space:nowrap;font-size:14px}
+    .btn.nav-link{background-color:transparent;color:var(--muted);position:relative;border:1px solid rgba(255,255,255,0.06);}
+    .btn.nav-link:hover{color:#fff;background-color:var(--glass)}
+    .btn.nav-link.active{color:var(--accent);font-weight:700; background-color: rgba(110, 231, 183, 0.1);}
+
+    /* Dashboard Stats Styling */
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:15px;margin-bottom:30px}
+    .stat{background-color:var(--card);padding:15px;border-radius:12px;box-shadow:0 4px 6px rgba(0,0,0,0.2);border:1px solid var(--glass);transition:transform .2s; border-left: 4px solid var(--accent);}
     .stat:hover{transform:translateY(-2px)}
     .stat h3{margin:0 0 5px 0;font-size:1rem;color:var(--muted);text-transform:uppercase}
     .stat p{margin:0;font-size:2rem;font-weight:700;line-height:1}
-    .stat.expiring p{color:var(--red)}
-    .stat.active p{color:var(--green)}
-    .stat.total p{color:var(--accent)}
-    .stat.free p{color:var(--yellow)}
+    .stat.expiring{border-left-color:var(--red)}
+    .stat.active{border-left-color:var(--green)}
 
-    .controls{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;gap:15px;flex-wrap:wrap}
-    .search-input{padding:10px 15px;border-radius:8px;border:1px solid var(--glass);background:var(--card);color:#e6eef6;width:100%;max-width:300px}
-
-    .btn{padding:10px 15px;border:none;border-radius:8px;font-weight:600;cursor:pointer;transition:background-color 0.2s, transform 0.1s}
-    .btn.primary{background-color:var(--accent);color:var(--bg)}
-    .btn.primary:hover{background-color:#4ade80}
-    .btn.secondary{background-color:var(--muted);color:var(--bg)}
-    .btn.secondary:hover{background-color:#7f90a8}
-    .btn.whatsapp{background-color:var(--whatsapp);color:white;}
-    .btn.whatsapp:hover{background-color:#1c9a4d;}
-    .btn:active{transform:scale(0.98)}
-
+    /* 1. Dashboard Visualization (Clientes por caducar en fila) */
+    .expiring-clients-box {
+        background-color: var(--card);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        margin-top: 20px;
+        border-left: 5px solid var(--yellow);
+    }
+    .expiring-clients-box h3 {
+        color: var(--yellow);
+        margin-top: 0;
+        margin-bottom: 15px;
+        font-size: 20px;
+    }
+    #expiring-clients-container {
+        display: flex; /* Display in a row */
+        overflow-x: auto; /* Enable horizontal scrolling */
+        gap: 15px;
+        padding: 5px 0;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .expiring-client-card {
+        min-width: 280px;
+        padding: 15px;
+        background-color: #2a1e12; /* Unique dark background */
+        color: #fff; 
+        border: 1px solid var(--yellow);
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        flex-shrink: 0;
+    }
+    .expiring-client-card h5 {
+        margin: 0 0 5px 0;
+        font-weight: 700;
+        font-size: 16px;
+        color: var(--yellow);
+    }
+    .expiring-client-card .detail {
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 3px;
+    }
+    
+    /* 4. Client Card Colors */
     .clients-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-bottom:40px}
-    .card{background-color:var(--card);padding:20px;border-radius:12px;box-shadow:0 6px 10px rgba(0,0,0,0.3);border-left:4px solid var(--glass);display:flex;flex-direction:column}
-    .card h4{margin-top:0;font-size:1.2rem;color:var(--e6eef6)}
-    .card .meta{font-size:0.9rem;color:var(--muted);margin-bottom:5px}
+    .card{padding:20px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.3);display:flex;flex-direction:column}
+    
+    .card-color-1 { background-color: #1a2a40; border-left: 5px solid #6366f1; } /* Indigo */
+    .card-color-2 { background-color: #1a3028; border-left: 5px solid #10b981; } /* Teal/Green */
+    .card-color-3 { background-color: #2a1e12; border-left: 5px solid #f97316; } /* Orange */
+    .card-color-4 { background-color: #241a2c; border-left: 5px solid #e879f9; } /* Violet */
+    .card-color-5 { background-color: #172535; border-left: 5px solid #3b82f6; } /* Blue */
+
+    .card h4{margin-top:0;font-size:18px;color:#fff}
+    .card .meta{font-size:13px;color:var(--muted);margin-bottom:5px}
     .card .btns{margin-top:15px;display:flex;flex-wrap:wrap;gap:8px}
-    .card .btn{flex-grow:1;min-width:70px}
-    .card.expiring{border-left-color:var(--red)}
-    .card.expiring h4{color:var(--red)}
-    .card.active{border-left-color:var(--green)}
-    .card.free{border-left-color:var(--yellow)}
+    .card .btns .btn{padding:8px 12px;font-size:12px;font-weight:500;background-color:var(--glass);color:var(--accent)}
+    .card .btns .btn:hover{background-color:rgba(255,255,255,0.08)}
+    .card .btns .delete{color:var(--red); background-color: #3b0b0b;}
 
+    /* Modal Styling */
     .modal{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;z-index:100}
-    .modal-content{background-color:var(--bg);padding:30px;border-radius:12px;width:90%;max-width:600px;box-shadow:0 10px 25px rgba(0,0,0,0.5);max-height:90vh;overflow-y:auto}
-    .modal h3{color:var(--accent);margin-top:0;border-bottom:1px solid var(--glass);padding-bottom:10px}
-    .modal label{display:block;margin-top:15px;margin-bottom:5px;font-weight:600;color:var(--muted)}
-    .modal input[type="text"], .modal input[type="tel"], .modal input[type="date"], .modal textarea{width:100%;padding:10px;border-radius:8px;border:1px solid var(--glass);background:var(--card);color:#e6eef6}
-    .modal textarea{min-height:80px}
-    .modal .btns{margin-top:20px;display:flex;gap:10px}
-    .modal .btns .btn{flex-grow:1}
+    
+    /* 3. Edit Modal Responsiveness */
+    .modal-content{
+        background-color: var(--bg);
+        padding: 30px;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 700px; 
+        max-height: 90vh; /* CRITICAL: Ensures responsiveness */
+        overflow-y: auto; /* CRITICAL: Ensures scrolling on small screens */
+        box-shadow:0 10px 25px rgba(0,0,0,0.5);
+        position: relative;
+    }
 
-    .notification-container{position:fixed;bottom:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:10px}
-    .notification{padding:15px 20px;border-radius:8px;color:white;box-shadow:0 4px 12px rgba(0,0,0,0.3);opacity:0;transition:opacity 0.3s ease-in-out, transform 0.3s ease-in-out;transform:translateX(100%)}
-    .notification.show{opacity:1;transform:translateX(0)}
-    .notification.success{background-color:var(--green)}
-    .notification.error{background-color:var(--red)}
-    .notification.warning{background-color:var(--yellow)}
+    .modal-content .close-btn{color:var(--muted);float:right;font-size:28px;font-weight:700;line-height:1;transition:color .2s}
+    .modal-content .close-btn:hover{color:#fff;text-decoration:none;cursor:pointer}
+    .modal-form{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:20px}
+    .form-group{display:flex;flex-direction:column}
+    .form-group label{margin-bottom:5px;font-size:14px;color:var(--muted)}
+    .modal-content input, .modal-content textarea{padding:10px;border-radius:6px;border:1px solid var(--glass);background-color:#1e293b;color:#e6eef6;font-size:14px;width:100%;}
+    .modal-content button[type="submit"]{grid-column:1 / -1;background-color:var(--accent);color:var(--bg);font-weight:700;margin-top:15px}
+    .modal-content button[type="submit"]:hover{background-color:#50e0a5}
+    .modal-content .full-width { grid-column: 1 / -1; }
 
-    .history-stat{background-color:var(--card);padding:10px;border-radius:8px;border:1px solid var(--glass)}
-    .history-stat h5{margin:0 0 5px 0;color:var(--accent)}
+    /* Tutorial Section Styling */
+    .tutorial-content {
+        display: grid;
+        gap: 25px;
+        padding-top: 10px;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+    .tutorial-step {
+        background-color: var(--card);
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 4px solid var(--accent);
+    }
+    .tutorial-step h4 {
+        color: var(--accent);
+        margin-top: 0;
+        margin-bottom: 10px;
+    }
+    .tutorial-step ul {
+        list-style: disc;
+        padding-left: 20px;
+        margin: 10px 0 0 0;
+        font-size: 0.9rem;
+        color: var(--muted);
+    }
 
-    @media (max-width: 600px) {
-        .controls {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        .search-input {
-            max-width: none;
-            order: 2;
-        }
-        .btn.primary, .btn.secondary {
-            width: 100%;
-            order: 1;
-        }
-        .card .btns {
-            flex-direction: column;
-        }
+
+    @media (max-width: 768px) {
+        .nav{overflow-x:auto;padding-bottom:5px;justify-content:flex-start;}
+        .container{padding:10px}
+        .stats-grid{grid-template-columns:1fr}
+        .modal-content { max-width: 95%; padding: 20px; }
+        .modal-form{grid-template-columns:1fr}
+        header { flex-direction: column; align-items: flex-start; }
+        header .nav { margin-top: 10px; }
     }
   </style>
-</head>
-<body>
-
-  <div class="container">
-    <header>
-      <h1>Gestor de Clientes</h1>
-      <button class="btn primary" onclick="document.getElementById('add-modal').style.display='flex'">+ Nuevo Cliente</button>
-    </header>
-
-    <!-- Controles y Estadísticas -->
-    <div class="stats-grid" id="stats-grid">
-      <div class="stat total"><h3>Total Clientes</h3><p id="stat-total">0</p></div>
-      <div class="stat active"><h3>Clientes Activos</h3><p id="stat-active">0</p></div>
-      <div class="stat expiring"><h3>A Punto de Caducar</h3><p id="stat-expiring">0</p></div>
-      <div class="stat free"><h3>Mes Gratis</h3><p id="stat-free">0</p></div>
-    </div>
-
-    <div class="controls">
-      <input type="text" id="search-input" class="search-input" placeholder="Buscar por nombre, usuario, o app..." />
-      <div style="display: flex; gap: 10px;">
-        <button class="btn secondary" onclick="filterClients('all')">Todos</button>
-        <button class="btn secondary" onclick="filterClients('expiring')">Caducando</button>
-        <button class="btn secondary" onclick="filterClients('free')">Gratis</button>
-      </div>
-    </div>
-
-    <!-- Grid de Clientes -->
-    <div class="clients-grid" id="clients-grid">
-      <p style="text-align:center; color: var(--muted); width: 100%;">Cargando clientes...</p>
-    </div>
-  </div>
-
-  <!-- Modal de Añadir -->
-  <div id="add-modal" class="modal" onclick="closeModal(event)">
-    <div class="modal-content">
-      <h3>Añadir Nuevo Cliente</h3>
-      <form id="add-client-form" onsubmit="handleAddSubmit(event)">
-        <label for="f-nombre">Nombre:</label>
-        <input type="text" id="f-nombre" name="nombre" required>
-
-        <label for="f-telefono">Teléfono (opcional):</label>
-        <input type="tel" id="f-telefono" name="telefono">
-
-        <label for="f-aplicacion">Aplicación:</label>
-        <input type="text" id="f-aplicacion" name="aplicacion" required>
-
-        <label for="f-usuario">Usuario/Email:</label>
-        <input type="text" id="f-usuario" name="usuario" required>
-
-        <label for="f-contrasena">Contraseña:</label>
-        <input type="text" id="f-contrasena" name="contrasena" required>
-
-        <label for="f-caducidad">Fecha de Caducidad:</label>
-        <input type="date" id="f-caducidad" name="caducidad" required>
-
-        <label for="f-notas">Notas (opcional):</label>
-        <textarea id="f-notas" name="notas"></textarea>
-
-        <div class="btns">
-          <button type="submit" id="client-form-submit" class="btn primary">Guardar Cliente</button>
-          <button type="button" onclick="closeModal(event)" class="btn secondary">Cancelar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal de Edición (IDs CORREGIDOS) -->
-  <div id="edit-modal" class="modal" onclick="closeModal(event)">
-    <div class="modal-content">
-      <h3>Editar Cliente <span id="client-name-display"></span></h3>
-      <form id="edit-client-form" onsubmit="handleEditSubmit(event)">
-        <!-- Hidden ID - ID CORREGIDO -->
-        <input type="hidden" id="edit-f-client-id" name="id">
-
-        <label for="edit-f-nombre">Nombre:</label>
-        <input type="text" id="edit-f-nombre" name="nombre" required>
-
-        <label for="edit-f-telefono">Teléfono (opcional):</label>
-        <input type="tel" id="edit-f-telefono" name="telefono">
-
-        <label for="edit-f-aplicacion">Aplicación:</label>
-        <input type="text" id="edit-f-aplicacion" name="aplicacion" required>
-
-        <label for="edit-f-usuario">Usuario/Email:</label>
-        <input type="text" id="edit-f-usuario" name="usuario" required>
-
-        <label for="edit-f-contrasena">Contraseña:</label>
-        <input type="text" id="edit-f-contrasena" name="contrasena" required>
-
-        <label for="edit-f-caducidad">Fecha de Caducidad:</label>
-        <input type="date" id="edit-f-caducidad" name="caducidad" required>
-
-        <label for="edit-f-notas">Notas (opcional):</label>
-        <textarea id="edit-f-notas" name="notas"></textarea>
-
-        <div class="btns">
-          <!-- Submit Button - ID CORREGIDO -->
-          <button type="submit" id="edit-client-form-submit" class="btn primary">Guardar Cambios</button>
-          <button type="button" onclick="closeModal(event)" class="btn secondary">Cancelar</button>
-        </div>
-      </form>
-
-      <!-- Historial de Renovaciones -->
-      <h4>Historial de Renovaciones</h4>
-      <div id="renewal-history">
-        <p style="text-align:center; color: var(--muted);">Cargando historial...</p>
-      </div>
-      <!-- Sugerencias de clientes -->
-      <h4>Clientes Recomendados para Renovar</h4>
-      <div id="f-recommended-clients" style="margin-top: 10px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-          <p style="text-align:center; color: var(--muted);">Cargando sugerencias...</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="notification-container" id="notification-container"></div>
 
   <script type="module">
     // Importaciones de Firebase
     import { initializeApp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, query, orderBy, onSnapshot, addDoc, doc, getDoc, updateDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, collection, query, onSnapshot, addDoc, doc, getDoc, updateDoc, deleteDoc, arrayUnion, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    setLogLevel('debug');
 
     // =========================================================================
-    // 1. CONFIGURACIÓN E INICIALIZACIÓN DE FIREBASE (CORREGIDO Y REFORZADO)
+    // 1. CONFIGURACIÓN E INICIALIZACIÓN DE FIREBASE (CORREGIDO Y ESTABILIZADO)
     // =========================================================================
 
-    // Variables de entorno globales (Definición robusta)
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+    // Nota: Aunque estas variables existen en el entorno Canvas, definimos una configuración de respaldo
+    // para entornos externos, usando tu configuración proporcionada previamente.
+    const APP_ID_FALLBACK = 'gestioncli19-app-id'; 
+    const FIREBASE_CONFIG_FALLBACK = {
+        apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
+        authDomain: "gestioncandy-b9356.firebaseapp.com",
+        projectId: "gestioncandy-b9356",
+        storageBucket: "gestioncandy-b9356.firebasestorage.app",
+        messagingSenderId: "869982852654",
+        appId: "1:869982852654:web:ac450321a746e62365f1bf"
+    };
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : APP_ID_FALLBACK;
+    const firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config !== '{}' 
+        ? JSON.parse(__firebase_config) 
+        : FIREBASE_CONFIG_FALLBACK;
     const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
 
     let db, auth;
     let currentUserId = null;
     let allClients = [];
-    let currentFilter = 'all'; // Estado para el filtro actual
+    let currentFilter = 'all'; 
 
     async function initializeFirebase() {
-        console.log("Iniciando Firebase...");
-        setLogLevel('debug');
+        console.log("Iniciando Firebase con ID de App:", appId);
 
-        if (!firebaseConfig) {
-            console.error("Firebase configuration is missing or invalid. Check __firebase_config variable.");
-            showNotification("Error de Configuración", "Falta la configuración de Firebase. Intenta actualizar la página.", 'error');
+        if (!firebaseConfig.apiKey) {
+            console.error("Firebase configuration is missing or invalid. Using fallback credentials.");
+            showNotification("Error de Configuración", "Falta la API Key de Firebase.", 'error');
             return;
         }
 
@@ -247,60 +218,40 @@
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     currentUserId = user.uid;
-                    console.log("Usuario autenticado. ID:", currentUserId);
-                    // Iniciar listeners de datos SÓLO después de la autenticación
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('main-content').style.display = 'block';
                     startListeners();
+                    showSection('dashboard-section'); // Muestra la sección inicial
                 } else {
                     currentUserId = null;
-                    console.error("Autenticación fallida o usuario desconectado.");
+                    document.getElementById('loading').innerText = 'Esperando autenticación...';
                 }
             });
 
         } catch (error) {
-            console.error("Error durante la inicialización o autenticación de Firebase:", error);
-            showNotification("Error Crítico", "No se pudo iniciar Firebase o la autenticación.", 'error');
+            console.error("Error durante la inicialización de Firebase:", error);
+            showNotification("Error Crítico", "No se pudo iniciar la app.", 'error');
         }
     }
 
     // Función de utilidad para obtener la ruta de la colección
     function getUserCollectionPath() {
-        if (!currentUserId) {
-            console.error("Error: currentUserId no está definido. La autenticación no ha finalizado.");
-            // Devolver una ruta de colección inválida para evitar escrituras accidentales
-            return 'invalid/collection/path';
-        }
-        // Usamos la ruta de datos privados
         return `artifacts/${appId}/users/${currentUserId}/clientes`;
     }
 
     // =========================================================================
-    // 2. FUNCIONES DE UTILITY (FECHAS, NOTIFICACIONES)
+    // 2. UTILITY & NAVIGATION
     // =========================================================================
 
     function formatDate(timestamp) {
       if (!timestamp) return '-';
-      let date;
-      if (timestamp.toDate) {
-          date = timestamp.toDate();
-      } else if (typeof timestamp === 'string' || typeof timestamp === 'number') {
-          date = new Date(timestamp);
-      } else {
-          date = timestamp;
-      }
+      let date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
       return date.toLocaleDateString('es-ES', { year: 'numeric', month: '2-digit', day: '2-digit' });
     }
 
     function formatDateForInput(timestamp) {
       if (!timestamp) return '';
-      let date;
-      if (timestamp.toDate) {
-          date = timestamp.toDate();
-      } else if (typeof timestamp === 'string' || typeof timestamp === 'number') {
-          date = new Date(timestamp);
-      } else {
-          date = timestamp;
-      }
-
+      let date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
@@ -324,21 +275,43 @@
       }, 5000);
     }
 
-    function closeModal(event) {
-        if (event && event.target.id && (event.target.id !== 'add-modal' && event.target.id !== 'edit-modal')) return;
-        document.getElementById('add-modal').style.display = 'none';
-        document.getElementById('edit-modal').style.display = 'none';
-        document.getElementById('add-client-form').reset();
+    window.showSection = function(sectionId) {
+        document.querySelectorAll('section').forEach(section => {
+            section.style.display = 'none';
+        });
+        document.getElementById(sectionId).style.display = 'block';
+
+        document.querySelectorAll('.btn.nav-link').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`.btn.nav-link[onclick="showSection('${sectionId}')"]`).classList.add('active');
+
+        // Render clients if switching to client section
+        if (sectionId === 'clients-section') {
+            document.getElementById('search-input').value = '';
+            renderClients(allClients, 'all');
+        }
     }
-    window.closeModal = closeModal; // Exponer al window
+
+    window.closeModal = function(event) {
+        if (event && event.target.classList.contains('modal')) {
+            document.getElementById('add-modal').style.display = 'none';
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+        if (!event) { // For direct call
+            document.getElementById('add-modal').style.display = 'none';
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+    }
 
     // =========================================================================
-    // 3. LISTENERS Y PROCESAMIENTO DE DATOS
+    // 3. LISTENERS & DATA RENDERING
     // =========================================================================
 
     function startListeners() {
+        if (!currentUserId) return;
         const clientsColRef = collection(db, getUserCollectionPath());
-        const q = query(clientsColRef); // No usar orderBy para evitar errores de índice, ordenar en cliente.
+        const q = query(clientsColRef); 
 
         onSnapshot(q, (snapshot) => {
             const clientsList = [];
@@ -346,7 +319,6 @@
                 clientsList.push({ id: doc.id, ...doc.data() });
             });
 
-            // Ordenar por fecha de caducidad más cercana (en el cliente)
             clientsList.sort((a, b) => {
                 const dateA = new Date(a.caducidad.toDate ? a.caducidad.toDate() : a.caducidad);
                 const dateB = new Date(b.caducidad.toDate ? b.caducidad.toDate() : b.caducidad);
@@ -355,13 +327,13 @@
 
             allClients = clientsList;
             updateStats(allClients);
-            renderClients(allClients, currentFilter);
+            renderDashboard(allClients); // Renderiza dashboard
+            renderClients(allClients, currentFilter); // Renderiza clientes (si es la sección visible)
         }, (error) => {
             console.error("Error al escuchar clientes:", error);
             showNotification("Error de Datos", "No se pudo cargar la lista de clientes.", 'error');
         });
 
-        // Configurar el listener de búsqueda
         document.getElementById('search-input').addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
             const filtered = allClients.filter(client =>
@@ -373,17 +345,10 @@
         });
     }
 
-    window.filterClients = function(filter) {
-        currentFilter = filter;
-        const searchInput = document.getElementById('search-input');
-        searchInput.value = ''; // Limpiar búsqueda al filtrar
-        renderClients(allClients, currentFilter);
-    }
-
     function updateStats(clients) {
         const today = new Date();
-        const oneWeekFromNow = new Date();
-        oneWeekFromNow.setDate(today.getDate() + 7);
+        const threeDaysFromNow = new Date();
+        threeDaysFromNow.setDate(today.getDate() + 3);
 
         const total = clients.length;
         let active = 0;
@@ -395,7 +360,7 @@
             if (caducidad > today) {
                 active++;
             }
-            if (caducidad >= today && caducidad <= oneWeekFromNow) {
+            if (caducidad >= today && caducidad <= threeDaysFromNow) {
                 expiring++;
             }
             if (client.tipo_renovacion === 'gratis') {
@@ -408,6 +373,52 @@
         document.getElementById('stat-expiring').textContent = expiring;
         document.getElementById('stat-free').textContent = free;
     }
+
+    // 1. Dashboard Visualization
+    function renderDashboard(clients) {
+        const today = new Date();
+        const threeDaysFromNow = new Date();
+        threeDaysFromNow.setDate(today.getDate() + 3);
+        
+        const expiringNow = clients.filter(client => {
+            const caducidad = client.caducidad.toDate ? client.caducidad.toDate() : new Date(client.caducidad);
+            return caducidad >= today && caducidad <= threeDaysFromNow;
+        });
+
+        const container = document.getElementById('expiring-clients-container');
+        container.innerHTML = ''; 
+
+        if (expiringNow.length === 0) {
+            container.innerHTML = '<p style="margin: 0; padding: 15px; color: var(--muted);">No hay clientes a punto de caducar (próximos 3 días).</p>';
+            container.style.display = 'block';
+            container.style.overflowX = 'hidden';
+            container.style.padding = '0';
+        } else {
+            container.style.display = 'flex';
+            container.style.overflowX = 'auto';
+            container.style.padding = '5px 0';
+
+            expiringNow.forEach(client => {
+                const card = document.createElement('div');
+                card.className = 'expiring-client-card';
+                card.innerHTML = `
+                    <h5>${client.nombre}</h5>
+                    <div class="detail">Usuario: ${client.usuario || '-'}</div>
+                    <div class="detail">App: ${client.aplicacion || '-'}</div>
+                    <div class="detail">Caduca: ${formatDate(client.caducidad)}</div>
+                    <div class="detail">Teléfono: ${client.telefono || '-'}</div>
+                    <div class="btns" style="margin-top: 10px;">
+                        <button class="btn" style="background-color: var(--yellow); color: var(--bg); font-weight: 700;" onclick="openEdit('${client.id}')">Editar</button>
+                        <button class="btn copy" onclick="copyPassword('${client.id}')">Copiar</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+    }
+    
+    // 4. Client Card Colors: Array para rotación de colores
+    const cardColors = ['card-color-1', 'card-color-2', 'card-color-3', 'card-color-4', 'card-color-5'];
 
     function renderClients(clients, filter = 'all') {
         const clientsGrid = document.getElementById('clients-grid');
@@ -433,7 +444,7 @@
             return;
         }
 
-        filteredClients.forEach(item => {
+        filteredClients.forEach((item, index) => {
             const caducidadDate = item.caducidad.toDate ? item.caducidad.toDate() : new Date(item.caducidad);
             let statusClass = 'active';
             let statusText = 'Activo';
@@ -449,6 +460,7 @@
                 statusText = 'Caduca Pronto';
             }
 
+            const colorClass = cardColors[index % cardColors.length]; // Aplica color rotativo
 
             let recommendationsHTML = '';
             if (item.recomendados && item.recomendados.length > 0) {
@@ -459,7 +471,7 @@
             const whatsappBtn = item.telefono ? `<a class="btn whatsapp" href="https://wa.me/${item.telefono.replace(/\D/g, '')}?text=${whatsappMessage}" target="_blank">WhatsApp</a>` : '';
 
             const card = document.createElement('div');
-            card.className = `card ${statusClass}`;
+            card.className = `card ${statusClass} ${colorClass}`; // Añade la clase de color
             card.innerHTML = `
                 <h4>${item.nombre} <span style="font-size: 0.8rem; color: var(--muted);">(${statusText})</span></h4>
                 <div class="meta">Teléfono: ${item.telefono || "-"}</div>
@@ -483,8 +495,40 @@
     }
 
     // =========================================================================
-    // 4. FUNCIONES CRUD Y ACCIONES
+    // 4. FUNCIONES CRUD Y ACCIONES (CON AJUSTES)
     // =========================================================================
+
+    // 2. Copy Functionality
+    window.copyPassword = async function(id) {
+        const clientData = allClients.find(c => c.id === id);
+        if (!clientData) {
+            showNotification("Error", "Cliente no encontrado para copiar.", 'error');
+            return;
+        }
+
+        // Campos solicitados: Usuario, Contraseña, Aplicacion, Fecha de caducidad
+        const copyText = `
+        Usuario: ${clientData.usuario || 'N/A'}
+        Contraseña: ${clientData.contrasena || 'N/A'}
+        Aplicación: ${clientData.aplicacion || 'N/A'}
+        Fecha de caducidad: ${formatDate(clientData.caducidad)}
+        `.trim().replace(/\n\s+/g, '\n');
+
+        try {
+            const textArea = document.createElement("textarea");
+            textArea.value = copyText;
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            document.execCommand('copy'); // Uso de execCommand('copy') como fallback para iframes
+            document.body.removeChild(textArea);
+
+            showNotification("Copiado", "Usuario, Contraseña, Aplicación y Caducidad copiados.", 'success');
+        } catch (err) {
+            console.error('Error al copiar:', err);
+            showNotification("Error al Copiar", "No se pudo copiar el texto automáticamente.", 'error');
+        }
+    };
 
     window.handleAddSubmit = async function(event) {
         event.preventDefault();
@@ -492,14 +536,15 @@
 
         const data = {
             nombre: form.elements['f-nombre'].value,
-            telefono: form.elements['f-telefono'].value || null,
+            // 6. Teléfono por defecto: se usa el valor del input, que ya es "+34"
+            telefono: form.elements['f-telefono'].value || null, 
             aplicacion: form.elements['f-aplicacion'].value,
             usuario: form.elements['f-usuario'].value,
             contrasena: form.elements['f-contrasena'].value,
             caducidad: new Date(form.elements['f-caducidad'].value),
             notas: form.elements['f-notas'].value || null,
-            creacion: new Date(),
-            recomendados: [],
+            creacion: serverTimestamp(),
+            recomendados: [], // Inicialmente vacío
             tipo_renovacion: 'manual',
             historial: [],
             usuario_creacion: auth.currentUser.email || 'Usuario Anónimo'
@@ -508,9 +553,8 @@
         try {
             const docRef = await addDoc(collection(db, getUserCollectionPath()), data);
             
-            // Añadir el evento de Creación al historial
             const creationRecord = {
-                fecha_renovacion: new Date(),
+                fecha_renovacion: serverTimestamp(),
                 caducidad_anterior: null,
                 nueva_caducidad: data.caducidad,
                 tipo_accion: 'Creación Inicial',
@@ -522,6 +566,9 @@
             });
 
             showNotification("Éxito", "Cliente añadido correctamente.", 'success');
+            form.reset();
+            // 6. Resetear Teléfono a +34 después del reset
+            document.getElementById('f-telefono').value = '+34'; 
             closeModal();
         } catch (error) {
             console.error("Error al añadir el cliente:", error);
@@ -537,14 +584,15 @@
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 
-                // Actualización de campos con IDs corregidos
+                // Carga de campos en el modal de edición (IDs CORREGIDOS)
                 document.getElementById('edit-f-client-id').value = id;
                 document.getElementById('client-name-display').textContent = data.nombre;
-                document.getElementById('edit-f-nombre').value = data.nombre;
-                document.getElementById('edit-f-telefono').value = data.telefono || '';
-                document.getElementById('edit-f-aplicacion').value = data.aplicacion;
-                document.getElementById('edit-f-usuario').value = data.usuario;
-                document.getElementById('edit-f-contrasena').value = data.contrasena;
+                document.getElementById('edit-f-nombre').value = data.nombre || '';
+                // 6. Teléfono por defecto: se usa el valor del input, que ya es "+34" si está vacío
+                document.getElementById('edit-f-telefono').value = data.telefono || '+34';
+                document.getElementById('edit-f-aplicacion').value = data.aplicacion || '';
+                document.getElementById('edit-f-usuario').value = data.usuario || '';
+                document.getElementById('edit-f-contrasena').value = data.contrasena || '';
                 document.getElementById('edit-f-caducidad').value = formatDateForInput(data.caducidad);
                 document.getElementById('edit-f-notas').value = data.notas || '';
 
@@ -552,9 +600,6 @@
                 const historyList = data.historial || [];
                 renderRenewalHistory(historyList, document.getElementById('renewal-history'));
                 
-                // Limpiar recomendaciones al abrir
-                document.getElementById('f-recommended-clients').innerHTML = '';
-
                 document.getElementById('edit-modal').style.display = 'flex';
             } else {
                 showNotification("Error", "Cliente no encontrado.", 'error');
@@ -571,23 +616,17 @@
         
         // Obtener valores de los campos CORREGIDOS
         const id = document.getElementById('edit-f-client-id').value;
-        const nombre = document.getElementById('edit-f-nombre').value;
-        const telefono = document.getElementById('edit-f-telefono').value;
-        const aplicacion = document.getElementById('edit-f-aplicacion').value;
-        const usuario = document.getElementById('edit-f-usuario').value;
-        const contrasena = document.getElementById('edit-f-contrasena').value;
-        const caducidadStr = document.getElementById('edit-f-caducidad').value;
-        const notas = document.getElementById('edit-f-notas').value;
-
+        const caducidadActual = allClients.find(c => c.id === id)?.caducidad.toDate();
+        const nuevaCaducidad = new Date(document.getElementById('edit-f-caducidad').value);
+        
         const updatedData = {
-            nombre: nombre,
-            telefono: telefono || null,
-            aplicacion: aplicacion,
-            usuario: usuario,
-            contrasena: contrasena,
-            caducidad: new Date(caducidadStr),
-            notas: notas || null,
-            // NOTA: Se mantiene el historial y recomendados
+            nombre: document.getElementById('edit-f-nombre').value,
+            telefono: document.getElementById('edit-f-telefono').value || null,
+            aplicacion: document.getElementById('edit-f-aplicacion').value,
+            usuario: document.getElementById('edit-f-usuario').value,
+            contrasena: document.getElementById('edit-f-contrasena').value,
+            caducidad: nuevaCaducidad,
+            notas: document.getElementById('edit-f-notas').value || null,
         };
 
         try {
@@ -595,99 +634,113 @@
             await updateDoc(clientDocRef, updatedData);
             showNotification("Actualizado", "Cliente modificado con éxito.", 'success');
             closeModal();
+            
+            // Si la fecha de caducidad se modificó manualmente, añadir al historial
+            if (caducidadActual && nuevaCaducidad.getTime() !== caducidadActual.getTime()) {
+                const historyRecord = {
+                    fecha_renovacion: serverTimestamp(),
+                    caducidad_anterior: caducidadActual,
+                    nueva_caducidad: nuevaCaducidad,
+                    tipo_accion: 'Edición Manual de Fecha',
+                    usuario: auth.currentUser.email || 'Usuario Anónimo'
+                };
+                await updateDoc(clientDocRef, { historial: arrayUnion(historyRecord) });
+            }
+
         } catch (error) {
             console.error("Error al actualizar el cliente:", error);
             showNotification("Error", "No se pudo guardar los cambios del cliente.", 'error');
         }
     }
 
-    // Función para copiar contraseña al portapapeles
-    window.copyPassword = async function(id) {
+    // 5. Mes Gratis Condicional
+    window.addFreeMonth = async function(id) {
         const clientDocRef = doc(db, getUserCollectionPath(), id);
-        try {
-            const docSnap = await getDoc(clientDocRef);
-            if (docSnap.exists()) {
-                const password = docSnap.data().contrasena;
-                
-                // Uso de execCommand('copy') como fallback para iframes
-                const textArea = document.createElement("textarea");
-                textArea.value = password;
-                document.body.appendChild(textArea);
-                textArea.focus();
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                    showNotification("Copiado", "Contraseña copiada al portapapeles.", 'success');
-                } catch (err) {
-                    console.error('Fallback: Error al copiar', err);
-                    showNotification("Error", "Fallo al copiar. Intenta copiar manualmente.", 'error');
-                }
-                document.body.removeChild(textArea);
+        const docSnap = await getDoc(clientDocRef);
+        if (!docSnap.exists()) return;
 
-            }
+        const data = docSnap.data();
+        const numRecomendaciones = (data.recomendados && Array.isArray(data.recomendados)) ? data.recomendados.length : 0;
+        
+        // Condición: solo si tiene 3 campos en el apartado de recomendaciones
+        if (numRecomendaciones < 3) {
+            showNotification("Acción Bloqueada", `Se requieren al menos 3 recomendaciones (${numRecomendaciones} actuales) para el Mes Gratis.`, 'warning');
+            return;
+        }
+
+        const confirmed = confirm(`¿Desea aplicar el MES GRATIS a ${data.nombre}? Requiere ${numRecomendaciones}/3 recomendaciones.`);
+        if (!confirmed) return;
+
+
+        const oldCaducidad = data.caducidad.toDate ? data.caducidad.toDate() : new Date(data.caducidad);
+        const newCaducidad = new Date(oldCaducidad);
+        newCaducidad.setMonth(newCaducidad.getMonth() + 1); // Añadir 1 mes
+
+        const renewalRecord = {
+            fecha_renovacion: serverTimestamp(),
+            caducidad_anterior: oldCaducidad,
+            nueva_caducidad: newCaducidad,
+            tipo_accion: 'Mes Gratis (30 días)',
+            usuario: auth.currentUser.email || 'Usuario Anónimo'
+        };
+
+        try {
+            await updateDoc(clientDocRef, {
+                caducidad: newCaducidad,
+                tipo_renovacion: 'gratis',
+                historial: arrayUnion(renewalRecord)
+            });
+            showNotification("Mes Gratis Aplicado", `${data.nombre} extendido por 1 mes. Nueva caducidad: ${formatDate(newCaducidad)}.`, 'success');
         } catch (error) {
-            console.error("Error al copiar contraseña:", error);
-            showNotification("Error", "No se pudo obtener la contraseña.", 'error');
+            console.error("Error al aplicar mes gratis:", error);
+            showNotification("Error", "No se pudo aplicar el Mes Gratis.", 'error');
         }
     }
 
     // Función para renovar (un mes más)
     window.renewItem = async function(id, tipoAccion) {
         const clientDocRef = doc(db, getUserCollectionPath(), id);
+        const docSnap = await getDoc(clientDocRef);
+        if (!docSnap.exists()) return;
+
+        const data = docSnap.data();
+        const confirmed = confirm(`¿Desea renovar a ${data.nombre} por 1 mes?`);
+        if (!confirmed) return;
+
         try {
-            const docSnap = await getDoc(clientDocRef);
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                const oldCaducidad = data.caducidad.toDate ? data.caducidad.toDate() : new Date(data.caducidad);
-                
-                // Calcular la nueva fecha de caducidad
-                const newCaducidad = new Date(oldCaducidad);
-                newCaducidad.setMonth(newCaducidad.getMonth() + 1);
+            const oldCaducidad = data.caducidad.toDate ? data.caducidad.toDate() : new Date(data.caducidad);
+            const newCaducidad = new Date(oldCaducidad);
+            newCaducidad.setMonth(newCaducidad.getMonth() + 1);
 
-                // Crear el registro de historial
-                const renewalRecord = {
-                    fecha_renovacion: new Date(),
-                    caducidad_anterior: oldCaducidad,
-                    nueva_caducidad: newCaducidad,
-                    tipo_accion: tipoAccion,
-                    usuario: auth.currentUser.email || 'Usuario Anónimo'
-                };
+            const renewalRecord = {
+                fecha_renovacion: serverTimestamp(),
+                caducidad_anterior: oldCaducidad,
+                nueva_caducidad: newCaducidad,
+                tipo_accion: tipoAccion,
+                usuario: auth.currentUser.email || 'Usuario Anónimo'
+            };
 
-                // Actualizar el documento
-                await updateDoc(clientDocRef, {
-                    caducidad: newCaducidad,
-                    tipo_renovacion: tipoAccion.includes('Gratis') ? 'gratis' : 'manual',
-                    historial: arrayUnion(renewalRecord)
-                });
+            await updateDoc(clientDocRef, {
+                caducidad: newCaducidad,
+                tipo_renovacion: 'manual',
+                historial: arrayUnion(renewalRecord)
+            });
 
-                showNotification("Renovado", `${data.nombre} renovado por un mes más.`, 'success');
-                // Si la acción es renovación simple, limpiamos el tipo_renovacion
-                if (!tipoAccion.includes('Gratis')) {
-                    await updateDoc(clientDocRef, { tipo_renovacion: 'manual' });
-                }
-            }
+            showNotification("Renovado", `${data.nombre} renovado por un mes más.`, 'success');
         } catch (error) {
             console.error("Error al renovar el cliente:", error);
             showNotification("Error", "No se pudo renovar el cliente.", 'error');
         }
     }
 
-    // Función para añadir mes gratis
-    window.addFreeMonth = function(id) {
-        // Reutilizamos renewItem con un tipo de acción específico
-        renewItem(id, 'Mes Gratis (Promoción)');
-    }
 
-    // Función para eliminar cliente (QUITAMOS confirm() PROHIBIDO)
     window.deleteItem = async function(id) {
-        // NOTA: window.confirm() está prohibido. 
-        // Se recomienda implementar un modal de confirmación personalizado.
-        showNotification("Procesando...", "Eliminando cliente. Se recomienda un modal de confirmación.", 'warning');
+        const confirmed = confirm("¿Estás seguro de que quieres eliminar este cliente? Esta acción es irreversible.");
+        if (!confirmed) return;
 
         try {
             await deleteDoc(doc(db, getUserCollectionPath(), id));
             showNotification("Eliminado", "Cliente eliminado con éxito.", 'success');
-            closeModal(); 
         } catch (error) {
             console.error("Error al eliminar el cliente:", error);
             showNotification("Error", "No se pudo eliminar el cliente.", 'error');
@@ -708,13 +761,12 @@
             const color = actionType.includes('Gratis') ? 'var(--yellow)' : actionType.includes('Creación') ? 'var(--green)' : 'var(--accent)';
 
             html += `
-                <div class="stat" style="border-left: 4px solid ${color}; padding:10px;">
-                    <strong>${actionType}</strong>
-                    <div style="font-size: 13px; color: var(--muted); margin-top: 5px;">
-                         Fecha de Registro: ${formatDate(rec.fecha_renovacion)}<br/>
-                         Caducidad anterior: ${formatDate(rec.caducidad_anterior)}<br/>
-                         Nueva Caducidad: ${formatDate(rec.nueva_caducidad)}
-                         ${rec.usuario ? `<br/>Usuario: ${rec.usuario.split('@')[0]}` : ''}
+                <div class="history-stat" style="border-left: 4px solid ${color};">
+                    <h5>${actionType}</h5>
+                    <div style="font-size: 0.8rem;">
+                         Fecha de Reg: ${formatDate(rec.fecha_renovacion)}<br/>
+                         Cad. Anterior: ${rec.caducidad_anterior ? formatDate(rec.caducidad_anterior) : 'N/A'}<br/>
+                         Nueva Cad.: ${formatDate(rec.nueva_caducidad)}
                     </div>
                 </div>
             `;
@@ -723,6 +775,7 @@
         targetDiv.innerHTML = html;
     }
 
+
     // =========================================================================
     // 5. INICIO DE LA APLICACIÓN
     // =========================================================================
@@ -730,5 +783,198 @@
     // Llamar a la función de inicialización al cargar la página
     window.onload = initializeFirebase; 
   </script>
+</head>
+<body>
+
+  <!-- Loading Screen -->
+  <div id="loading" style="position: fixed; inset: 0; background-color: var(--bg); display: flex; justify-content: center; align-items: center; color: var(--accent); z-index: 1000;">
+    Cargando aplicación y autenticando...
+  </div>
+
+  <div id="main-content" style="display:none;">
+    <div class="container">
+      <header>
+        <h1>Gestor de Clientes</h1>
+        <div class="nav">
+          <button class="btn nav-link active" onclick="showSection('dashboard-section')">Dashboard</button>
+          <button class="btn nav-link" onclick="showSection('clients-section')">Clientes</button>
+          <button class="btn nav-link" onclick="document.getElementById('add-modal').style.display='flex'">+ Nuevo</button>
+          <button class="btn nav-link" onclick="showSection('tutorial-section')">Tutorial</button>
+          <button class="btn nav-link" onclick="logout()">Salir</button>
+        </div>
+      </header>
+      
+      <!-- DASHBOARD SECTION -->
+      <section id="dashboard-section" style="display:none;">
+        <h2>Dashboard</h2>
+        <div class="stats-grid">
+          <div class="stat total"><h3>Total Clientes</h3><p id="stat-total">0</p></div>
+          <div class="stat active"><h3>Clientes Activos</h3><p id="stat-active">0</p></div>
+          <div class="stat expiring"><h3>A Punto de Caducar</h3><p id="stat-expiring">0</p></div>
+          <div class="stat free"><h3>Mes Gratis</h3><p id="stat-free">0</p></div>
+        </div>
+        
+        <!-- 1. Unique Visualization for Expiring Clients -->
+        <div class="expiring-clients-box">
+            <h3>Clientes a punto de Caducar (3 Días)</h3>
+            <div id="expiring-clients-container">
+                <!-- Clients expiring in 3 days will be rendered here in a row -->
+            </div>
+        </div>
+      </section>
+
+      <!-- CLIENTS SECTION -->
+      <section id="clients-section" style="display:none;">
+        <h2>Gestión de Clientes</h2>
+        <div class="controls">
+            <input type="text" id="search-input" class="search-input" placeholder="Buscar por nombre, usuario, o app..." />
+            <div style="display: flex; gap: 10px;">
+                <button class="btn secondary" onclick="filterClients('all')">Todos</button>
+                <button class="btn secondary" onclick="filterClients('expiring')">Caducando</button>
+                <button class="btn secondary" onclick="filterClients('free')">Gratis</button>
+            </div>
+        </div>
+        <div class="clients-grid" id="clients-grid">
+          <p style="text-align:center; color: var(--muted); width: 100%;">Cargando clientes...</p>
+        </div>
+      </section>
+      
+      <!-- 7. TUTORIAL SECTION -->
+      <section id="tutorial-section" style="display:none;">
+        <h2>Guía de Uso del Gestor de Clientes</h2>
+        <p class="description" style="color: var(--accent); font-size: 1.1em;">Bienvenido al tutorial. Aquí aprenderás a usar todas las funciones de esta aplicación.</p>
+
+        <div class="tutorial-content">
+            <div class="tutorial-step">
+                <h4>Dashboard y Estadísticas</h4>
+                <p>Muestra el resumen de la aplicación, destacando los <strong>clientes que caducan en los próximos 3 días</strong> en una fila especial para atención rápida.</p>
+                <ul>
+                    <li>**Botón Copiar:** Copia 4 campos clave: Usuario, Contraseña, Aplicación, y Fecha de Caducidad.</li>
+                </ul>
+            </div>
+            <div class="tutorial-step">
+                <h4>Gestión y Colores</h4>
+                <p>La sección "Clientes" lista todos los registros. Las tarjetas rotan entre <strong>5 colores distintos</strong> para una mejor visualización de los datos. El modal de edición es totalmente <strong>responsive</strong>.</p>
+            </div>
+            <div class="tutorial-step">
+                <h4>Funciones Clave</h4>
+                <p>Las acciones rápidas son:</p>
+                <ul>
+                    <li>**Renovar:** Añade 1 mes al servicio.</li>
+                    <li>**Mes Gratis:** Añade 1 mes. ⚠️ **Solo si el cliente tiene 3 o más recomendaciones.**</li>
+                    <li>**Teléfono:** Por defecto es **+34** en el formulario de registro.</li>
+                </ul>
+            </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- Modal de Añadir -->
+  <div id="add-modal" class="modal" onclick="closeModal(event)">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal(event)">&times;</span>
+      <h3>Añadir Nuevo Cliente</h3>
+      <form id="add-client-form" onsubmit="handleAddSubmit(event)">
+        <div class="modal-form">
+            <div class="form-group">
+                <label for="f-nombre">Nombre:</label>
+                <input type="text" id="f-nombre" name="f-nombre" required>
+            </div>
+
+            <div class="form-group">
+                <label for="f-usuario">Usuario/Email:</label>
+                <input type="text" id="f-usuario" name="f-usuario" required>
+            </div>
+
+            <div class="form-group">
+                <label for="f-contrasena">Contraseña:</label>
+                <input type="text" id="f-contrasena" name="f-contrasena" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="f-aplicacion">Aplicación:</label>
+                <input type="text" id="f-aplicacion" name="f-aplicacion" required>
+            </div>
+
+            <div class="form-group">
+                <label for="f-telefono">Teléfono (opcional):</label>
+                <input type="tel" id="f-telefono" name="f-telefono" value="+34">
+            </div>
+
+            <div class="form-group">
+                <label for="f-caducidad">Fecha de Caducidad:</label>
+                <input type="date" id="f-caducidad" name="f-caducidad" required>
+            </div>
+
+            <div class="form-group full-width">
+                <label for="f-notas">Notas (opcional):</label>
+                <textarea id="f-notas" name="f-notas"></textarea>
+            </div>
+        </div>
+        <button type="submit" class="btn primary full-width">Guardar Cliente</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Edición (IDS CORREGIDOS) -->
+  <div id="edit-modal" class="modal" onclick="closeModal(event)">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal(event)">&times;</span>
+      <h3>Editar Cliente <span id="client-name-display"></span></h3>
+      <form id="edit-client-form" onsubmit="handleEditSubmit(event)">
+        <!-- Hidden ID - ID CORREGIDO -->
+        <input type="hidden" id="edit-f-client-id" name="id">
+
+        <div class="modal-form">
+            <div class="form-group">
+                <label for="edit-f-nombre">Nombre:</label>
+                <input type="text" id="edit-f-nombre" name="edit-f-nombre" required>
+            </div>
+
+            <div class="form-group">
+                <label for="edit-f-usuario">Usuario/Email:</label>
+                <input type="text" id="edit-f-usuario" name="edit-f-usuario" required>
+            </div>
+
+            <div class="form-group">
+                <label for="edit-f-contrasena">Contraseña:</label>
+                <input type="text" id="edit-f-contrasena" name="edit-f-contrasena" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="edit-f-aplicacion">Aplicación:</label>
+                <input type="text" id="edit-f-aplicacion" name="edit-f-aplicacion" required>
+            </div>
+
+            <div class="form-group">
+                <label for="edit-f-telefono">Teléfono (opcional):</label>
+                <input type="tel" id="edit-f-telefono" name="edit-f-telefono">
+            </div>
+
+            <div class="form-group">
+                <label for="edit-f-caducidad">Fecha de Caducidad:</label>
+                <input type="date" id="edit-f-caducidad" name="edit-f-caducidad" required>
+            </div>
+
+            <div class="form-group full-width">
+                <label for="edit-f-notas">Notas (opcional):</label>
+                <textarea id="edit-f-notas" name="edit-f-notas"></textarea>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn primary full-width">Guardar Cambios</button>
+      </form>
+
+      <h4 style="margin-top: 30px; border-top: 1px solid var(--glass); padding-top: 15px; color: var(--accent);">Historial de Renovaciones</h4>
+      <div id="renewal-history">
+        <!-- Historial rendered here -->
+      </div>
+      
+    </div>
+  </div>
+
+  <div class="notification-container" id="notification-container"></div>
 </body>
 </html>
