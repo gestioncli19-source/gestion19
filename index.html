@@ -505,7 +505,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
 import {
   getFirestore, collection, addDoc, doc, onSnapshot,
-  updateDoc, deleteDoc, query, orderBy, getDocs
+  updateDoc, deleteDoc, query, orderBy, getDocs, where // <-- AÑADIDO 'where'
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js';
 
 import { 
@@ -566,7 +566,7 @@ const fObservaciones = document.getElementById('f-observaciones');
 const formEdit = document.getElementById('form-edit');
 const modal = document.getElementById('modal');
 const modalCancel = document.getElementById('modal-cancel');
-const modalSaveBtn = document.getElementById('modal-save'); // NUEVO BOTÓN
+const modalSaveBtn = document.getElementById('modal-save'); 
 const eNewRecommendation = document.getElementById('e-new-recommendation');
 const eAddRecommendationBtn = document.getElementById('e-add-recommendation-btn');
 const eRecommendedClientsDiv = document.getElementById('e-recommended-clients');
@@ -772,7 +772,24 @@ onAuthStateChanged(auth, (user) => {
 // --- CARGA DE CLIENTES EN TIEMPO REAL (Listener) ---
 
 function startDataListener() {
-    const q = query(col, orderBy("caducidad", "asc"));
+    const user = auth.currentUser;
+    if (!user) {
+        console.warn("No hay usuario autenticado. No se cargan los datos.");
+        // Si no hay usuario, limpiar listas para asegurar que la vista esté vacía.
+        cachedList = []; 
+        cachedClientNames.clear();
+        updateStats(cachedList);
+        renderDashboard(cachedList);
+        filterClients('');
+        return; 
+    }
+
+    // FILTRO CLAVE: Solo carga documentos donde el campo 'userId' sea igual al UID del usuario
+    const q = query(
+        col, 
+        where("userId", "==", user.uid), // <-- FILTRO MULTIUSUARIO
+        orderBy("caducidad", "asc")
+    );
 
     clientDataListener = onSnapshot(q, (snapshot) => {
         cachedList = [];
@@ -809,7 +826,13 @@ function parseCSVLine(line, separator = ';') {
 
 async function importFromCSV(file) {
     const reader = new FileReader();
+    const user = auth.currentUser;
     
+    if (!user) {
+        showNotification("Error", "Debes estar logueado para importar clientes.", 'error');
+        return;
+    }
+
     reader.onload = async (event) => {
         const text = event.target.result;
         const lines = text.split('\n').filter(line => line.trim() !== '');
@@ -848,7 +871,8 @@ async function importFromCSV(file) {
                 aplicacion: 'Spinning TV', // Valor por defecto
                 observaciones: '', // NUEVO: Valor por defecto
                 recomendaciones: [],
-                renovara: false
+                renovara: false,
+                userId: user.uid // <-- CAMBIO CRÍTICO: Asignar el UID del usuario
             };
             
             // Validación básica del formato de la fecha de caducidad (YYYY-MM-DD)
@@ -867,7 +891,7 @@ async function importFromCSV(file) {
                     caducidad_anterior: 'Importación CSV',
                     nueva_caducidad: clientData.caducidad,
                     tipo_accion: 'Importación CSV', 
-                    usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
+                    usuario: user.email // Usar el email del usuario
                 });
                 
                 importedCount++;
@@ -988,7 +1012,7 @@ function addRecommendation(name, input, containerDiv, listDiv) {
     name = name.trim();
     if (!name) return;
 
-    // VALIDACIÓN CRÍTICA: El nombre DEBE existir en la lista de clientes
+    // VALIDACIÓN CRÍTICA: El nombre DEBE existir en la lista de clientes (del usuario actual)
     if (!cachedClientNames.has(name)) {
         showNotification("Error de Recomendación", `El cliente "${name}" no existe en tu base de datos.`, 'error');
         listDiv.style.display = 'none'; // Ocultar lista
@@ -1237,6 +1261,7 @@ window.addFreeMonth = async function(id) {
 
     const oldCaducidad = item.caducidad;
     const newCaducidad = getNewCaducidad(oldCaducidad, 1); // Sumar 1 mes
+    const user = auth.currentUser;
 
     try {
         await updateDoc(doc(db, "clientes", id), {
@@ -1248,7 +1273,7 @@ window.addFreeMonth = async function(id) {
             caducidad_anterior: oldCaducidad || 'Fecha no registrada',
             nueva_caducidad: newCaducidad,
             tipo_accion: 'Mes Gratis (3 Recom.)', // Diferenciar la acción
-            usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
+            usuario: user ? user.email : 'Usuario Desconocido'
         });
 
         showNotification("Mes Gratis Añadido", `Cliente ${item.nombre} extendido por 1 mes.`, 'success');
@@ -1265,6 +1290,7 @@ window.renewItem = async function(id){
 
   const oldCaducidad = item.caducidad;
   const newCaducidad = getNewCaducidad(oldCaducidad, 3); // Sumar 3 meses
+  const user = auth.currentUser;
 
   try {
       await updateDoc(doc(db, "clientes", id), {
@@ -1276,7 +1302,7 @@ window.renewItem = async function(id){
           caducidad_anterior: oldCaducidad || 'Fecha no registrada',
           nueva_caducidad: newCaducidad,
           tipo_accion: 'Renovación Normal (+3 meses)', 
-          usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
+          usuario: user ? user.email : 'Usuario Desconocido'
       });
 
       showNotification("Renovación Exitosa", "Cliente renovado por 3 meses y registro guardado.", 'success');
@@ -1431,11 +1457,19 @@ modalSaveBtn.addEventListener('click', () => {
     formEdit.dispatchEvent(new Event('submit', { cancelable: true }));
 });
 
+// *** MODIFICADO: FUNCIÓN DE EDICIÓN ***
 formEdit.addEventListener('submit', async e=>{
   e.preventDefault();
   const id = modal.getAttribute('data-id');
-  if(!id) return;
-
+  const user = auth.currentUser;
+  
+  if(!id || !user) {
+    showNotification("Error de Sesión", "Debes estar logueado para editar clientes.", 'error');
+    return;
+  }
+  
+  // No necesitamos el userId del documento aquí, porque el documento ya existe
+  // y las reglas de seguridad nos obligan a ser el dueño para actualizarlo.
   const data = {
     nombre: document.getElementById('e-nombre').value,
     telefono: document.getElementById('e-telefono').value, 
@@ -1455,14 +1489,21 @@ formEdit.addEventListener('submit', async e=>{
       showNotification("Guardado", `Cambios en cliente ${data.nombre} guardados.`, 'success');
       currentRecommendations = [];
   } catch (error) {
-      showNotification("Error", "No se pudieron guardar los cambios.", 'error');
+      showNotification("Error", "No se pudieron guardar los cambios. Verifica tus permisos.", 'error');
       console.error("Error updating item:", error);
   }
 });
 
+// *** MODIFICADO: FUNCIÓN DE AÑADIR CLIENTE ***
 formAdd.addEventListener('submit', async e=>{
   e.preventDefault();
 
+  const user = auth.currentUser;
+  if (!user) {
+    showNotification("Error de Sesión", "Debes estar logueado para añadir clientes.", 'error');
+    return;
+  }
+  
   const data = {
     nombre: document.getElementById('f-nombre').value,
     telefono: document.getElementById('f-telefono').value, 
@@ -1474,7 +1515,8 @@ formAdd.addEventListener('submit', async e=>{
     aplicacion: document.getElementById('f-aplicacion').value,
     observaciones: document.getElementById('f-observaciones').value, 
     recomendaciones: currentRecommendations, 
-    renovara: false
+    renovara: false,
+    userId: user.uid // <-- CAMBIO CRÍTICO: ID del usuario
   };
 
   try {
@@ -1485,7 +1527,7 @@ formAdd.addEventListener('submit', async e=>{
           caducidad_anterior: 'Nuevo Cliente',
           nueva_caducidad: data.caducidad,
           tipo_accion: 'Creación (+3 meses)', 
-          usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
+          usuario: user.email // Usar el email del usuario
       });
       
       showNotification("Cliente Creado", `El cliente ${data.nombre} ha sido añadido con éxito.`, 'success');
@@ -1551,6 +1593,7 @@ function renderRenewalHistory(historyList, targetDiv) {
     historyList.forEach(rec => {
         const actionType = rec.tipo_accion || 'Renovación Manual';
         const color = actionType.includes('Gratis') ? 'var(--yellow)' : actionType.includes('Creación') ? 'var(--green)' : 'var(--accent)';
+        const userDisplay = rec.usuario ? rec.usuario.split('@')[0] : 'Desconocido';
 
         html += `
             <div class="stat" style="border-left: 4px solid ${color}; padding:10px;">
@@ -1559,7 +1602,7 @@ function renderRenewalHistory(historyList, targetDiv) {
                      Fecha de Registro: ${formatDate(rec.fecha_renovacion)}<br/>
                      Caducidad anterior: ${formatDate(rec.caducidad_anterior)}<br/>
                      Nueva Caducidad: ${formatDate(rec.nueva_caducidad)}
-                     ${rec.usuario ? `<br/>Usuario: ${rec.usuario.split('@')[0]}` : ''}
+                     <br/>Usuario: ${userDisplay}
                 </div>
             </div>
         `;
