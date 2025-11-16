@@ -34,4 +34,24 @@
     color: white;
 }
 
+/* Estilo para el botón de eliminar recomendación */
+.remove-recomendacion-btn {
+    background-color: #ef4444; /* bg-red-500 */
+    color: white;
+    border-radius: 9999px; /* rounded-full */
+    width: 1.25rem; /* w-5 */
+    height: 1.25rem; /* h-5 */
+    font-weight: bold;
+    font-size: 0.75rem; /* text-xs */
+    line-height: 1.25rem; /* Centrar el 'x' */
+    text-align: center;
+    border: none;
+    cursor: pointer;
+    margin-left: 0.5rem; /* ml-2 */
+    flex-shrink: 0; /* Evita que el botón se encoja */
+}
+.remove-recomendacion-btn:hover {
+    background-color: #dc2626; /* bg-red-600 */
+}
+
 
