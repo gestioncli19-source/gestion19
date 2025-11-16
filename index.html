@@ -74,15 +74,10 @@
             
             <!-- Cabecera Superior -->
             <header class="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 md:px-6">
-                <!-- Botón de Menú (Móvil) -->
                 <button id="menu-toggle" class="text-gray-500 md:hidden">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
-                
-                <!-- Título de la Página (cambia dinámicamente) -->
                 <h2 id="page-title" class="text-xl font-semibold text-gray-800">Dashboard</h2>
-                
-                <!-- Info de Usuario (Placeholder) -->
                 <div class="flex items-center space-x-2">
                     <div class="h-8 w-8 rounded-full bg-gray-400" title="Info de usuario"></div>
                 </div>
@@ -112,11 +107,9 @@
                 <!-- Página: Lista de Clientes -->
                 <div id="page-clientes" class="page-content hidden">
                     <h3 class="text-2xl font-semibold text-gray-700 mb-4">Lista de Clientes</h3>
-                    <!-- Barra de Búsqueda -->
                     <div class="mb-4">
                         <input type="search" id="search-bar" placeholder="Buscar por nombre..." class="w-full rounded-md border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
-                    <!-- Contenedor de la Lista -->
                     <div class="rounded-lg bg-white p-5 shadow">
                         <div id="client-list-container" class="space-y-4">
                             <p id="client-list-placeholder" class="text-gray-500">No hay clientes para mostrar. Añade uno nuevo.</p>
@@ -129,14 +122,11 @@
                     <h3 class="text-2xl font-semibold text-gray-700 mb-4">Añadir Nuevo Cliente</h3>
                     <div class="max-w-2xl rounded-lg bg-white p-5 shadow">
                         <form id="add-client-form" class="space-y-4">
-
-                            <!-- Nombre -->
+                            <!-- ... (todos los campos como antes) ... -->
                             <div>
                                 <label for="client-name" class="block text-sm font-medium text-gray-700">Nombre</label>
                                 <input type="text" id="client-name" name="client-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
-
-                            <!-- Fila para Fechas -->
                             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
                                     <label for="client-creation-date" class="block text-sm font-medium text-gray-700">Fecha de creación</label>
@@ -147,8 +137,6 @@
                                     <input type="date" id="client-expiry-date" name="client-expiry-date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
                             </div>
-
-                            <!-- Fila para Usuario/Contraseña -->
                             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
                                     <label for="client-user" class="block text-sm font-medium text-gray-700">Usuario</label>
@@ -159,8 +147,6 @@
                                     <input type="password" id="client-password" name="client-password" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
                             </div>
-
-                            <!-- Fila para Dispositivo/Aplicación -->
                             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
                                     <label for="client-device" class="block text-sm font-medium text-gray-700">Dispositivo</label>
@@ -171,32 +157,27 @@
                                     <input type="text" id="client-app" name="client-app" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                                 </div>
                             </div>
-
-                            <!-- Teléfono -->
                             <div>
                                 <label for="client-phone" class="block text-sm font-medium text-gray-700">Número de teléfono</label>
                                 <input type="tel" id="client-phone" name="client-phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
-
-                            <!-- Recomendaciones (Dinámico) -->
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Recomendaciones (debe ser un cliente existente)</label>
                                 <div id="recomendaciones-container" class="mt-1 space-y-2">
-                                    <!-- Campos dinámicos irán aquí -->
                                 </div>
                                 <button type="button" id="add-recomendacion-btn" class="mt-2 rounded bg-gray-200 px-2 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-300">+ Añadir recomendación</button>
-                                <!-- Datalist para autocomplete -->
                                 <datalist id="existing-clients-list"></datalist>
                             </div>
-
-                            <!-- Notas -->
                             <div>
                                 <label for="client-notes" class="block text-sm font-medium text-gray-700">Notas</label>
                                 <textarea id="client-notes" name="client-notes" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
                             </div>
                             
-                            <!-- Botón Submit -->
-                            <div>
+                            <!-- Botones Submit y Cancelar -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <button type="button" id="cancel-add-client-btn" class="w-full rounded-md bg-gray-500 px-4 py-2 text-white shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                                    Cancelar
+                                </button>
                                 <button type="submit" class="w-full rounded-md bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                                     Guardar Cliente
                                 </button>
@@ -205,7 +186,6 @@
                         <p id="add-client-success" class="mt-4 text-center text-green-600 hidden">¡Cliente añadido con éxito!</p>
                     </div>
                 </div>
-
 
                 <!-- Página: Ajustes -->
                 <div id="page-ajustes" class="page-content hidden">
@@ -216,6 +196,21 @@
                 </div>
 
             </main>
+        </div>
+    </div>
+
+    <!-- 
+      Modal de Confirmación / Alerta
+      (Reemplaza todos los 'alert' y 'confirm')
+    -->
+    <div id="modal-backdrop" class="fixed inset-0 z-40 bg-black/50 hidden"></div>
+    <div id="modal-container" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+            <h3 id="modal-title" class="text-xl font-semibold text-gray-900">Confirmar</h3>
+            <p id="modal-message" class="mt-2 text-gray-600">¿Estás seguro?</p>
+            <div id="modal-buttons" class="mt-6 flex justify-end space-x-3">
+                <!-- Los botones se generan dinámicamente -->
+            </div>
         </div>
     </div>
 
