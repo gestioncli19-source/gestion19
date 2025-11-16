@@ -15,7 +15,7 @@ import {
     query,
     onSnapshot,
     serverTimestamp,
-    deleteDoc // Importar deleteDoc
+    deleteDoc
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 // --- 2. CONFIGURACIÓN DE FIREBASE ---
@@ -36,8 +36,9 @@ let userId = null;
 let unsubscribeClientListener = null;
 
 // --- Variables de estado de la aplicación ---
-let allClientNames = []; // Lista de nombres para validación
-let fullClientList = []; // Lista completa de clientes de Firestore
+let allClientNames = []; 
+let fullClientList = []; 
+let modalConfirmResolve = null; // Para manejar la promesa del modal
 
 // --- 4. INICIALIZACIÓN DE LA APP ---
 try {
@@ -80,7 +81,74 @@ document.getElementById('logout-button').addEventListener('click', () => {
     signOut(auth).catch(error => console.error("Error al cerrar sesión:", error));
 });
 
-// --- 6. LÓGICA DE NAVEGACIÓN Y UI ---
+
+// --- 6. SISTEMA DE MODAL (Reemplaza alert/confirm) ---
+
+const modalBackdrop = document.getElementById('modal-backdrop');
+const modalContainer = document.getElementById('modal-container');
+const modalTitle = document.getElementById('modal-title');
+const modalMessage = document.getElementById('modal-message');
+const modalButtons = document.getElementById('modal-buttons');
+
+/**
+ * Muestra una alerta (un solo botón "Aceptar").
+ * @param {string} title - Título del modal.
+ * @param {string} message - Mensaje del modal.
+ */
+function showAlert(title, message) {
+    modalTitle.textContent = title;
+    modalMessage.textContent = message;
+    modalButtons.innerHTML = '<button id="modal-alert-ok-btn" class="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">Aceptar</button>';
+    
+    modalBackdrop.classList.remove('hidden');
+    modalContainer.classList.remove('hidden');
+    
+    document.getElementById('modal-alert-ok-btn').addEventListener('click', () => {
+        modalBackdrop.classList.add('hidden');
+        modalContainer.classList.add('hidden');
+    }, { once: true });
+}
+
+/**
+ * Muestra una confirmación (dos botones) y devuelve una Promesa.
+ * @param {string} title - Título del modal.
+ * @param {string} message - Mensaje del modal.
+ * @returns {Promise<boolean>} - Resuelve 'true' si se confirma, 'false' si se cancela.
+ */
+function showConfirm(title, message) {
+    modalTitle.textContent = title;
+    modalMessage.textContent = message;
+    modalButtons.innerHTML = `
+        <button id="modal-cancel-btn" class="rounded-md bg-gray-200 px-4 py-2 text-gray-800 hover:bg-gray-300">Cancelar</button>
+        <button id="modal-confirm-btn" class="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">Confirmar</button>`;
+    
+    modalBackdrop.classList.remove('hidden');
+    modalContainer.classList.remove('hidden');
+
+    return new Promise((resolve) => {
+        modalConfirmResolve = resolve;
+        
+        document.getElementById('modal-cancel-btn').addEventListener('click', handleModalCancel, { once: true });
+        document.getElementById('modal-confirm-btn').addEventListener('click', handleModalConfirm, { once: true });
+    });
+}
+
+function handleModalConfirm() {
+    modalBackdrop.classList.add('hidden');
+    modalContainer.classList.add('hidden');
+    if (modalConfirmResolve) modalConfirmResolve(true);
+}
+
+function handleModalCancel() {
+    modalBackdrop.classList.add('hidden');
+    modalContainer.classList.add('hidden');
+    if (modalConfirmResolve) modalConfirmResolve(false);
+}
+
+
+// --- 7. LÓGICA DE NAVEGACIÓN Y UI ---
+let showPage; // Declarar showPage en un ámbito superior
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- Selectores de Navegación ---
     const navLinks = document.querySelectorAll('.nav-link');
@@ -97,13 +165,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const expiryDateInput = document.getElementById('client-expiry-date');
     const addRecomendacionBtn = document.getElementById('add-recomendacion-btn');
     const recomendacionesContainer = document.getElementById('recomendaciones-container');
+    const cancelAddClientBtn = document.getElementById('cancel-add-client-btn'); // Botón Cancelar
 
     // --- Selectores de "Lista de Clientes" ---
     const searchBar = document.getElementById('search-bar');
     const clientListContainer = document.getElementById('client-list-container');
 
     // --- Navegación ---
-    function showPage(pageId) {
+    showPage = function(pageId) {
         pageContents.forEach(page => page.classList.add('hidden'));
         const activePage = document.getElementById(`page-${pageId}`);
         if (activePage) {
@@ -114,6 +183,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if(link) link.classList.add('active');
         }
         hideMobileMenu();
+
+        // Si vamos a la página de "Añadir Cliente", reseteamos el formulario
+        if (pageId === 'add-cliente') {
+            addClientForm.reset();
+            recomendacionesContainer.innerHTML = '';
+            initializeDateFields();
+        }
     }
     
     document.getElementById('nav-links').addEventListener('click', (e) => {
@@ -141,14 +217,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Lógica del Formulario "Añadir Cliente" ---
 
-    // Inicializar fechas
     initializeDateFields();
 
-    // Actualizar fecha de caducidad si cambia la de creación
     creationDateInput.addEventListener('change', () => {
         try {
             const creationDate = new Date(creationDateInput.value);
-            // Corregir el bug de zona horaria (obtener fecha como UTC)
             const correctedCreationDate = new Date(creationDate.getTime() + creationDate.getTimezoneOffset() * 60000);
             
             correctedCreationDate.setMonth(correctedCreationDate.getMonth() + 3);
@@ -158,65 +231,63 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Añadir campo de recomendación
     addRecomendacionBtn.addEventListener('click', addRecomendacionField);
 
-    // Eliminar campo de recomendación (usando delegación de eventos)
     recomendacionesContainer.addEventListener('click', (e) => {
         if (e.target && e.target.classList.contains('remove-recomendacion-btn')) {
             e.target.parentElement.remove();
         }
     });
 
+    // Botón Cancelar (NUEVO)
+    cancelAddClientBtn.addEventListener('click', () => {
+        // No es necesario resetear (showPage lo hace), solo navegar
+        showPage('clientes'); // O 'dashboard'
+    });
+
     // Enviar formulario
     addClientForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!userId) {
-            alert("Error: Debes estar autenticado para añadir clientes.");
+            showAlert("Error", "Debes estar autenticado para añadir clientes.");
             return;
         }
 
-        // 1. Recoger campos de recomendación
         const recInputs = document.querySelectorAll('.recomendacion-input');
         const recomendaciones = Array.from(recInputs)
             .map(input => input.value.trim())
             .filter(val => val !== '');
 
-        // 2. Validar recomendaciones
         let allValid = true;
         for (const rec of recomendaciones) {
             if (!allClientNames.includes(rec)) {
                 allValid = false;
-                alert(`Error: El cliente recomendado "${rec}" no existe. Por favor, corrígelo o elimínalo.`);
+                showAlert("Error de validación", `El cliente recomendado "${rec}" no existe. Por favor, corrígelo o elimínalo.`);
                 break;
             }
         }
-        if (!allValid) return; // Detener el envío
+        if (!allValid) return;
 
-        // 3. Recoger todos los datos del formulario
         const newClientData = {
             name: addClientForm['client-name'].value,
             fechaCreacion: addClientForm['client-creation-date'].value,
             fechaCaducidad: addClientForm['client-expiry-date'].value,
             usuario: addClientForm['client-user'].value,
-            password: addClientForm['client-password'].value, // Considera encriptar esto en un futuro
+            password: addClientForm['client-password'].value,
             dispositivo: addClientForm['client-device'].value,
             aplicacion: addClientForm['client-app'].value,
             phone: addClientForm['client-phone'].value,
-            recomendaciones: recomendaciones, // Array validado
+            recomendaciones: recomendaciones,
             notas: addClientForm['client-notes'].value,
-            createdAt: serverTimestamp() // Para orden interno
+            createdAt: serverTimestamp()
         };
 
-        // 4. Guardar en Firestore
         try {
             const clientsCollectionPath = `/artifacts/${appId}/users/${userId}/clients`;
             await addDoc(collection(db, clientsCollectionPath), newClientData);
             
             console.log("Cliente añadido a Firestore.");
-            addClientForm.reset();
-            recomendacionesContainer.innerHTML = ''; // Limpiar campos dinámicos
-            initializeDateFields(); // Resetear fechas
+            // Reset/Navegación ya se maneja en showPage
             
             successMessage.classList.remove('hidden');
             setTimeout(() => successMessage.classList.add('hidden'), 3000);
@@ -225,7 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
         } catch (error) {
             console.error("Error al añadir cliente:", error);
-            alert("Hubo un error al guardar el cliente.");
+            showAlert("Error", "Hubo un error al guardar el cliente. Revisa la consola (F12) para más detalles.");
         }
     });
 
@@ -236,29 +307,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const clientId = deleteButton.dataset.id;
             const clientName = deleteButton.dataset.name;
             
-            if (confirm(`¿Estás seguro de que quieres eliminar a "${clientName}"?`)) {
+            // Usando el nuevo modal de confirmación
+            const confirmed = await showConfirm("Confirmar Eliminación", `¿Estás seguro de que quieres eliminar a "${clientName}"?`);
+            
+            if (confirmed) {
                 try {
                     const docPath = `/artifacts/${appId}/users/${userId}/clients/${clientId}`;
                     await deleteDoc(doc(db, docPath));
                     console.log(`Cliente ${clientId} eliminado.`);
                 } catch (error) {
                     console.error("Error al eliminar cliente:", error);
-                    alert("No se pudo eliminar el cliente.");
+                    showAlert("Error", "No se pudo eliminar el cliente.");
                 }
             }
         }
     });
 
-
-    // Mostrar dashboard por defecto
     showPage('dashboard');
 });
 
-// --- 7. LÓGICA DE DATOS (FIRESTORE) ---
+// --- 8. LÓGICA DE DATOS (FIRESTORE) ---
 
-/**
- * Configura el listener de Firestore que actualiza la app en tiempo real.
- */
 function setupClientListener(currentUserId) {
     console.log(`Configurando listener para el usuario: ${currentUserId}`);
     const clientsCollectionPath = `/artifacts/${appId}/users/${currentUserId}/clients`;
@@ -267,17 +336,11 @@ function setupClientListener(currentUserId) {
     unsubscribeClientListener = onSnapshot(q, (snapshot) => {
         console.log(`Nuevos datos recibidos: ${snapshot.size} clientes.`);
         
-        // 1. Mapear datos y actualizar listas globales
         fullClientList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         allClientNames = fullClientList.map(c => c.name);
 
-        // 2. Actualizar datalist para el formulario
         updateDatalist(allClientNames);
-
-        // 3. Actualizar estadísticas del Dashboard
         updateDashboardStats(fullClientList);
-        
-        // 4. Renderizar la lista (ordenar, filtrar, mostrar)
         renderLogic();
 
     }, (error) => {
@@ -286,29 +349,25 @@ function setupClientListener(currentUserId) {
     });
 }
 
-/**
- * Calcula y muestra las estadísticas del Dashboard.
- */
 function updateDashboardStats(clients) {
     const clientCountElement = document.getElementById('client-count');
     const clientSoonCountElement = document.getElementById('client-soon-count');
     const clientExpiredCountElement = document.getElementById('client-expired-count');
 
     const now = new Date();
-    now.setHours(0, 0, 0, 0); // Comparar solo fechas
+    now.setHours(0, 0, 0, 0); 
     
     const soonLimit = new Date();
-    soonLimit.setDate(now.getDate() + 30); // "Pronto" = en los próximos 30 días
+    soonLimit.setDate(now.getDate() + 30);
 
     let soonCount = 0;
     let expiredCount = 0;
 
     clients.forEach(client => {
-        if (!client.fechaCaducidad) return; // Omitir si no tiene fecha
+        if (!client.fechaCaducidad) return; 
         
         try {
             const expiryDate = new Date(client.fechaCaducidad);
-            // Corregir bug de zona horaria (obtener fecha como UTC)
             const correctedExpiryDate = new Date(expiryDate.getTime() + expiryDate.getTimezoneOffset() * 60000);
 
             if (correctedExpiryDate < now) {
@@ -326,37 +385,27 @@ function updateDashboardStats(clients) {
     clientExpiredCountElement.textContent = expiredCount;
 }
 
-/**
- * Contiene la lógica de renderizado: ordenar, filtrar y llamar a renderClientList.
- * Se llama cuando los datos cambian (snapshot) o cuando se busca (input).
- */
 function renderLogic() {
     const searchBar = document.getElementById('search-bar');
     const searchTerm = searchBar.value.toLowerCase();
 
-    // 1. Ordenar: Por fecha de caducidad (ascendente)
     const sortedClients = [...fullClientList].sort((a, b) => {
         const dateA = a.fechaCaducidad ? new Date(a.fechaCaducidad) : new Date(0);
         const dateB = b.fechaCaducidad ? new Date(b.fechaCaducidad) : new Date(0);
         return dateA - dateB;
     });
 
-    // 2. Filtrar: Por término de búsqueda
     const filteredClients = searchTerm
         ? sortedClients.filter(client => client.name.toLowerCase().includes(searchTerm))
         : sortedClients;
 
-    // 3. Renderizar
     renderClientList(filteredClients);
 }
 
-/**
- * Renderiza la lista de clientes en el DOM.
- */
 function renderClientList(clientsToRender) {
     const clientListContainer = document.getElementById('client-list-container');
     const clientListPlaceholder = document.getElementById('client-list-placeholder');
-    clientListContainer.innerHTML = ''; // Limpiar lista
+    clientListContainer.innerHTML = ''; 
 
     if (clientsToRender.length === 0) {
         clientListContainer.appendChild(clientListPlaceholder);
@@ -365,7 +414,6 @@ function renderClientList(clientsToRender) {
             const card = document.createElement('div');
             card.className = 'client-card-enter flex items-center justify-between rounded border border-gray-200 p-4';
             
-            // Determinar color de la fecha de caducidad
             let dateColor = "text-gray-500";
             try {
                 const now = new Date();
@@ -374,15 +422,15 @@ function renderClientList(clientsToRender) {
                 const correctedExpiryDate = new Date(expiryDate.getTime() + expiryDate.getTimezoneOffset() * 60000);
 
                 if (correctedExpiryDate < now) {
-                    dateColor = "text-red-600 font-bold"; // Caducado
+                    dateColor = "text-red-600 font-bold";
                 } else {
                     const soonLimit = new Date();
                     soonLimit.setDate(now.getDate() + 30);
                     if (correctedExpiryDate <= soonLimit) {
-                        dateColor = "text-yellow-600 font-semibold"; // Caduca pronto
+                        dateColor = "text-yellow-600 font-semibold";
                     }
                 }
-            } catch(e) {} // Dejar color por defecto si hay error
+            } catch(e) {} 
 
             card.innerHTML = `
                 <div>
@@ -399,21 +447,15 @@ function renderClientList(clientsToRender) {
     }
 }
 
-// --- 8. FUNCIONES DE AYUDA (Helpers) ---
+// --- 9. FUNCIONES DE AYUDA (Helpers) ---
 
-/**
- * Formatea un objeto Date a 'YYYY-MM-DD'.
- */
 function formatDate(date) {
     if (!date || isNaN(date.getTime())) {
-        return ""; // Devuelve string vacío si la fecha es inválida
+        return ""; 
     }
     return date.toISOString().split('T')[0];
 }
 
-/**
- * Establece los valores por defecto de los campos de fecha en el formulario.
- */
 function initializeDateFields() {
     const creationDateInput = document.getElementById('client-creation-date');
     const expiryDateInput = document.getElementById('client-expiry-date');
@@ -426,9 +468,6 @@ function initializeDateFields() {
     expiryDateInput.value = formatDate(expiry);
 }
 
-/**
- * Añade un nuevo campo de recomendación al formulario.
- */
 function addRecomendacionField() {
     const container = document.getElementById('recomendaciones-container');
     const fieldWrapper = document.createElement('div');
@@ -444,14 +483,11 @@ function addRecomendacionField() {
     container.appendChild(fieldWrapper);
 }
 
-/**
- * Actualiza el <datalist> con la lista de nombres de clientes existentes.
- */
 function updateDatalist(names) {
     const datalist = document.getElementById('existing-clients-list');
     if (!datalist) return;
     
-    datalist.innerHTML = ''; // Limpiar opciones
+    datalist.innerHTML = ''; 
     names.forEach(name => {
         const option = document.createElement('option');
         option.value = name;
