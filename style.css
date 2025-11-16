@@ -43,9 +43,7 @@
     @apply bg-red-600;
 }
 
-/* Clases de componentes reutilizables (Estilo Tailwind)
-  Esto nos ahorra repetir clases en el HTML
-*/
+/* Clases de componentes reutilizables (Estilo Tailwind) */
 
 /* --- Tarjetas del Dashboard --- */
 .dashboard-card {
@@ -67,32 +65,46 @@
 }
 
 .form-input {
-    /* Añadido bg-gray-50 para contraste */
     @apply mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400;
 }
+/* Estilo para el <select> en modo oscuro */
+.form-input[type="date"] {
+    @apply dark:text-white;
+}
+select.form-input {
+    @apply dark:text-white;
+}
+select.form-input option {
+    @apply text-black dark:text-white dark:bg-gray-700;
+}
 
-/* --- Botones --- */
+
+/* --- Botones (redondeados) --- */
 .button-primary {
-    @apply inline-flex items-center justify-center rounded-lg border border-transparent bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-full border border-transparent bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
 }
 
 .button-secondary {
-    @apply inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600;
+    @apply inline-flex items-center justify-center rounded-full border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600;
 }
 
-/* NUEVOS Botones de color */
 .button-success {
-    @apply inline-flex items-center justify-center rounded-lg border border-transparent bg-green-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-full border border-transparent bg-green-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
 }
 
 .button-danger {
-    @apply inline-flex items-center justify-center rounded-lg border border-transparent bg-red-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-full border border-transparent bg-red-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2;
 }
 
 
 /* --- Botones de Acción (Lista) --- */
 .action-icon-button {
      @apply p-2 rounded-full text-gray-400 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-200;
+}
+
+/* --- NUEVO: Modal de Vista --- */
+.view-modal-pre {
+    @apply bg-gray-50 dark:bg-gray-700 rounded-md p-4 text-sm font-mono whitespace-pre-wrap break-words;
 }
 
 
