@@ -14,6 +14,10 @@
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                     },
+                    colors: {
+                        // Puedes definir colores personalizados si quieres
+                        // 'brand-blue': '#1a73e8',
+                    }
                 },
             },
         };
@@ -23,46 +27,43 @@
     <link rel="stylesheet" href="style.css">
 
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-gray-100 font-sans antialiased">
 
     <div class="flex h-screen overflow-hidden">
         <!-- Overlay para móvil (se activa con el menú) -->
-        <div id="sidebar-overlay" class="fixed inset-0 z-10 bg-black/50 md:hidden hidden"></div>
+        <div id="sidebar-overlay" class="fixed inset-0 z-10 bg-black/60 md:hidden hidden"></div>
 
         <!-- 1. Menú Lateral (Sidebar) -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-20 flex w-64 transform flex-col overflow-y-auto bg-gray-900 text-gray-300 transition-transform duration-300 ease-in-out -translate-x-full md:relative md:translate-x-0">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-20 flex w-64 transform flex-col overflow-y-auto bg-gray-900 text-gray-300 shadow-lg transition-transform duration-300 ease-in-out -translate-x-full md:relative md:translate-x-0">
             
-            <!-- Logo / Título -->
-            <div class="flex h-16 items-center justify-center px-4 shadow-md">
+            <div class="flex h-20 items-center justify-center px-4">
                 <h1 class="text-2xl font-bold text-white">GestiónApp</h1>
             </div>
 
-            <!-- Navegación Principal -->
             <nav class="flex-1 space-y-2 p-4" id="nav-links">
-                <a href="#" data-page="dashboard" class="nav-link group active flex items-center space-x-3 rounded-lg px-3 py-2 hover:bg-gray-700 hover:text-white">
+                <a href="#" data-page="dashboard" class="nav-link group active flex items-center space-x-3 rounded-lg px-3 py-3 hover:bg-gray-700 hover:text-white">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                     <span class="font-medium">Dashboard</span>
                 </a>
                 
-                <a href="#" data-page="clientes" class="nav-link group flex items-center space-x-3 rounded-lg px-3 py-2 hover:bg-gray-700 hover:text-white">
+                <a href="#" data-page="clientes" class="nav-link group flex items-center space-x-3 rounded-lg px-3 py-3 hover:bg-gray-700 hover:text-white">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                     <span class="font-medium">Clientes</span>
                 </a>
                 
-                <a href="#" data-page="add-cliente" class="nav-link group flex items-center space-x-3 rounded-lg px-3 py-2 hover:bg-gray-700 hover:text-white">
+                <a href="#" data-page="add-cliente" class="nav-link group flex items-center space-x-3 rounded-lg px-3 py-3 hover:bg-gray-700 hover:text-white">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
                     <span class="font-medium">Añadir Cliente</span>
                 </a>
                 
-                <a href="#" data-page="ajustes" class="nav-link group flex items-center space-x-3 rounded-lg px-3 py-2 hover:bg-gray-700 hover:text-white">
+                <a href="#" data-page="ajustes" class="nav-link group flex items-center space-x-3 rounded-lg px-3 py-3 hover:bg-gray-700 hover:text-white">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                     <span class="font-medium">Ajustes</span>
                 </a>
             </nav>
 
-            <!-- Footer del Sidebar (Logout) -->
             <div class="p-4">
-                <button id="logout-button" class="group flex w-full items-center space-x-3 rounded-lg px-3 py-2 text-left hover:bg-red-500 hover:text-white">
+                <button id="logout-button" class="group flex w-full items-center space-x-3 rounded-lg px-3 py-3 text-left hover:bg-red-500 hover:text-white">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     <span class="font-medium">Cerrar Sesión</span>
                 </button>
@@ -72,113 +73,142 @@
         <!-- 2. Contenido Principal -->
         <div class="flex flex-1 flex-col overflow-hidden">
             
-            <!-- Cabecera Superior -->
-            <header class="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 md:px-6">
+            <header class="flex h-20 items-center justify-between border-b border-gray-200 bg-white px-4 md:px-8">
                 <button id="menu-toggle" class="text-gray-500 md:hidden">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
-                <h2 id="page-title" class="text-xl font-semibold text-gray-800">Dashboard</h2>
-                <div class="flex items-center space-x-2">
-                    <div class="h-8 w-8 rounded-full bg-gray-400" title="Info de usuario"></div>
+                <h2 id="page-title" class="text-2xl font-semibold text-gray-800">Dashboard</h2>
+                <div class="flex items-center space-x-3">
+                    <span class="hidden text-right text-sm font-medium text-gray-700 sm:block">Admin</span>
+                    <div class="h-10 w-10 rounded-full bg-gray-400" title="Info de usuario"></div>
                 </div>
             </header>
 
-            <!-- Área de Contenido (cambia dinámicamente) -->
-            <main class="flex-1 overflow-y-auto p-4 md:p-6">
+            <main class="flex-1 overflow-y-auto p-4 md:p-8">
 
                 <!-- Página: Dashboard -->
-                <div id="page-dashboard" class="page-content active">
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        <div class="rounded-lg bg-white p-5 shadow">
-                            <h4 class="text-lg font-semibold text-gray-800">Total de Clientes</h4>
-                            <p class="text-3xl font-bold text-blue-600" id="client-count">0</p>
+                <div id="page-dashboard" class="page-content active space-y-6">
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+                        <div id="dashboard-card-total" class="dashboard-card group">
+                            <div class="flex items-center justify-between">
+                                <h4 class="card-title">Total de Clientes</h4>
+                                <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-1.657-1.343-3-3-3s-3 1.343-3 3v2m6 0H9"></path></svg>
+                            </div>
+                            <p class="card-data text-blue-600" id="client-count">0</p>
                         </div>
-                        <div class="rounded-lg bg-white p-5 shadow">
-                            <h4 class="text-lg font-semibold text-gray-800">Caducan pronto</h4>
-                            <p class="text-3xl font-bold text-yellow-500" id="client-soon-count">0</p>
+                        <div id="dashboard-card-soon" class="dashboard-card group">
+                            <div class="flex items-center justify-between">
+                                <h4 class="card-title">Caducan pronto (3 días)</h4>
+                                <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            </div>
+                            <p class="card-data text-yellow-500" id="client-soon-count">0</p>
                         </div>
-                        <div class="rounded-lg bg-white p-5 shadow">
-                            <h4 class="text-lg font-semibold text-gray-800">Caducados</h4>
-                            <p class="text-3xl font-bold text-red-600" id="client-expired-count">0</p>
+                        <div id="dashboard-card-expired" class="dashboard-card group">
+                            <div class="flex items-center justify-between">
+                                <h4 class="card-title">Caducados</h4>
+                                <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+                            </div>
+                            <p class="card-data text-red-600" id="client-expired-count">0</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Página: Lista de Clientes -->
-                <div id="page-clientes" class="page-content hidden">
-                    <h3 class="text-2xl font-semibold text-gray-700 mb-4">Lista de Clientes</h3>
-                    <div class="mb-4">
-                        <input type="search" id="search-bar" placeholder="Buscar por nombre..." class="w-full rounded-md border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <div id="page-clientes" class="page-content hidden space-y-6">
+                    <h3 class="text-2xl font-semibold text-gray-800">Lista de Clientes</h3>
+                    <div>
+                        <input type="search" id="search-bar" placeholder="Buscar por nombre..." class="w-full rounded-xl border-gray-300 p-3 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     </div>
-                    <div class="rounded-lg bg-white p-5 shadow">
-                        <div id="client-list-container" class="space-y-4">
-                            <p id="client-list-placeholder" class="text-gray-500">No hay clientes para mostrar. Añade uno nuevo.</p>
+                    <div class="rounded-xl bg-white p-2 shadow-lg sm:p-4">
+                        <div id="client-list-container" class="space-y-2">
+                            <p id="client-list-placeholder" class="text-center text-gray-500 p-8">No hay clientes para mostrar. Añade uno nuevo.</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Página: Añadir Cliente -->
                 <div id="page-add-cliente" class="page-content hidden">
-                    <h3 class="text-2xl font-semibold text-gray-700 mb-4">Añadir Nuevo Cliente</h3>
-                    <div class="max-w-2xl rounded-lg bg-white p-5 shadow">
-                        <form id="add-client-form" class="space-y-4">
-                            <!-- ... (todos los campos como antes) ... -->
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-6">Añadir Nuevo Cliente</h3>
+                    <div class="max-w-3xl rounded-xl bg-white p-6 shadow-lg">
+                        <form id="add-client-form" class="space-y-6">
+
                             <div>
-                                <label for="client-name" class="block text-sm font-medium text-gray-700">Nombre</label>
-                                <input type="text" id="client-name" name="client-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <label for="client-name" class="form-label">Nombre</label>
+                                <input type="text" id="client-name" name="client-name" required class="form-input">
                             </div>
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div>
-                                    <label for="client-creation-date" class="block text-sm font-medium text-gray-700">Fecha de creación</label>
-                                    <input type="date" id="client-creation-date" name="client-creation-date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                </div>
-                                <div>
-                                    <label for="client-expiry-date" class="block text-sm font-medium text-gray-700">Fecha de caducidad</label>
-                                    <input type="date" id="client-expiry-date" name="client-expiry-date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div>
-                                    <label for="client-user" class="block text-sm font-medium text-gray-700">Usuario</label>
-                                    <input type="text" id="client-user" name="client-user" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <label for="client-creation-date" class="form-label">Fecha de creación</label>
+                                    <input type="date" id="client-creation-date" name="client-creation-date" required class="form-input">
                                 </div>
                                 <div>
-                                    <label for="client-password" class="block text-sm font-medium text-gray-700">Contraseña</label>
-                                    <input type="password" id="client-password" name="client-password" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <label for="client-expiry-date" class="form-label">Fecha de caducidad</label>
+                                    <input type="date" id="client-expiry-date" name="client-expiry-date" required class="form-input">
                                 </div>
                             </div>
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 <div>
-                                    <label for="client-device" class="block text-sm font-medium text-gray-700">Dispositivo</label>
-                                    <input type="text" id="client-device" name="client-device" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <label for="client-user" class="form-label">Usuario</label>
+                                    <input type="text" id="client-user" name="client-user" class="form-input">
                                 </div>
                                 <div>
-                                    <label for="client-app" class="block text-sm font-medium text-gray-700">Aplicación</label>
-                                    <input type="text" id="client-app" name="client-app" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                    <label for="client-password" class="form-label">Contraseña</label>
+                                    <!-- Cambiado a type="text" para visibilidad -->
+                                    <input type="text" id="client-password" name="client-password" class="form-input">
                                 </div>
                             </div>
-                            <div>
-                                <label for="client-phone" class="block text-sm font-medium text-gray-700">Número de teléfono</label>
-                                <input type="tel" id="client-phone" name="client-phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Recomendaciones (debe ser un cliente existente)</label>
-                                <div id="recomendaciones-container" class="mt-1 space-y-2">
+
+                            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                <div>
+                                    <label for="client-phone" class="form-label">Número de teléfono</label>
+                                    <div class="relative mt-1 rounded-md shadow-sm">
+                                      <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                        <span class="text-gray-500 sm:text-sm">+34</span>
+                                      </div>
+                                      <input type="tel" id="client-phone" name="client-phone" class="form-input pl-10" placeholder="600 000 000">
+                                    </div>
                                 </div>
-                                <button type="button" id="add-recomendacion-btn" class="mt-2 rounded bg-gray-200 px-2 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-300">+ Añadir recomendación</button>
-                                <datalist id="existing-clients-list"></datalist>
-                            </div>
-                            <div>
-                                <label for="client-notes" class="block text-sm font-medium text-gray-700">Notas</label>
-                                <textarea id="client-notes" name="client-notes" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                                <div>
+                                    <label for="client-app" class="form-label">Aplicación</label>
+                                    <!-- Cambiado a <select> -->
+                                    <select id="client-app" name="client-app" class="form-input">
+                                        <option value="Spinning TV">Spinning TV</option>
+                                        <option value="Spinning IBO">Spinning IBO</option>
+                                        <option value="Spinning Mate">Spinning Mate</option>
+                                        <option value="Hot Player">Hot Player</option>
+                                    </select>
+                                </div>
                             </div>
                             
-                            <!-- Botones Submit y Cancelar -->
-                            <div class="grid grid-cols-2 gap-4">
-                                <button type="button" id="cancel-add-client-btn" class="w-full rounded-md bg-gray-500 px-4 py-2 text-white shadow hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                            <div>
+                                <label for="client-device" class="form-label">Dispositivo</label>
+                                <input type="text" id="client-device" name="client-device" class="form-input">
+                            </div>
+
+                            <div>
+                                <label class="form-label">Recomendaciones (debe ser un cliente existente)</label>
+                                <div id="recomendaciones-container" class="mt-1 space-y-2">
+                                </div>
+                                <button type="button" id="add-recomendacion-btn" class="button-secondary mt-2">
+                                    <svg class="h-5 w-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                    Añadir
+                                </button>
+                                <datalist id="existing-clients-list"></datalist>
+                            </div>
+
+                            <div>
+                                <label for="client-notes" class="form-label">Notas</label>
+                                <textarea id="client-notes" name="client-notes" rows="4" class="form-input"></textarea>
+                            </div>
+                            
+                            <div class="flex justify-end space-x-4 pt-4">
+                                <button type="button" id="cancel-add-client-btn" class="button-secondary">
                                     Cancelar
                                 </button>
-                                <button type="submit" class="w-full rounded-md bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                <button type="submit" class="button-primary">
+                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                     Guardar Cliente
                                 </button>
                             </div>
@@ -186,11 +216,100 @@
                         <p id="add-client-success" class="mt-4 text-center text-green-600 hidden">¡Cliente añadido con éxito!</p>
                     </div>
                 </div>
+                
+                <!-- Página: Editar Cliente (NUEVA) -->
+                <div id="page-edit-cliente" class="page-content hidden">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-6">Editar Cliente</h3>
+                    <div class="max-w-3xl rounded-xl bg-white p-6 shadow-lg">
+                        <form id="edit-client-form" class="space-y-6">
+                            <!-- Input oculto para guardar el ID del cliente -->
+                            <input type="hidden" id="edit-client-id" name="edit-client-id">
+
+                            <div>
+                                <label for="edit-client-name" class="form-label">Nombre</label>
+                                <input type="text" id="edit-client-name" name="edit-client-name" required class="form-input">
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                <div>
+                                    <label for="edit-client-creation-date" class="form-label">Fecha de creación</label>
+                                    <input type="date" id="edit-client-creation-date" name="edit-client-creation-date" required class="form-input">
+                                </div>
+                                <div>
+                                    <label for="edit-client-expiry-date" class="form-label">Fecha de caducidad</label>
+                                    <input type="date" id="edit-client-expiry-date" name="edit-client-expiry-date" required class="form-input">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                <div>
+                                    <label for="edit-client-user" class="form-label">Usuario</label>
+                                    <input type="text" id="edit-client-user" name="edit-client-user" class="form-input">
+                                </div>
+                                <div>
+                                    <label for="edit-client-password" class="form-label">Contraseña</label>
+                                    <input type="text" id="edit-client-password" name="edit-client-password" class="form-input">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                <div>
+                                    <label for="edit-client-phone" class="form-label">Número de teléfono</label>
+                                    <div class="relative mt-1 rounded-md shadow-sm">
+                                      <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                        <span class="text-gray-500 sm:text-sm">+34</span>
+                                      </div>
+                                      <input type="tel" id="edit-client-phone" name="edit-client-phone" class="form-input pl-10" placeholder="600 000 000">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="edit-client-app" class="form-label">Aplicación</label>
+                                    <select id="edit-client-app" name="edit-client-app" class="form-input">
+                                        <option value="Spinning TV">Spinning TV</option>
+                                        <option value="Spinning IBO">Spinning IBO</option>
+                                        <option value="Spinning Mate">Spinning Mate</option>
+                                        <option value="Hot Player">Hot Player</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="edit-client-device" class="form-label">Dispositivo</label>
+                                <input type="text" id="edit-client-device" name="edit-client-device" class="form-input">
+                            </div>
+
+                            <div>
+                                <label class="form-label">Recomendaciones (debe ser un cliente existente)</label>
+                                <div id="edit-recomendaciones-container" class="mt-1 space-y-2">
+                                </div>
+                                <button type="button" id="edit-add-recomendacion-btn" class="button-secondary mt-2">
+                                    <svg class="h-5 w-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                    Añadir
+                                </button>
+                            </div>
+
+                            <div>
+                                <label for="edit-client-notes" class="form-label">Notas</label>
+                                <textarea id="edit-client-notes" name="edit-client-notes" rows="4" class="form-input"></textarea>
+                            </div>
+                            
+                            <div class="flex justify-end space-x-4 pt-4">
+                                <button type="button" id="cancel-edit-client-btn" class="button-secondary">
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="button-primary">
+                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Guardar Cambios
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
 
                 <!-- Página: Ajustes -->
                 <div id="page-ajustes" class="page-content hidden">
-                    <h3 class="text-2xl font-semibold text-gray-700 mb-4">Ajustes</h3>
-                    <div class="rounded-lg bg-white p-5 shadow">
+                    <h3 class="text-2xl font-semibold text-gray-800 mb-6">Ajustes</h3>
+                    <div class="rounded-xl bg-white p-6 shadow-lg">
                         <p class="text-gray-600">Aquí irán las opciones de configuración de la cuenta y la aplicación.</p>
                     </div>
                 </div>
@@ -201,11 +320,10 @@
 
     <!-- 
       Modal de Confirmación / Alerta
-      (Reemplaza todos los 'alert' y 'confirm')
     -->
     <div id="modal-backdrop" class="fixed inset-0 z-40 bg-black/50 hidden"></div>
     <div id="modal-container" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
-        <div class="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+        <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
             <h3 id="modal-title" class="text-xl font-semibold text-gray-900">Confirmar</h3>
             <p id="modal-message" class="mt-2 text-gray-600">¿Estás seguro?</p>
             <div id="modal-buttons" class="mt-6 flex justify-end space-x-3">
