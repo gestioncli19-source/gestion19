@@ -11,12 +11,12 @@
 // 6. Asegúrate de que los scripts 'compat' estén en tu index.html
 
 const firebaseConfig = {
-    apiKey: "TU_API_KEY",
-    authDomain: "TU_AUTH_DOMAIN",
-    projectId: "TU_PROJECT_ID",
-    storageBucket: "TU_STORAGE_BUCKET",
-    messagingSenderId: "TU_MESSAGING_SENDER_ID",
-    appId: "TU_APP_ID"
+  apiKey: "AIzaSyDPeH3aJ8upyLiBNLtqDxKBtg9aN3YV8HE",
+  authDomain: "gestionclient-35e9a.firebaseapp.com",
+  projectId: "gestionclient-35e9a",
+  storageBucket: "gestionclient-35e9a.firebasestorage.app",
+  messagingSenderId: "490709691948",
+  appId: "1:490709691948:web:77f94044b409cabc256b89"
 };
 
 // Inicializar Firebase (usando la sintaxis 'compat' que pusimos en el HTML)
