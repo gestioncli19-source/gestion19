@@ -1,57 +1,58 @@
-/* Estilo para el scrollbar */
+/* --- Estilo Base y Scrollbar --- */
+body {
+    background-color: #f9fafb; /* bg-gray-50 */
+}
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 ::-webkit-scrollbar-track {
     background: #f1f1f1;
-    dark:background: #2d3748; /* dark:bg-gray-700 */
 }
 ::-webkit-scrollbar-thumb {
-    background: #a8a8a8;
+    background: #cccccc;
     border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: #888;
+    background: #aaaaaa;
 }
 
-/* Animación para las tarjetas de cliente */
-.client-card-enter {
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeIn 0.3s ease-out forwards;
-}
-
-@keyframes fadeIn {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Clase 'active' para los enlaces de navegación */
+/* --- Navegación --- */
+/* Color de acento Teal */
 .nav-link.active {
-    background-color: #3b82f6; /* bg-blue-600 */
+    background-color: #14b8a6; /* teal-500 */
     color: white;
 }
 
+/* --- Componentes --- */
+
 /* Botón de eliminar recomendación */
 .remove-recomendacion-btn {
-    @apply bg-red-500 text-white rounded-full w-5 h-5 font-bold text-xs leading-5 text-center border-none cursor-pointer ml-2 flex-shrink-0;
+    background-color: #ef4444; /* red-500 */
+    color: white;
+    border-radius: 9999px; /* rounded-full */
+    width: 20px;
+    height: 20px;
+    font-weight: bold;
+    font-size: 0.75rem;
+    line-height: 20px;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+    margin-left: 0.5rem;
+    flex-shrink: 0;
 }
 .remove-recomendacion-btn:hover {
-    @apply bg-red-600;
+    background-color: #dc2626; /* red-600 */
 }
-
-/* Clases de componentes reutilizables (Estilo Tailwind) */
 
 /* --- Tarjetas del Dashboard --- */
 .dashboard-card {
-    @apply rounded-xl bg-white p-5 shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 cursor-pointer dark:bg-gray-800;
+    @apply rounded-2xl bg-white p-6 shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-0.5 cursor-pointer;
 }
 
 .card-title {
-    @apply text-base font-semibold text-gray-800 dark:text-gray-200;
+    @apply text-base font-semibold text-gray-700;
 }
 
 .card-data {
@@ -61,50 +62,48 @@
 
 /* --- Formularios --- */
 .form-label {
-    @apply block text-sm font-medium text-gray-700 dark:text-gray-300;
+    @apply block text-xs font-medium uppercase tracking-wider text-gray-500;
 }
 
 .form-input {
-    /* Fondo ligeramente gris (bg-gray-50/dark:bg-gray-700) para contraste */
-    @apply mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400;
+    /* Fondo muy claro, bordes suaves, enfoque Teal */
+    @apply mt-1 block w-full rounded-xl border-gray-300 bg-white p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-500 focus:ring-opacity-50;
 }
-/* Estilo para el <select> en modo oscuro */
-.form-input[type="date"] {
-    @apply dark:text-white;
-}
-select.form-input {
-    @apply dark:text-white;
+/* Ajuste de color del texto para select y date */
+.form-input[type="date"], select.form-input {
+    color: #4b5563; /* gray-600 */
 }
 select.form-input option {
-    @apply text-black dark:text-white dark:bg-gray-700;
+    color: #1f2937; /* gray-900 */
+    background-color: white;
 }
 
 
-/* --- Botones (redondeados) --- */
-/* NOTA: Se ha forzado rounded-full en button-success/danger */
+/* --- Botones (Acento Teal) --- */
 .button-primary {
-    @apply inline-flex items-center justify-center rounded-full border border-transparent bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+    /* Color principal Teal */
+    @apply inline-flex items-center justify-center rounded-full border border-transparent bg-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition-colors hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2;
 }
 
 .button-secondary {
-    @apply inline-flex items-center justify-center rounded-full border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600;
+    @apply inline-flex items-center justify-center rounded-full border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2;
 }
 
 .button-success {
-    @apply inline-flex items-center justify-center rounded-full border border-transparent bg-green-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-full border border-transparent bg-green-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
 }
 
 .button-danger {
-    @apply inline-flex items-center justify-center rounded-full border border-transparent bg-red-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-full border border-transparent bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2;
 }
 
 
 /* --- Botones de Acción (Lista) --- */
 .action-icon-button {
-     @apply p-2 rounded-full text-gray-400 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-200;
+     @apply p-2 rounded-full text-gray-400 transition-colors duration-200 hover:bg-gray-100 hover:text-teal-600;
 }
 
 /* --- Modal de Vista --- */
 .view-modal-pre {
-    @apply bg-gray-50 dark:bg-gray-700 rounded-md p-4 text-sm font-mono whitespace-pre-wrap break-words;
+    @apply bg-gray-100 rounded-lg p-4 text-sm font-mono whitespace-pre-wrap break-words;
 }
