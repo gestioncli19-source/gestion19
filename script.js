@@ -56,8 +56,8 @@ onAuthStateChanged(auth, async (user) => {
         // Usuario autenticado
         userId = user.uid;
         console.log("Usuario autenticado:", userId);
-        document.getElementById('user-id-display').textContent = `ID: ${userId.substring(0, 8)}...`;
-        document.getElementById('user-id-debug').textContent = userId;
+        
+        // Las líneas que mostraban el ID se han quitado
 
         // Iniciar listener de clientes SÓLO si no existe ya
         if (!unsubscribeClientListener) {
@@ -68,7 +68,8 @@ onAuthStateChanged(auth, async (user) => {
         // Usuario no autenticado
         console.log("Usuario no autenticado, intentando iniciar sesión...");
         userId = null;
-        document.getElementById('user-id-display').textContent = "Desconectado";
+        
+        // La línea que mostraba "Desconectado" se ha quitado
         
         // Detener el listener de clientes si existe
         if (unsubscribeClientListener) {
@@ -77,16 +78,13 @@ onAuthStateChanged(auth, async (user) => {
             console.log("Listener de clientes detenido.");
         }
 
-        // --- IMPORTANTE ---
         // Como no tienes un sistema de login (email/pass) aún,
         // iniciamos sesión de forma anónima.
-        // Esto es perfecto para probar.
         try {
             await signInAnonymously(auth);
             console.log("Login anónimo exitoso.");
         } catch (error) {
             console.error("Error en el login anónimo:", error);
-            document.getElementById('user-id-display').textContent = "Error de Auth";
         }
     }
 });
@@ -145,12 +143,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Lógica del menú móvil
     function hideMobileMenu() {
-        sidebar.classList.add('-translatex-full');
+        // ¡CORREGIDO!
+        sidebar.classList.add('-translate-x-full');
         sidebarOverlay.classList.add('hidden');
     }
     
     menuToggle.addEventListener('click', () => {
-        sidebar.classList.remove('-translatex-full');
+        // ¡CORREGIDO!
+        sidebar.classList.remove('-translate-x-full');
         sidebarOverlay.classList.remove('hidden');
     });
     
