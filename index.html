@@ -8,7 +8,7 @@
     <!-- 1. Carga de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Configuración de Tailwind (eliminado dark mode)
+        // Configuración de Tailwind (sin dark mode)
         tailwind.config = {
             theme: {
                 extend: {
@@ -30,7 +30,7 @@
         <!-- Overlay para móvil (se activa con el menú) -->
         <div id="sidebar-overlay" class="fixed inset-0 z-10 bg-black/50 md:hidden hidden"></div>
 
-        <!-- 1. Menú Lateral (Sidebar - Nuevo Color) -->
+        <!-- 1. Menú Lateral (Sidebar) -->
         <aside id="sidebar" class="fixed inset-y-0 left-0 z-20 flex w-64 transform flex-col overflow-y-auto bg-gray-800 text-gray-300 shadow-xl transition-transform duration-300 ease-in-out -translate-x-full md:relative md:translate-x-0">
             
             <div class="flex h-20 items-center justify-center px-4 border-b border-gray-700">
@@ -53,8 +53,6 @@
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
                     <span class="font-medium">Añadir Cliente</span>
                 </a>
-                
-                <!-- Eliminada la página de Ajustes -->
             </nav>
 
             <div class="p-4 border-t border-gray-700">
@@ -69,8 +67,8 @@
         <div class="flex flex-1 flex-col overflow-hidden">
             
             <!-- Cabecera limpia -->
-            <header class="flex h-16 items-center justify-start space-x-4 border-b border-gray-200 bg-white px-4 shadow-sm md:justify-between md:space-x-0 md:px-8">
-                <button id="menu-toggle" class="text-gray-500 md:hidden">
+            <header class="flex h-16 items-center justify-start space-x-4 border-b border-gray-200 bg-white px-4 shadow-sm md:justify-start md:space-x-0 md:px-8">
+                <button id="menu-toggle" class="text-gray-500 md:hidden mr-4">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
                 
@@ -169,7 +167,7 @@
                             <!-- Dispositivo (Fila simple) -->
                             <input type="text" id="client-device" name="client-device" class="form-input" placeholder="Dispositivo">
 
-                            <!-- Recomendaciones (Nuevo diseño de contenedor) -->
+                            <!-- Recomendaciones -->
                             <div class="rounded-lg border border-teal-200 bg-teal-50/50 p-4">
                                 <label class="form-label mb-2 flex items-center text-sm font-semibold text-gray-700">
                                     Recomendaciones (cliente existente)
@@ -178,7 +176,7 @@
                                     <!-- Aquí van los campos dinámicos -->
                                 </div>
                                 <button type="button" id="add-recomendacion-btn" class="button-secondary mt-3 text-sm">
-                                    <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                    <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                                     Añadir Recomendación
                                 </button>
                                 <datalist id="existing-clients-list"></datalist>
@@ -190,11 +188,11 @@
                             <!-- Botones de Acción (Redondeados y Profesionales) -->
                             <div class="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end">
                                 <button type="button" id="cancel-add-client-btn" class="button-danger">
-                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                     Cancelar
                                 </button>
                                 <button type="submit" class="button-success">
-                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                     Guardar Cliente
                                 </button>
                             </div>
@@ -253,7 +251,7 @@
                             <!-- Dispositivo (Fila simple) -->
                             <input type="text" id="edit-client-device" name="edit-client-device" class="form-input" placeholder="Dispositivo">
 
-                            <!-- Recomendaciones (Nuevo diseño de contenedor) -->
+                            <!-- Recomendaciones -->
                             <div class="rounded-lg border border-teal-200 bg-teal-50/50 p-4">
                                 <label class="form-label mb-2 flex items-center text-sm font-semibold text-gray-700">
                                     Recomendaciones (cliente existente)
@@ -261,7 +259,7 @@
                                 <div id="edit-recomendaciones-container" class="space-y-2">
                                 </div>
                                 <button type="button" id="edit-add-recomendacion-btn" class="button-secondary mt-3 text-sm">
-                                    <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                    <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                                     Añadir Recomendación
                                 </button>
                             </div>
@@ -272,11 +270,11 @@
                             <!-- Botones de Acción (Redondeados y Profesionales) -->
                             <div class="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end">
                                 <button type="button" id="cancel-edit-client-btn" class="button-danger">
-                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                     Cancelar
                                 </button>
                                 <button type="submit" class="button-success">
-                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                     Guardar Cambios
                                 </button>
                             </div>
