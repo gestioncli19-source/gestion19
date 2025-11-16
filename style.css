@@ -48,7 +48,17 @@ body {
 
 /* --- Tarjetas del Dashboard --- */
 .dashboard-card {
-    @apply rounded-2xl bg-white p-6 shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-0.5 cursor-pointer;
+    /* Clases de Tailwind: rounded-2xl bg-white p-6 shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-0.5 cursor-pointer; */
+    border-radius: 1rem;
+    background-color: white;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+}
+.dashboard-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
 }
 
 .card-title {
@@ -66,8 +76,9 @@ body {
 }
 
 .form-input {
-    /* Fondo BLANCO para hacer el campo visible, bordes suaves, enfoque Teal */
-    @apply mt-1 block w-full rounded-xl border-gray-300 bg-white p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-500 focus:ring-opacity-50;
+    /* Fondo BLANCO, bordes suaves, enfoque Teal, y SOMBRA para que el campo sea visible */
+    @apply mt-1 block w-full rounded-xl border-gray-300 bg-white p-3 shadow-inner focus:border-teal-500 focus:ring focus:ring-teal-500 focus:ring-opacity-50;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06); /* Sombra interna para hacerlo visible */
 }
 /* Ajuste de color del texto para select y date */
 .form-input[type="date"], select.form-input {
