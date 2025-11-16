@@ -3,371 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Clientes</title>
+    <title>Gestor de Clientes CRM</title>
     
-    <!-- 1. Carga de Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Configuración de Tailwind CSS
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                },
-            },
-        };
-    </script>
-
-    <!-- 2. Enlace a tu hoja de estilos (Para estilos custom como botones y formularios) -->
-    <link rel="stylesheet" href="style.css">
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        /* Un pequeño estilo para dar espacio y color a las alertas de caducidad */
+        body {
+            background-color: #f8f9fa;
+        }
+        .cliente-card {
+            margin-bottom: 1rem;
+        }
+        /* Clases para las caducidades que usaremos con JS */
+        .caducidad-roja {
+            border-left: 5px solid #dc3545; /* Rojo */
+        }
+        .caducidad-amarilla {
+            border-left: 5px solid #ffc107; /* Amarillo */
+        }
+        .caducidad-verde {
+            border-left: 5px solid #198754; /* Verde */
+        }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans antialiased">
+<body>
 
-    <div class="flex h-screen overflow-hidden">
-        <!-- Overlay para móvil (se activa con el menú) -->
-        <div id="sidebar-overlay" class="fixed inset-0 z-10 bg-black/50 md:hidden hidden"></div>
+    <nav class="navbar navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a href="#" class="navbar-brand">
+                <strong>🚀 Gestor de Clientes</strong>
+            </a>
+        </div>
+    </nav>
 
-        <!-- 1. Menú Lateral (Sidebar) -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-20 flex w-64 transform flex-col overflow-y-auto bg-gray-800 text-gray-300 shadow-xl transition-transform duration-300 ease-in-out -translate-x-full md:relative md:translate-x-0">
-            
-            <div class="flex h-20 items-center justify-center px-4 border-b border-gray-700">
-                <h1 class="text-2xl font-bold text-teal-400">GestiónApp</h1>
-            </div>
+    <main class="container mt-4">
+        <div class="row">
 
-            <nav class="flex-1 space-y-2 p-4" id="nav-links">
-                <!-- Color de acento Teal -->
-                <a href="#" data-page="dashboard" class="nav-link group active flex items-center space-x-3 rounded-xl px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                    <span class="font-medium">Dashboard</span>
-                </a>
-                
-                <a href="#" data-page="clientes" class="nav-link group flex items-center space-x-3 rounded-xl px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                    <span class="font-medium">Clientes</span>
-                </a>
-                
-                <a href="#" data-page="add-cliente" class="nav-link group flex items-center space-x-3 rounded-xl px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
-                    <span class="font-medium">Añadir Cliente</span>
-                </a>
-
-                <!-- Restaurada la página de Ajustes -->
-                 <a href="#" data-page="settings" class="nav-link group flex items-center space-x-3 rounded-xl px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    <span class="font-medium">Ajustes</span>
-                </a>
-            </nav>
-
-            <div class="p-4 border-t border-gray-700">
-                <button id="logout-button" class="group flex w-full items-center space-x-3 rounded-xl px-4 py-3 text-left text-gray-300 hover:bg-red-600 hover:text-white transition duration-200">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                    <span class="font-medium">Cerrar Sesión</span>
-                </button>
-            </div>
-        </aside>
-
-        <!-- 2. Contenido Principal -->
-        <div class="flex flex-1 flex-col overflow-hidden">
-            
-            <!-- Cabecera limpia y compacta -->
-            <header class="flex h-16 items-center justify-start space-x-4 border-b border-gray-200 bg-white px-4 shadow-sm md:justify-start md:space-x-0 md:px-8">
-                <button id="menu-toggle" class="text-gray-500 md:hidden mr-4">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                </button>
-                
-                <!-- Título aún más pequeño: text-lg -->
-                <h2 id="page-title" class="text-lg font-semibold text-gray-800">Dashboard</h2>
-            </header>
-
-            <main class="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
-
-                <!-- Página: Dashboard -->
-                <div id="page-dashboard" class="page-content active space-y-6">
-                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
-                        <div id="dashboard-card-total" class="dashboard-card group">
-                            <div class="flex items-center justify-between">
-                                <h4 class="card-title">Total de Clientes</h4>
-                                <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-1.657-1.343-3-3-3s-3 1.343-3 3v2m6 0H9"></path></svg>
-                            </div>
-                            <p class="card-data text-teal-600" id="client-count">0</p>
-                        </div>
-                        <div id="dashboard-card-soon" class="dashboard-card group">
-                            <div class="flex items-center justify-between">
-                                <h4 class="card-title">Caducan pronto (3 días)</h4>
-                                <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            </div>
-                            <p class="card-data text-orange-500" id="client-soon-count">0</p>
-                        </div>
-                        <div id="dashboard-card-expired" class="dashboard-card group">
-                            <div class="flex items-center justify-between">
-                                <h4 class="card-title">Caducados</h4>
-                                <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
-                            </div>
-                            <p class="card-data text-red-600" id="client-expired-count">0</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Página: Lista de Clientes -->
-                <div id="page-clientes" class="page-content hidden space-y-6">
-                    <div>
-                        <input type="search" id="search-bar" placeholder="Buscar por nombre..." class="w-full rounded-2xl border-gray-300 bg-white p-3 shadow-md focus:border-teal-500 focus:ring-teal-500 focus:ring-opacity-50">
-                    </div>
-                    <div class="rounded-2xl bg-white p-2 shadow-lg sm:p-4">
-                        <div id="client-list-container" class="space-y-2">
-                            <p id="client-list-placeholder" class="text-center text-gray-500 p-8">No hay clientes que coincidan con el filtro.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Página: Añadir Cliente (Mejorado y Compacto) -->
-                <div id="page-add-cliente" class="page-content hidden">
-                    <div class="max-w-none rounded-2xl bg-white p-4 shadow-xl sm:p-6 md:max-w-4xl">
-                        <form id="add-client-form" class="space-y-4">
+            <div class="col-md-5">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h4 class="card-title">Añadir Nuevo Cliente</h4>
+                        <form id="formulario-cliente">
                             
-                            <!-- Campo Nombre -->
-                            <input type="text" id="client-name" name="client-name" required class="form-input" placeholder="Nombre del Cliente">
+                            <input type="hidden" id="cliente-id">
 
-                            <!-- Fechas (Grid 2 columnas) -->
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div class="relative">
-                                    <label for="client-creation-date" class="form-label mb-1">Fecha de Creación</label>
-                                    <input type="date" id="client-creation-date" name="client-creation-date" required class="form-input">
+                            <div class="mb-3">
+                                <label for="nombre" class="form-label">Nombre Cliente</label>
+                                <input type="text" class="form-control" id="nombre" required>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="fecha-creacion" class="form-label">Fecha Creación</label>
+                                    <input type="date" class="form-control" id="fecha-creacion" required>
                                 </div>
-                                <div class="relative">
-                                    <label for="client-expiry-date" class="form-label mb-1">Fecha de Caducidad</label>
-                                    <input type="date" id="client-expiry-date" name="client-expiry-date" required class="form-input">
+                                <div class="col-md-6 mb-3">
+                                    <label for="fecha-caducidad" class="form-label">Fecha Caducidad</label>
+                                    <input type="date" class="form-control" id="fecha-caducidad" required>
                                 </div>
                             </div>
 
-                            <!-- Usuario / Contraseña (Grid 2 columnas) -->
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <input type="text" id="client-user" name="client-user" class="form-input" placeholder="Usuario">
-                                <input type="text" id="client-password" name="client-password" class="form-input" placeholder="Contraseña">
-                            </div>
-
-                            <!-- Teléfono / Aplicación (Grid 2 columnas) -->
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div>
-                                    <div class="relative">
-                                      <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                        <span class="text-gray-500 text-base font-semibold">+34</span>
-                                      </div>
-                                      <input type="tel" id="client-phone" name="client-phone" class="form-input pl-14" placeholder="Número de teléfono (600 000 000)">
-                                    </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="usuario" class="form-label">Usuario</label>
+                                    <input type="text" class="form-control" id="usuario">
                                 </div>
-                                <div>
-                                    <select id="client-app" name="client-app" class="form-input text-gray-500">
-                                        <option value="" disabled selected>Seleccionar Aplicación</option>
-                                        <option value="Spinning TV">Spinning TV</option>
-                                        <option value="Spinning IBO">Spinning IBO</option>
-                                        <option value="Spinning Mate">Spinning Mate</option>
-                                        <option value="Hot Player">Hot Player</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <!-- Dispositivo (Fila simple) -->
-                            <input type="text" id="client-device" name="client-device" class="form-input" placeholder="Dispositivo">
-
-                            <!-- Recomendaciones -->
-                            <div class="rounded-lg border border-teal-200 bg-teal-50/50 p-4">
-                                <label class="form-label mb-2 flex items-center text-sm font-semibold text-gray-700">
-                                    Recomendaciones (cliente existente)
-                                </label>
-                                <div id="recomendaciones-container" class="space-y-2">
-                                    <!-- Aquí van los campos dinámicos -->
-                                </div>
-                                <button type="button" id="add-recomendacion-btn" class="button-secondary mt-3 text-sm">
-                                    <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                                    Añadir Recomendación
-                                </button>
-                                <datalist id="existing-clients-list"></datalist>
-                            </div>
-
-                            <!-- Notas -->
-                            <textarea id="client-notes" name="client-notes" rows="4" class="form-input" placeholder="Notas Adicionales"></textarea>
-                            
-                            <!-- Botones de Acción (Estilo integrado) -->
-                            <div class="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end">
-                                
-                                <!-- Botón CANCELAR (Rojo) -->
-                                <button type="button" id="cancel-add-client-btn" 
-                                    class="inline-flex items-center justify-center rounded-full border border-transparent 
-                                           bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-md 
-                                           transition-all duration-200 hover:bg-red-700 focus:ring-red-500 
-                                           hover:shadow-lg hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-offset-2">
-                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                    Cancelar
-                                </button>
-                                
-                                <!-- Botón GUARDAR (Verde) -->
-                                <button type="submit" 
-                                    class="inline-flex items-center justify-center rounded-full border border-transparent 
-                                           bg-green-600 px-6 py-3 text-sm font-semibold text-white shadow-md 
-                                           transition-all duration-200 hover:bg-green-700 focus:ring-green-500 
-                                           hover:shadow-lg hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-offset-2">
-                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                    Guardar Cliente
-                                </button>
-                            </div>
-                        </form>
-                        <p id="add-client-success" class="mt-4 text-center text-green-600 hidden">¡Cliente añadido con éxito!</p>
-                    </div>
-                </div>
-                
-                <!-- Página: Editar Cliente -->
-                <div id="page-edit-cliente" class="page-content hidden">
-                    <div class="max-w-none rounded-2xl bg-white p-4 shadow-xl sm:p-6 md:max-w-4xl">
-                        <form id="edit-client-form" class="space-y-4">
-                            <input type="hidden" id="edit-client-id" name="edit-client-id">
-
-                            <!-- Campo Nombre -->
-                            <input type="text" id="edit-client-name" name="edit-client-name" required class="form-input" placeholder="Nombre del Cliente">
-
-                            <!-- Fechas (Grid 2 columnas) -->
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div class="relative">
-                                    <label for="edit-client-creation-date" class="form-label mb-1">Fecha de Creación</label>
-                                    <input type="date" id="edit-client-creation-date" name="edit-client-creation-date" required class="form-input">
-                                </div>
-                                <div class="relative">
-                                    <label for="edit-client-expiry-date" class="form-label mb-1">Fecha de Caducidad</label>
-                                    <input type="date" id="edit-client-expiry-date" name="edit-client-expiry-date" required class="form-input">
+                                <div class="col-md-6 mb-3">
+                                    <label for="contrasena" class="form-label">Contraseña</label>
+                                    <input type="password" class="form-control" id="contrasena">
                                 </div>
                             </div>
 
-                            <!-- Usuario / Contraseña (Grid 2 columnas) -->
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <input type="text" id="edit-client-user" name="edit-client-user" class="form-input" placeholder="Usuario">
-                                <input type="text" id="edit-client-password" name="edit-client-password" class="form-input" placeholder="Contraseña">
+                            <div class="mb-3">
+                                <label for="dispositivo" class="form-label">Dispositivo</label>
+                                <input type="text" class="form-control" id="dispositivo">
                             </div>
 
-                            <!-- Teléfono / Aplicación (Grid 2 columnas) -->
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div>
-                                    <div class="relative">
-                                      <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                        <span class="text-gray-500 text-base font-semibold">+34</span>
-                                      </div>
-                                      <input type="tel" id="edit-client-phone" name="edit-client-phone" class="form-input pl-14" placeholder="Número de teléfono (600 000 000)">
-                                    </div>
-                                </div>
-                                <div>
-                                    <select id="edit-client-app" name="edit-client-app" class="form-input text-gray-500">
-                                        <option value="Spinning TV">Spinning TV</option>
-                                        <option value="Spinning IBO">Spinning IBO</option>
-                                        <option value="Spinning Mate">Spinning Mate</option>
-                                        <option value="Hot Player">Hot Player</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <!-- Dispositivo (Fila simple) -->
-                            <input type="text" id="edit-client-device" name="edit-client-device" class="form-input" placeholder="Dispositivo">
-
-                            <!-- Recomendaciones -->
-                            <div class="rounded-lg border border-teal-200 bg-teal-50/50 p-4">
-                                <label class="form-label mb-2 flex items-center text-sm font-semibold text-gray-700">
-                                    Recomendaciones (cliente existente)
-                                </label>
-                                <div id="edit-recomendaciones-container" class="space-y-2">
-                                </div>
-                                <button type="button" id="edit-add-recomendacion-btn" class="button-secondary mt-3 text-sm">
-                                    <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                                    Añadir Recomendación
-                                </button>
+                            <div class="mb-3">
+                                <label for="aplicacion" class="form-label">Aplicación</label>
+                                <input type="text" class="form-control" id="aplicacion">
                             </div>
 
-                            <!-- Notas -->
-                            <textarea id="edit-client-notes" name="edit-client-notes" rows="4" class="form-input" placeholder="Notas Adicionales"></textarea>
-                            
-                            <!-- Botones de Acción (Estilo integrado) -->
-                            <div class="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end">
-                                
-                                <!-- Botón CANCELAR (Rojo) -->
-                                <button type="button" id="cancel-edit-client-btn" 
-                                    class="inline-flex items-center justify-center rounded-full border border-transparent 
-                                           bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-md 
-                                           transition-all duration-200 hover:bg-red-700 focus:ring-red-500 
-                                           hover:shadow-lg hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-offset-2">
-                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                    Cancelar
-                                </button>
-                                
-                                <!-- Botón GUARDAR (Verde) -->
-                                <button type="submit" 
-                                    class="inline-flex items-center justify-center rounded-full border border-transparent 
-                                           bg-green-600 px-6 py-3 text-sm font-semibold text-white shadow-md 
-                                           transition-all duration-200 hover:bg-green-700 focus:ring-green-500 
-                                           hover:shadow-lg hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-offset-2">
-                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                    Guardar Cambios
-                                </button>
+                            <div class="mb-3">
+                                <label for="recomendaciones" class="form-label">Recomendaciones</label>
+                                <textarea class="form-control" id="recomendaciones" rows="3"></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="notas" class="form-label">Notas</label>
+                                <textarea class="form-control" id="notas" rows="3"></textarea>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">Guardar Cliente</button>
+                                <button type="reset" class="btn btn-secondary" id="boton-cancelar">Cancelar Edición</button>
                             </div>
                         </form>
                     </div>
                 </div>
+            </div>
 
-                <!-- Página: Ajustes -->
-                <div id="page-settings" class="page-content hidden">
-                    <div class="rounded-2xl bg-white p-6 shadow-xl">
-                        <h3 class="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">Configuración de la Aplicación</h3>
-                        
-                        <div class="space-y-4">
-                            <p class="text-gray-600">
-                                Esta es la sección de ajustes. Puedes usarla en el futuro para agregar opciones
-                                como cambiar el límite de días para "Caducan pronto" o administrar usuarios.
-                            </p>
-                            <div class="bg-teal-50 border-l-4 border-teal-500 text-teal-700 p-4 rounded-lg" role="alert">
-                                <p class="font-bold">Modo de Pruebas Activo</p>
-                                <p>Actualmente, la aplicación permite guardar clientes incluso si la autenticación anónima está pendiente, para facilitar las pruebas.</p>
-                            </div>
-                        </div>
+            <div class="col-md-7">
+                <h4>Lista de Clientes</h4>
+                <div id="lista-clientes">
                     </div>
-                </div>
-
-            </main>
-        </div>
-    </div>
-
-    <!-- 
-      Modal de Confirmación / Alerta
-    -->
-    <div id="modal-backdrop" class="fixed inset-0 z-40 bg-black/50 hidden"></div>
-    <div id="modal-container" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
-        <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <h3 id="modal-title" class="text-xl font-semibold text-gray-900">Confirmar</h3>
-            <p id="modal-message" class="mt-2 text-gray-600">¿Estás seguro?</p>
-            <div id="modal-buttons" class="mt-6 flex justify-end space-x-3">
-                <!-- Los botones se generan dinámicamente -->
             </div>
+
         </div>
-    </div>
+    </main>
 
-    <!-- 
-      Modal de "Ver Cliente"
-    -->
-    <div id="view-modal-backdrop" class="fixed inset-0 z-40 bg-black/50 hidden"></div>
-    <div id="view-modal-container" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
-        <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <h3 id="view-modal-title" class="text-xl font-semibold text-gray-900">Datos del Cliente</h3>
-            <pre id="view-modal-content" class="view-modal-pre mt-4 text-gray-600"></pre>
-            <div class="mt-6 flex justify-end space-x-3">
-                <button id="view-modal-close-btn" class="button-secondary">Cerrar</button>
-                <button id="view-modal-copy-btn" class="button-primary">Copiar Datos</button>
-            </div>
-        </div>
-    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
-
-    <!-- 
-      3. Enlace a tu archivo JavaScript 
-    -->
-    <script type="module" src="script.js" defer></script>
-
+    <script src="app.js" type="module"></script> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
