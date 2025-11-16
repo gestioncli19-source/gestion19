@@ -80,9 +80,13 @@ select.form-input option {
 
 
 /* --- Botones (Acento Teal) --- */
+/* Estilos base con efecto de elevación (shadow-md) */
+.base-button {
+    @apply inline-flex items-center justify-center rounded-full border border-transparent px-6 py-3 text-sm font-semibold text-white shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
 .button-primary {
-    /* Color principal Teal */
-    @apply inline-flex items-center justify-center rounded-full border border-transparent bg-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition-colors hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2;
+    @apply base-button bg-teal-600 hover:bg-teal-700 focus:ring-teal-500 hover:shadow-lg hover:scale-[1.01];
 }
 
 .button-secondary {
@@ -90,11 +94,13 @@ select.form-input option {
 }
 
 .button-success {
-    @apply inline-flex items-center justify-center rounded-full border border-transparent bg-green-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+    /* Diseño profesional: Verde, sombra, efecto de scale al pasar el ratón */
+    @apply base-button bg-green-600 hover:bg-green-700 focus:ring-green-500 hover:shadow-lg hover:scale-[1.01];
 }
 
 .button-danger {
-    @apply inline-flex items-center justify-center rounded-full border border-transparent bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2;
+    /* Diseño profesional: Rojo, sombra, efecto de scale al pasar el ratón */
+    @apply base-button bg-red-600 hover:bg-red-700 focus:ring-red-500 hover:shadow-lg hover:scale-[1.01];
 }
 
 
