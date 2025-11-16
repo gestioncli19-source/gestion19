@@ -8,7 +8,6 @@
     <!-- 1. Carga de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Configuración de Tailwind para usar la fuente Inter
         tailwind.config = {
             theme: {
                 extend: {
@@ -41,25 +40,21 @@
             <!-- Navegación Principal -->
             <nav class="flex-1 space-y-2 p-4" id="nav-links">
                 <a href="#" data-page="dashboard" class="nav-link group active flex items-center space-x-3 rounded-lg px-3 py-2 hover:bg-gray-700 hover:text-white">
-                    <!-- Icono Dashboard -->
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
                     <span class="font-medium">Dashboard</span>
                 </a>
                 
                 <a href="#" data-page="clientes" class="nav-link group flex items-center space-x-3 rounded-lg px-3 py-2 hover:bg-gray-700 hover:text-white">
-                    <!-- Icono Clientes -->
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                     <span class="font-medium">Clientes</span>
                 </a>
                 
                 <a href="#" data-page="add-cliente" class="nav-link group flex items-center space-x-3 rounded-lg px-3 py-2 hover:bg-gray-700 hover:text-white">
-                    <!-- Icono Añadir Cliente -->
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
                     <span class="font-medium">Añadir Cliente</span>
                 </a>
                 
                 <a href="#" data-page="ajustes" class="nav-link group flex items-center space-x-3 rounded-lg px-3 py-2 hover:bg-gray-700 hover:text-white">
-                    <!-- Icono Ajustes -->
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                     <span class="font-medium">Ajustes</span>
                 </a>
@@ -68,7 +63,6 @@
             <!-- Footer del Sidebar (Logout) -->
             <div class="p-4">
                 <button id="logout-button" class="group flex w-full items-center space-x-3 rounded-lg px-3 py-2 text-left hover:bg-red-500 hover:text-white">
-                    <!-- Icono Logout -->
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     <span class="font-medium">Cerrar Sesión</span>
                 </button>
@@ -90,7 +84,6 @@
                 
                 <!-- Info de Usuario (Placeholder) -->
                 <div class="flex items-center space-x-2">
-                    <!-- El ID de usuario se ha quitado -->
                     <div class="h-8 w-8 rounded-full bg-gray-400" title="Info de usuario"></div>
                 </div>
             </header>
@@ -100,19 +93,18 @@
 
                 <!-- Página: Dashboard -->
                 <div id="page-dashboard" class="page-content active">
-                    <!-- El mensaje de bienvenida se ha quitado -->
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                         <div class="rounded-lg bg-white p-5 shadow">
                             <h4 class="text-lg font-semibold text-gray-800">Total de Clientes</h4>
                             <p class="text-3xl font-bold text-blue-600" id="client-count">0</p>
                         </div>
                         <div class="rounded-lg bg-white p-5 shadow">
-                            <h4 class="text-lg font-semibold text-gray-800">Nuevos este mes</h4>
-                            <p class="text-3xl font-bold text-green-600">0</p>
+                            <h4 class="text-lg font-semibold text-gray-800">Caducan pronto</h4>
+                            <p class="text-3xl font-bold text-yellow-500" id="client-soon-count">0</p>
                         </div>
                         <div class="rounded-lg bg-white p-5 shadow">
-                            <h4 class="text-lg font-semibold text-gray-800">Alertas</h4>
-                            <p class="text-3xl font-bold text-yellow-500">0</p>
+                            <h4 class="text-lg font-semibold text-gray-800">Caducados</h4>
+                            <p class="text-3xl font-bold text-red-600" id="client-expired-count">0</p>
                         </div>
                     </div>
                 </div>
@@ -120,9 +112,13 @@
                 <!-- Página: Lista de Clientes -->
                 <div id="page-clientes" class="page-content hidden">
                     <h3 class="text-2xl font-semibold text-gray-700 mb-4">Lista de Clientes</h3>
+                    <!-- Barra de Búsqueda -->
+                    <div class="mb-4">
+                        <input type="search" id="search-bar" placeholder="Buscar por nombre..." class="w-full rounded-md border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <!-- Contenedor de la Lista -->
                     <div class="rounded-lg bg-white p-5 shadow">
                         <div id="client-list-container" class="space-y-4">
-                            <!-- Los clientes se cargarán aquí desde Firebase -->
                             <p id="client-list-placeholder" class="text-gray-500">No hay clientes para mostrar. Añade uno nuevo.</p>
                         </div>
                     </div>
@@ -131,20 +127,75 @@
                 <!-- Página: Añadir Cliente -->
                 <div id="page-add-cliente" class="page-content hidden">
                     <h3 class="text-2xl font-semibold text-gray-700 mb-4">Añadir Nuevo Cliente</h3>
-                    <div class="max-w-xl rounded-lg bg-white p-5 shadow">
+                    <div class="max-w-2xl rounded-lg bg-white p-5 shadow">
                         <form id="add-client-form" class="space-y-4">
+
+                            <!-- Nombre -->
                             <div>
-                                <label for="client-name" class="block text-sm font-medium text-gray-700">Nombre Completo</label>
+                                <label for="client-name" class="block text-sm font-medium text-gray-700">Nombre</label>
                                 <input type="text" id="client-name" name="client-name" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
-                            <div>
-                                <label for="client-email" class="block text-sm font-medium text-gray-700">Email</label>
-                                <input type="email" id="client-email" name="client-email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+
+                            <!-- Fila para Fechas -->
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div>
+                                    <label for="client-creation-date" class="block text-sm font-medium text-gray-700">Fecha de creación</label>
+                                    <input type="date" id="client-creation-date" name="client-creation-date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label for="client-expiry-date" class="block text-sm font-medium text-gray-700">Fecha de caducidad</label>
+                                    <input type="date" id="client-expiry-date" name="client-expiry-date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
                             </div>
+
+                            <!-- Fila para Usuario/Contraseña -->
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div>
+                                    <label for="client-user" class="block text-sm font-medium text-gray-700">Usuario</label>
+                                    <input type="text" id="client-user" name="client-user" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label for="client-password" class="block text-sm font-medium text-gray-700">Contraseña</label>
+                                    <input type="password" id="client-password" name="client-password" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+                            </div>
+
+                            <!-- Fila para Dispositivo/Aplicación -->
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div>
+                                    <label for="client-device" class="block text-sm font-medium text-gray-700">Dispositivo</label>
+                                    <input type="text" id="client-device" name="client-device" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label for="client-app" class="block text-sm font-medium text-gray-700">Aplicación</label>
+                                    <input type="text" id="client-app" name="client-app" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                </div>
+                            </div>
+
+                            <!-- Teléfono -->
                             <div>
-                                <label for="client-phone" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                                <label for="client-phone" class="block text-sm font-medium text-gray-700">Número de teléfono</label>
                                 <input type="tel" id="client-phone" name="client-phone" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
+
+                            <!-- Recomendaciones (Dinámico) -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Recomendaciones (debe ser un cliente existente)</label>
+                                <div id="recomendaciones-container" class="mt-1 space-y-2">
+                                    <!-- Campos dinámicos irán aquí -->
+                                </div>
+                                <button type="button" id="add-recomendacion-btn" class="mt-2 rounded bg-gray-200 px-2 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-300">+ Añadir recomendación</button>
+                                <!-- Datalist para autocomplete -->
+                                <datalist id="existing-clients-list"></datalist>
+                            </div>
+
+                            <!-- Notas -->
+                            <div>
+                                <label for="client-notes" class="block text-sm font-medium text-gray-700">Notas</label>
+                                <textarea id="client-notes" name="client-notes" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                            </div>
+                            
+                            <!-- Botón Submit -->
                             <div>
                                 <button type="submit" class="w-full rounded-md bg-blue-600 px-4 py-2 text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                                     Guardar Cliente
@@ -155,12 +206,12 @@
                     </div>
                 </div>
 
+
                 <!-- Página: Ajustes -->
                 <div id="page-ajustes" class="page-content hidden">
                     <h3 class="text-2xl font-semibold text-gray-700 mb-4">Ajustes</h3>
                     <div class="rounded-lg bg-white p-5 shadow">
                         <p class="text-gray-600">Aquí irán las opciones de configuración de la cuenta y la aplicación.</p>
-                        <!-- El ID de depuración se ha quitado -->
                     </div>
                 </div>
 
@@ -170,8 +221,6 @@
 
     <!-- 
       3. Enlace a tu archivo JavaScript 
-      Se usa 'type="module"' porque el script usa 'import' de ES6.
-      'defer' asegura que se ejecute después de que el HTML esté cargado.
     -->
     <script type="module" src="script.js" defer></script>
 
