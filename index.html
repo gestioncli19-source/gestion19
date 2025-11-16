@@ -2,7 +2,7 @@
 <html lang="es"> <!-- 'class="dark"' se añadirá aquí con JS -->
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Clientes</title>
     
     <!-- 1. Carga de Tailwind CSS -->
@@ -70,22 +70,13 @@
         <!-- 2. Contenido Principal -->
         <div class="flex flex-1 flex-col overflow-hidden">
             
-            <!-- CAMBIOS EN LA CABECERA:
-                 1. Título reducido a text-lg
-                 2. Bloque de "Admin" y círculo eliminados
-                 3. Ajustado justify-start y space-x-4 para móvil, y md:justify-between para desktop
-            -->
             <header class="flex h-20 items-center justify-start space-x-4 border-b border-gray-200 bg-white px-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 md:justify-between md:space-x-0 md:px-8">
                 <button id="menu-toggle" class="text-gray-500 md:hidden">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
                 
+                <!-- Título reducido a text-lg -->
                 <h2 id="page-title" class="text-lg font-semibold text-gray-800 dark:text-gray-100">Dashboard</h2>
-                
-                <!-- El bloque 'Admin' y círculo se ha eliminado. 
-                     En desktop (md:justify-between), el título irá a la izquierda.
-                     En móvil (justify-start), el título irá al lado del botón de menú.
-                -->
             </header>
 
             <main class="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
@@ -105,13 +96,15 @@
                                 <h4 class="card-title dark:text-gray-200">Caducan pronto (3 días)</h4>
                                 <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             </div>
-                            <p class="card-data text-yellow-500 dark:text-yellow-400" id="client-soon-count">0</p>
+                            <!-- Texto corregido para modo oscuro -->
+                            <p class="card-data text-yellow-500 dark:text-yellow-400" id="client-soon-count">0</p> 
                         </div>
                         <div id="dashboard-card-expired" class="dashboard-card group">
                             <div class="flex items-center justify-between">
                                 <h4 class="card-title dark:text-gray-200">Caducados</h4>
                                 <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
                             </div>
+                            <!-- Texto corregido para modo oscuro -->
                             <p class="card-data text-red-600 dark:text-red-500" id="client-expired-count">0</p>
                         </div>
                     </div>
@@ -129,51 +122,45 @@
                     </div>
                 </div>
 
-                <!-- Página: Añadir Cliente -->
+                <!-- Página: Añadir Cliente (REDIMENSIONADO Y MEJORADO) -->
                 <div id="page-add-cliente" class="page-content hidden">
-                    <div class="max-w-none rounded-xl bg-white p-4 shadow-lg dark:bg-gray-800 sm:p-6 md:max-w-3xl">
-                        <form id="add-client-form" class="space-y-5">
+                    <div class="max-w-none rounded-xl bg-white p-4 shadow-lg dark:bg-gray-800 sm:p-6 md:max-w-4xl">
+                        <form id="add-client-form" class="space-y-4">
+                            
+                            <!-- Campo Nombre (Fila simple) -->
+                            <input type="text" id="client-name" name="client-name" required class="form-input" placeholder="Nombre del Cliente">
 
-                            <div>
-                                <label for="client-name" class="form-label">Nombre</label>
-                                <input type="text" id="client-name" name="client-name" required class="form-input">
-                            </div>
-
-                            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-                                <div>
-                                    <label for="client-creation-date" class="form-label">Fecha de creación</label>
+                            <!-- Fechas (Grid 2 columnas) -->
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div class="relative">
+                                    <label for="client-creation-date" class="form-label mb-1">Fecha de Creación</label>
                                     <input type="date" id="client-creation-date" name="client-creation-date" required class="form-input">
                                 </div>
-                                <div>
-                                    <label for="client-expiry-date" class="form-label">Fecha de caducidad</label>
+                                <div class="relative">
+                                    <label for="client-expiry-date" class="form-label mb-1">Fecha de Caducidad</label>
                                     <input type="date" id="client-expiry-date" name="client-expiry-date" required class="form-input">
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-                                <div>
-                                    <label for="client-user" class="form-label">Usuario</label>
-                                    <input type="text" id="client-user" name="client-user" class="form-input">
-                                </div>
-                                <div>
-                                    <label for="client-password" class="form-label">Contraseña</label>
-                                    <input type="text" id="client-password" name="client-password" class="form-input">
-                                </div>
+                            <!-- Usuario / Contraseña (Grid 2 columnas) -->
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <input type="text" id="client-user" name="client-user" class="form-input" placeholder="Usuario">
+                                <input type="text" id="client-password" name="client-password" class="form-input" placeholder="Contraseña">
                             </div>
 
-                            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                            <!-- Teléfono / Aplicación (Grid 2 columnas) -->
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
-                                    <label for="client-phone" class="form-label">Número de teléfono</label>
-                                    <div class="relative mt-1">
+                                    <div class="relative">
                                       <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                        <span class="text-gray-500 dark:text-gray-400 sm:text-sm">+34</span>
+                                        <span class="text-gray-500 dark:text-gray-400 text-base font-semibold">+34</span>
                                       </div>
-                                      <input type="tel" id="client-phone" name="client-phone" class="form-input pl-10" placeholder="600 000 000">
+                                      <input type="tel" id="client-phone" name="client-phone" class="form-input pl-14" placeholder="Número de teléfono (600 000 000)">
                                     </div>
                                 </div>
                                 <div>
-                                    <label for="client-app" class="form-label">Aplicación</label>
-                                    <select id="client-app" name="client-app" class="form-input">
+                                    <select id="client-app" name="client-app" class="form-input text-gray-500 dark:text-gray-400">
+                                        <option value="" disabled selected>Seleccionar Aplicación</option>
                                         <option value="Spinning TV">Spinning TV</option>
                                         <option value="Spinning IBO">Spinning IBO</option>
                                         <option value="Spinning Mate">Spinning Mate</option>
@@ -182,29 +169,31 @@
                                 </div>
                             </div>
                             
-                            <div>
-                                <label for="client-device" class="form-label">Dispositivo</label>
-                                <input type="text" id="client-device" name="client-device" class="form-input">
-                            </div>
+                            <!-- Dispositivo (Fila simple) -->
+                            <input type="text" id="client-device" name="client-device" class="form-input" placeholder="Dispositivo">
 
-                            <div>
-                                <label class="form-label">Recomendaciones (debe ser un cliente existente)</label>
-                                <div id="recomendaciones-container" class="mt-1 space-y-2">
+                            <!-- Recomendaciones -->
+                            <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-700">
+                                <label class="form-label mb-2 flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    Recomendaciones (cliente existente)
+                                </label>
+                                <div id="recomendaciones-container" class="space-y-2">
+                                    <!-- Aquí van los campos dinámicos -->
                                 </div>
-                                <button type="button" id="add-recomendacion-btn" class="button-secondary mt-2">
-                                    <svg class="h-5 w-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                                    Añadir
+                                <button type="button" id="add-recomendacion-btn" class="button-secondary mt-3 text-sm">
+                                    <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                    Añadir Recomendación
                                 </button>
                                 <datalist id="existing-clients-list"></datalist>
                             </div>
 
-                            <div>
-                                <label for="client-notes" class="form-label">Notas</label>
-                                <textarea id="client-notes" name="client-notes" rows="4" class="form-input"></textarea>
-                            </div>
+                            <!-- Notas -->
+                            <textarea id="client-notes" name="client-notes" rows="4" class="form-input" placeholder="Notas Adicionales"></textarea>
                             
-                            <div class="flex flex-col-reverse gap-4 pt-4 sm:flex-row sm:justify-end sm:space-x-4">
+                            <!-- Botones de Acción (Redondeados y Profesionales) -->
+                            <div class="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end">
                                 <button type="button" id="cancel-add-client-btn" class="button-danger">
+                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                     Cancelar
                                 </button>
                                 <button type="submit" class="button-success">
@@ -219,50 +208,43 @@
                 
                 <!-- Página: Editar Cliente -->
                 <div id="page-edit-cliente" class="page-content hidden">
-                    <div class="max-w-none rounded-xl bg-white p-4 shadow-lg dark:bg-gray-800 sm:p-6 md:max-w-3xl">
-                        <form id="edit-client-form" class="space-y-5">
+                    <div class="max-w-none rounded-xl bg-white p-4 shadow-lg dark:bg-gray-800 sm:p-6 md:max-w-4xl">
+                        <form id="edit-client-form" class="space-y-4">
                             <input type="hidden" id="edit-client-id" name="edit-client-id">
 
-                            <div>
-                                <label for="edit-client-name" class="form-label">Nombre</label>
-                                <input type="text" id="edit-client-name" name="edit-client-name" required class="form-input">
-                            </div>
+                            <!-- Campo Nombre -->
+                            <input type="text" id="edit-client-name" name="edit-client-name" required class="form-input" placeholder="Nombre del Cliente">
 
-                            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-                                <div>
-                                    <label for="edit-client-creation-date" class="form-label">Fecha de creación</label>
+                            <!-- Fechas (Grid 2 columnas) -->
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div class="relative">
+                                    <label for="edit-client-creation-date" class="form-label mb-1">Fecha de Creación</label>
                                     <input type="date" id="edit-client-creation-date" name="edit-client-creation-date" required class="form-input">
                                 </div>
-                                <div>
-                                    <label for="edit-client-expiry-date" class="form-label">Fecha de caducidad</label>
+                                <div class="relative">
+                                    <label for="edit-client-expiry-date" class="form-label mb-1">Fecha de Caducidad</label>
                                     <input type="date" id="edit-client-expiry-date" name="edit-client-expiry-date" required class="form-input">
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-                                <div>
-                                    <label for="edit-client-user" class="form-label">Usuario</label>
-                                    <input type="text" id="edit-client-user" name="edit-client-user" class="form-input">
-                                </div>
-                                <div>
-                                    <label for="edit-client-password" class="form-label">Contraseña</label>
-                                    <input type="text" id="edit-client-password" name="edit-client-password" class="form-input">
-                                </div>
+                            <!-- Usuario / Contraseña (Grid 2 columnas) -->
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <input type="text" id="edit-client-user" name="edit-client-user" class="form-input" placeholder="Usuario">
+                                <input type="text" id="edit-client-password" name="edit-client-password" class="form-input" placeholder="Contraseña">
                             </div>
 
-                            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                            <!-- Teléfono / Aplicación (Grid 2 columnas) -->
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
-                                    <label for="edit-client-phone" class="form-label">Número de teléfono</label>
-                                    <div class="relative mt-1">
+                                    <div class="relative">
                                       <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                        <span class="text-gray-500 dark:text-gray-400 sm:text-sm">+34</span>
+                                        <span class="text-gray-500 dark:text-gray-400 text-base font-semibold">+34</span>
                                       </div>
-                                      <input type="tel" id="edit-client-phone" name="edit-client-phone" class="form-input pl-10" placeholder="600 000 000">
+                                      <input type="tel" id="edit-client-phone" name="edit-client-phone" class="form-input pl-14" placeholder="Número de teléfono (600 000 000)">
                                     </div>
                                 </div>
                                 <div>
-                                    <label for="edit-client-app" class="form-label">Aplicación</label>
-                                    <select id="edit-client-app" name="edit-client-app" class="form-input">
+                                    <select id="edit-client-app" name="edit-client-app" class="form-input text-gray-500 dark:text-gray-400">
                                         <option value="Spinning TV">Spinning TV</option>
                                         <option value="Spinning IBO">Spinning IBO</option>
                                         <option value="Spinning Mate">Spinning Mate</option>
@@ -271,28 +253,29 @@
                                 </div>
                             </div>
                             
-                            <div>
-                                <label for="edit-client-device" class="form-label">Dispositivo</label>
-                                <input type="text" id="edit-client-device" name="edit-client-device" class="form-input">
-                            </div>
+                            <!-- Dispositivo (Fila simple) -->
+                            <input type="text" id="edit-client-device" name="edit-client-device" class="form-input" placeholder="Dispositivo">
 
-                            <div>
-                                <label class="form-label">Recomendaciones (debe ser un cliente existente)</label>
-                                <div id="edit-recomendaciones-container" class="mt-1 space-y-2">
+                            <!-- Recomendaciones -->
+                            <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-700">
+                                <label class="form-label mb-2 flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                    Recomendaciones (cliente existente)
+                                </label>
+                                <div id="edit-recomendaciones-container" class="space-y-2">
                                 </div>
-                                <button type="button" id="edit-add-recomendacion-btn" class="button-secondary mt-2">
-                                    <svg class="h-5 w-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                                    Añadir
+                                <button type="button" id="edit-add-recomendacion-btn" class="button-secondary mt-3 text-sm">
+                                    <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                    Añadir Recomendación
                                 </button>
                             </div>
 
-                            <div>
-                                <label for="edit-client-notes" class="form-label">Notas</label>
-                                <textarea id="edit-client-notes" name="edit-client-notes" rows="4" class="form-input"></textarea>
-                            </div>
+                            <!-- Notas -->
+                            <textarea id="edit-client-notes" name="edit-client-notes" rows="4" class="form-input" placeholder="Notas Adicionales"></textarea>
                             
-                            <div class="flex flex-col-reverse gap-4 pt-4 sm:flex-row sm:justify-end sm:space-x-4">
+                            <!-- Botones de Acción (Redondeados y Profesionales) -->
+                            <div class="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end">
                                 <button type="button" id="cancel-edit-client-btn" class="button-danger">
+                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                     Cancelar
                                 </button>
                                 <button type="submit" class="button-success">
