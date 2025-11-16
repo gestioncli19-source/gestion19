@@ -12,7 +12,7 @@ import {
 setLogLevel('debug');
 
 // Variables de entorno globales (Definición robusta con Fallback)
-const APP_ID_FALLBACK = 'gestioncli19-app-id'; 
+const APP_ID_FALLBACK = 'gestioncli19-fallback-id-v2'; 
 const FIREBASE_CONFIG_FALLBACK = {
     apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
     authDomain: "gestioncandy-b9356.firebaseapp.com",
@@ -31,6 +31,7 @@ let db, auth;
 let cachedList = []; 
 let currentRecommendations = []; 
 let currentUserId = null;
+let currentFilter = 'all';
 
 
 // --- INICIALIZACIÓN DE FIREBASE (SOLO CONFIGURACIÓN) ---
@@ -46,7 +47,7 @@ async function initializeFirebase() {
     try {
         const app = initializeApp(firebaseConfig);
         db = getFirestore(app);
-        auth = getAuth(app); // auth se inicializa aquí
+        auth = getAuth(app); 
         
         // Listener de Estado de Autenticación
         onAuthStateChanged(auth, (user) => {
@@ -62,8 +63,108 @@ async function initializeFirebase() {
 
     } catch (error) {
         console.error("Error durante la inicialización de Firebase:", error);
-        loginErrorMsg.textContent = `Error crítico de Firebase: ${error.code}.`;
+        document.getElementById('login-error-message').textContent = `Error crítico de Firebase: ${error.code}.`;
     }
+}
+
+
+// --- CONFIGURACIÓN DE OYENTES DE EVENTOS (LA SOLUCIÓN AL ERROR DE NULL) ---
+
+function setupEventListeners() {
+    
+    // --- MANEJADOR DE LOGIN ---
+    const formLogin = document.getElementById('form-login');
+    const loginEmail = document.getElementById('login-email');
+    const loginPassword = document.getElementById('login-password');
+    const loginErrorMsg = document.getElementById('login-error-message');
+
+    formLogin.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        loginErrorMsg.textContent = 'Iniciando sesión...';
+
+        if (!auth) {
+            loginErrorMsg.textContent = 'Error: Firebase no está inicializado. Intenta recargar.';
+            return;
+        }
+
+        try {
+            await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
+            loginErrorMsg.textContent = '';
+        } catch (error) {
+            let message = "Error de inicio de sesión.";
+            
+            switch (error.code) {
+                case 'auth/wrong-password':
+                case 'auth/user-not-found':
+                case 'auth/invalid-credential':
+                    message = "Usuario o contraseña incorrectos.";
+                    break;
+                case 'auth/operation-not-allowed':
+                    message = "ERROR CRÍTICO: El proveedor Email/Password NO está habilitado en Firebase Console.";
+                    break;
+                default:
+                    message = `Error de autenticación: ${error.code}`;
+            }
+            
+            loginErrorMsg.textContent = message;
+            console.error("Login error:", error);
+        }
+    });
+
+    // --- OYENTES DE NAVEGACIÓN ---
+    document.getElementById('nav-dashboard').addEventListener('click', ()=> switchSection('dashboard'));
+    document.getElementById('nav-clientes').addEventListener('click', ()=> switchSection('clientes'));
+    document.getElementById('nav-add').addEventListener('click', ()=>{
+        switchSection('add');
+        setDefaultDates(); 
+        document.getElementById('f-telefono').value = '+34'; 
+    });
+    // Icono de Engranaje
+    document.getElementById('nav-settings').addEventListener('click', ()=> switchSection('settings')); 
+
+    // Opciones del Menú de Ajustes
+    document.getElementById('btn-export-csv').addEventListener('click', () => exportCSV());
+    document.getElementById('btn-logout-settings').addEventListener('click', async () => {
+        await signOut(auth);
+        showNotification("Sesión Cerrada", "Has cerrado sesión correctamente.", 'success');
+    });
+    document.getElementById('btn-import-csv').addEventListener('click', () => handleImportClick());
+    document.getElementById('nav-tutorial').addEventListener('click', ()=> switchSection('tutorial'));
+    
+    // Oyentes de la sección Clientes
+    document.getElementById('search-input').addEventListener('input', (e) => {
+        filterClients(e.target.value, 'all');
+    });
+    document.getElementById('stat-3days-link').addEventListener('click', () => {
+        currentFilter = 'soon';
+        document.getElementById('search-input').value = '';
+        switchSection('clientes');
+    });
+    document.getElementById('stat-expired-link').addEventListener('click', () => {
+        currentFilter = 'expired';
+        document.getElementById('search-input').value = '';
+        switchSection('clientes');
+    });
+
+
+    // Oyentes de Modales y Formularios
+    document.getElementById('modal-cancel').addEventListener('click', () => {
+        document.getElementById('modal').classList.remove('show');
+        currentRecommendations = [];
+    });
+    document.getElementById('history-modal-close').addEventListener('click', () => {
+        document.getElementById('history-modal').classList.remove('show');
+    });
+    
+    // Llamadas a la lógica de adición de recomendaciones (para ambos formularios)
+    addRecommendationLogic('f'); 
+    addRecommendationLogic('e'); 
+    
+    // Aquí se inicializan los submits de los formularios
+    document.getElementById('form-edit').addEventListener('submit', handleEditSubmit);
+    document.getElementById('form-add').addEventListener('submit', handleAddSubmit);
+    document.getElementById('f-reset').addEventListener('click', handleResetClick);
+    document.getElementById('f-creacion').addEventListener('change', handleCreationDateChange);
 }
 
 
@@ -100,7 +201,7 @@ function switchSection(target) {
     
     // Activar el botón correspondiente
     let targetId = `nav-${target}`;
-    if (target === 'settings' || target === 'tutorial') {
+    if (target === 'tutorial' || target === 'settings') {
         // Para Tutorial y Ajustes, activamos el botón de Ajustes (Engranaje)
         document.getElementById('nav-settings').classList.add('active');
     } else {
@@ -109,65 +210,9 @@ function switchSection(target) {
     }
 
     if (target === 'clientes') {
-      filterClients(document.getElementById('search-input').value, 'all');
+      filterClients(document.getElementById('search-input').value, currentFilter);
     }
 }
-
-// Oyentes de Navegación 
-document.getElementById('nav-dashboard').addEventListener('click', ()=> switchSection('dashboard'));
-document.getElementById('nav-clientes').addEventListener('click', ()=> switchSection('clientes'));
-document.getElementById('nav-add').addEventListener('click', ()=>{
-    switchSection('add');
-    setDefaultDates(); 
-    document.getElementById('f-telefono').value = '+34'; 
-});
-document.getElementById('nav-settings').addEventListener('click', ()=> switchSection('settings')); // Engranaje
-
-// --- MANEJADOR DE LOGIN Y LOGOUT ---
-
-// VINCULACIÓN DE LAS OPCIONES DEL MENÚ DE AJUSTES
-document.getElementById('btn-export-csv').addEventListener('click', () => exportCSV());
-document.getElementById('btn-logout-settings').addEventListener('click', async () => {
-    await signOut(auth);
-    showNotification("Sesión Cerrada", "Has cerrado sesión correctamente.", 'success');
-});
-document.getElementById('nav-tutorial').addEventListener('click', ()=> switchSection('tutorial'));
-
-
-const formLogin = document.getElementById('form-login');
-const loginEmail = document.getElementById('login-email');
-const loginPassword = document.getElementById('login-password');
-const loginErrorMsg = document.getElementById('login-error-message');
-
-formLogin.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    loginErrorMsg.textContent = 'Iniciando sesión...';
-
-    // **VERIFICACIÓN CRÍTICA**: Aseguramos que 'auth' está disponible.
-    if (!auth) {
-        loginErrorMsg.textContent = 'Error: Firebase no está inicializado. Intenta recargar.';
-        return;
-    }
-
-    try {
-        // La función intenta el login
-        await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
-        loginErrorMsg.textContent = '';
-    } catch (error) {
-        let message = "Error de inicio de sesión.";
-        if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-            message = "Usuario o contraseña incorrectos.";
-        } else if (error.code === 'auth/invalid-email') {
-            message = "Formato de email no válido.";
-        } else if (error.code === 'auth/network-request-failed') {
-             message = "Error de red. Revisa tu conexión.";
-        } else if (error.code === 'auth/admin-restricted-operation' || error.code === 'auth/operation-not-allowed') {
-             message = "Operación bloqueada. Revisa que el proveedor Email/Password esté habilitado en Firebase.";
-        }
-        loginErrorMsg.textContent = message;
-        console.error("Login error:", error);
-    }
-});
 
 
 // --- LÓGICA DE FIRESTORE ---
@@ -194,8 +239,9 @@ function startListeners() {
         renderDashboard(list);
         updateStats(list);
         
+        // Si ya estamos en la sección clientes, refrescamos la vista
         if (document.getElementById('section-clientes').style.display !== 'none') {
-            filterClients(document.getElementById('search-input').value, 'all');
+            filterClients(document.getElementById('search-input').value, currentFilter);
         }
     }, (error) => {
         console.error("Error fetching data: ", error);
@@ -259,15 +305,15 @@ function setDefaultDates() {
     document.getElementById('f-creacion').value = isoForInput(today);
     document.getElementById('f-caducidad').value = isoForInput(caducidad3Months);
 }
-if(document.getElementById('f-creacion')) {
-    document.getElementById('f-creacion').addEventListener('change', () => {
-        const newCreationDate = document.getElementById('f-creacion').value;
-        if (newCreationDate) {
-            const newCaducidad = getNewCaducidad(newCreationDate, 3);
-            document.getElementById('f-caducidad').value = isoForInput(newCaducidad);
-        }
-    });
+
+function handleCreationDateChange() {
+    const newCreationDate = document.getElementById('f-creacion').value;
+    if (newCreationDate) {
+        const newCaducidad = getNewCaducidad(newCreationDate, 3);
+        document.getElementById('f-caducidad').value = isoForInput(newCaducidad);
+    }
 }
+
 
 // --- Dashboard Logic ---
 function getExpiryStatus(isoDate) {
@@ -480,20 +526,6 @@ function filterClients(searchTerm = "", filter = 'all') {
     renderClients(searchResults);
 }
 
-document.getElementById('search-input').addEventListener('input', (e) => {
-    filterClients(e.target.value, 'all');
-});
-document.getElementById('stat-3days-link').addEventListener('click', () => {
-    currentFilter = 'soon';
-    document.getElementById('search-input').value = '';
-    switchSection('clientes');
-});
-document.getElementById('stat-expired-link').addEventListener('click', () => {
-    currentFilter = 'expired';
-    document.getElementById('search-input').value = '';
-    switchSection('clientes');
-});
-
 
 function renderClients(list){
   const clientsGrid = document.getElementById('clients-grid');
@@ -595,39 +627,11 @@ const addRecommendationLogic = (prefix) => {
         }
     };
 };
-addRecommendationLogic('f'); 
-addRecommendationLogic('e'); 
 
 
-// --- MODAL Y FORMULARIOS ---
+// --- CRUD Handlers ---
 
-window.openEdit = function(id){
-    const item = cachedList.find(i => i.id === id);
-    if(!item) return;
-
-    currentRecommendations = [...(item.recomendaciones || [])];
-    renderRecommendations(currentRecommendations, document.getElementById('e-recommended-clients'), 'e');
-
-    document.getElementById('e-nombre').value = item.nombre;
-    document.getElementById('e-telefono').value = item.telefono || "+34"; 
-    document.getElementById('e-creacion').value = isoForInput(item.creacion);
-    document.getElementById('e-caducidad').value = isoForInput(item.caducidad);
-    document.getElementById('e-usuario').value = item.usuario || "";
-    document.getElementById('e-contrasena').value = item.contrasena || "";
-    document.getElementById('e-dispositivo').value = item.dispositivo || "";
-    document.getElementById('e-aplicacion').value = item.aplicacion || ""; 
-
-    document.getElementById('modal').setAttribute('data-id', id);
-    document.getElementById('btn-history-open').onclick = () => openHistoryModal(id);
-    document.getElementById('modal').classList.add('show');
-};
-
-document.getElementById('modal-cancel').addEventListener('click', () => {
-    document.getElementById('modal').classList.remove('show');
-    currentRecommendations = [];
-});
-
-document.getElementById('form-edit').addEventListener('submit', async e=>{
+async function handleEditSubmit(e){
   e.preventDefault();
   const id = document.getElementById('modal').getAttribute('data-id');
   if(!id || !currentUserId) return showNotification("Error", "Usuario o ID no válido.", 'error');
@@ -653,9 +657,9 @@ document.getElementById('form-edit').addEventListener('submit', async e=>{
       showNotification("Error", "No se pudieron guardar los cambios. (Revisa reglas de Firestore)", 'error');
       console.error("Error updating item:", error);
   }
-});
+}
 
-document.getElementById('form-add').addEventListener('submit', async e=>{
+async function handleAddSubmit(e){
   e.preventDefault();
   if (!currentUserId) return showNotification("Error", "Usuario no autenticado.", 'error');
 
@@ -697,15 +701,39 @@ document.getElementById('form-add').addEventListener('submit', async e=>{
       showNotification("Error de Creación", "No se pudo añadir el nuevo cliente. (Revisa reglas de Firestore)", 'error');
       console.error("Error adding item:", error);
   }
-});
+}
 
-document.getElementById('f-reset').addEventListener('click', ()=> {
+function handleResetClick() {
     document.getElementById('form-add').reset();
     setDefaultDates();
     currentRecommendations = [];
     document.getElementById('f-recommended-clients').innerHTML = '';
     document.getElementById('f-telefono').value = '+34'; 
-});
+}
+
+
+// --- MODAL Y FUNCIONES VARIAS ---
+
+window.openEdit = function(id){
+    const item = cachedList.find(i => i.id === id);
+    if(!item) return;
+
+    currentRecommendations = [...(item.recomendaciones || [])];
+    renderRecommendations(currentRecommendations, document.getElementById('e-recommended-clients'), 'e');
+
+    document.getElementById('e-nombre').value = item.nombre;
+    document.getElementById('e-telefono').value = item.telefono || "+34"; 
+    document.getElementById('e-creacion').value = isoForInput(item.creacion);
+    document.getElementById('e-caducidad').value = isoForInput(item.caducidad);
+    document.getElementById('e-usuario').value = item.usuario || "";
+    document.getElementById('e-contrasena').value = item.contrasena || "";
+    document.getElementById('e-dispositivo').value = item.dispositivo || "";
+    document.getElementById('e-aplicacion').value = item.aplicacion || ""; 
+
+    document.getElementById('modal').setAttribute('data-id', id);
+    document.getElementById('btn-history-open').onclick = () => openHistoryModal(id);
+    document.getElementById('modal').classList.add('show');
+};
 
 // --- HISTORIAL ---
 window.openHistoryModal = async function(id) {
@@ -720,7 +748,6 @@ window.openHistoryModal = async function(id) {
         
         let historyList = snapshot.docs.map(doc => doc.data());
         
-        // Ordenar en el cliente (fecha_renovacion en formato ISO string)
         historyList.sort((a, b) => {
             return new Date(b.fecha_renovacion) - new Date(a.fecha_renovacion);
         });
@@ -732,11 +759,6 @@ window.openHistoryModal = async function(id) {
         console.error("Error fetching history:", error);
     }
 }
-
-document.getElementById('history-modal-close').addEventListener('click', () => {
-    document.getElementById('history-modal').classList.remove('show');
-});
-
 
 function renderRenewalHistory(historyList, targetDiv) {
     targetDiv.innerHTML = '';
@@ -810,19 +832,7 @@ window.handleImportClick = function() {
     showNotification("Advertencia", "La importación es una función avanzada, asegúrate de que el CSV tenga las columnas correctas: Nombre, Telefono, App, Usuario, etc.", 'warning');
 }
 
-document.getElementById('file-import-csv').addEventListener('change', (event) => {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const csvData = e.target.result;
-            showNotification("Importación en Curso", `Procesando archivo ${file.name}...`, 'success');
-        };
-        reader.readAsText(file);
-    }
-});
 
-
-// Iniciar la aplicación
+// Iniciar la aplicación: Primero se inicializa Firebase, luego se configuran los oyentes.
 window.onload = initializeFirebase;
-
+document.addEventListener('DOMContentLoaded', setupEventListeners);
