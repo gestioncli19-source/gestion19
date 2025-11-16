@@ -81,7 +81,7 @@ document.getElementById('logout-button').addEventListener('click', () => {
     signOut(auth).catch(error => console.error("Error al cerrar sesión:", error));
 });
 
-// --- 6. SISTEMA DE MODAL ---
+// --- 6. SISTEMA DE MODAL (Confirmar/Alerta) ---
 const modalBackdrop = document.getElementById('modal-backdrop');
 const modalContainer = document.getElementById('modal-container');
 const modalTitle = document.getElementById('modal-title');
@@ -91,7 +91,6 @@ const modalButtons = document.getElementById('modal-buttons');
 function showAlert(title, message) {
     modalTitle.textContent = title;
     modalMessage.textContent = message;
-    // Usar los nuevos botones de color
     modalButtons.innerHTML = '<button id="modal-alert-ok-btn" class="button-primary">Aceptar</button>';
     
     modalBackdrop.classList.remove('hidden');
@@ -161,39 +160,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const cardSoon = document.getElementById('dashboard-card-soon');
     const cardExpired = document.getElementById('dashboard-card-expired');
 
-    // --- Lógica del Tema (Modo Claro/Oscuro) ---
-    const themeToggle = document.getElementById('theme-toggle');
-    const themeToggleKnob = document.getElementById('theme-toggle-knob');
-    const html = document.documentElement; // Tag <html>
-
-    // Al cargar, comprobar preferencia guardada o del sistema
-    if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        html.classList.add('dark');
-        themeToggle.setAttribute('aria-checked', 'true');
-        themeToggleKnob.classList.add('translate-x-5');
-    } else {
-        html.classList.remove('dark');
-        themeToggle.setAttribute('aria-checked', 'false');
-        themeToggleKnob.classList.remove('translate-x-0'); // Asegurar posición inicial
-    }
-
-    // Listener para el botón de tema
-    themeToggle.addEventListener('click', () => {
-        if (html.classList.contains('dark')) {
-            html.classList.remove('dark');
-            localStorage.setItem('theme', 'light');
-            themeToggle.setAttribute('aria-checked', 'false');
-            themeToggleKnob.classList.remove('translate-x-5');
-            themeToggleKnob.classList.add('translate-x-0');
-        } else {
-            html.classList.add('dark');
-            localStorage.setItem('theme', 'dark');
-            themeToggle.setAttribute('aria-checked', 'true');
-            themeToggleKnob.classList.add('translate-x-5');
-            themeToggleKnob.classList.remove('translate-x-0');
-        }
-    });
-
+    const viewModalBackdrop = document.getElementById('view-modal-backdrop');
+    const viewModalContainer = document.getElementById('view-modal-container');
+    const viewModalCloseBtn = document.getElementById('view-modal-close-btn');
 
     // --- Navegación ---
     showPage = function(pageId) {
@@ -202,7 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activePage) {
             activePage.classList.remove('hidden');
             
-            // Lógica de Título Actualizada
             const link = document.querySelector(`.nav-link[data-page="${pageId}"]`);
             let titleText = 'Página';
             if (link) {
@@ -241,8 +209,13 @@ document.addEventListener('DOMContentLoaded', () => {
         sidebar.classList.add('-translate-x-full');
         sidebarOverlay.classList.add('hidden');
     }
-    menuToggle.addEventListener('click', () => sidebar.classList.remove('-translate-x-full'));
-    // CERRAR AL PULSAR FUERA (ya estaba)
+    
+    menuToggle.addEventListener('click', () => {
+        sidebar.classList.remove('-translate-x-full');
+        sidebarOverlay.classList.remove('hidden');
+    });
+    
+    // CERRAR AL PULSAR FUERA
     sidebarOverlay.addEventListener('click', hideMobileMenu);
 
     // --- Lógica de Búsqueda y Filtro (Dashboard) ---
@@ -360,41 +333,85 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Lógica de borrado/edición de cliente (delegación) ---
+    // --- Lógica de borrado/edición/vista de cliente (delegación) ---
     clientListContainer.addEventListener('click', async (e) => {
         const deleteButton = e.target.closest('.delete-client-btn');
         const editButton = e.target.closest('.edit-client-btn');
+        const actionButton = e.target.closest('.action-icon-button');
+        const card = e.target.closest('.client-card');
 
-        if (deleteButton) {
-            const clientId = deleteButton.dataset.id;
-            const clientName = deleteButton.dataset.name;
-            
-            const confirmed = await showConfirm("Confirmar Eliminación", `¿Estás seguro de que quieres eliminar a "${clientName}"?`);
-            
-            if (confirmed) {
-                try {
-                    const docPath = `/artifacts/${appId}/users/${userId}/clients/${clientId}`;
-                    await deleteDoc(doc(db, docPath));
-                    console.log(`Cliente ${clientId} eliminado.`);
-                } catch (error) {
-                    console.error("Error al eliminar cliente:", error);
-                    showAlert("Error", "No se pudo eliminar el cliente.");
+        // Si se pulsó un botón de acción (editar o borrar), gestionar y salir
+        if (actionButton) {
+            if (deleteButton) {
+                const clientId = deleteButton.dataset.id;
+                const clientName = deleteButton.dataset.name;
+                const confirmed = await showConfirm("Confirmar Eliminación", `¿Estás seguro de que quieres eliminar a "${clientName}"?`);
+                if (confirmed) {
+                    try {
+                        const docPath = `/artifacts/${appId}/users/${userId}/clients/${clientId}`;
+                        await deleteDoc(doc(db, docPath));
+                        console.log(`Cliente ${clientId} eliminado.`);
+                    } catch (error) {
+                        console.error("Error al eliminar cliente:", error);
+                        showAlert("Error", "No se pudo eliminar el cliente.");
+                    }
+                }
+            } else if (editButton) {
+                const clientId = editButton.dataset.id;
+                const client = fullClientList.find(c => c.id === clientId);
+                if (client) {
+                    populateEditForm(client);
+                    showPage('edit-cliente'); 
+                } else {
+                    showAlert("Error", "No se pudieron cargar los datos del cliente.");
                 }
             }
+            return;
         }
-        
-        if (editButton) {
-            const clientId = editButton.dataset.id;
+
+        // Si no se pulsó un botón de acción, pero sí una tarjeta, mostrar el modal de vista
+        if (card) {
+            const clientId = card.dataset.id;
             const client = fullClientList.find(c => c.id === clientId);
             if (client) {
-                populateEditForm(client);
-                // Aquí es donde se establece el Título de la cabecera
-                showPage('edit-cliente'); 
-            } else {
-                showAlert("Error", "No se pudieron cargar los datos del cliente.");
+                showViewClientModal(client);
             }
         }
     });
+    
+    // --- Lógica Modal de Vista ---
+    const viewModalContent = document.getElementById('view-modal-content');
+    const viewModalCopyBtn = document.getElementById('view-modal-copy-btn');
+
+    function showViewClientModal(client) {
+        document.getElementById('view-modal-title').textContent = client.name || 'Datos del Cliente';
+        
+        const textToCopy = `Usuario: ${client.usuario || ''}
+Contraseña: ${client.password || ''}
+Fecha de caducidad: ${client.fechaCaducidad || ''}
+Aplicación: ${client.aplicacion || ''}`;
+        
+        viewModalContent.textContent = textToCopy;
+        
+        viewModalBackdrop.classList.remove('hidden');
+        viewModalContainer.classList.remove('hidden');
+        
+        // Asignar listener de copia
+        viewModalCopyBtn.onclick = () => {
+            copyTextToClipboard(textToCopy);
+            viewModalCopyBtn.textContent = '¡Copiado!';
+            setTimeout(() => { viewModalCopyBtn.textContent = 'Copiar Datos'; }, 2000);
+        };
+    }
+    
+    function hideViewClientModal() {
+        viewModalBackdrop.classList.add('hidden');
+        viewModalContainer.classList.add('hidden');
+    }
+    
+    viewModalCloseBtn.addEventListener('click', hideViewClientModal);
+    viewModalBackdrop.addEventListener('click', hideViewClientModal);
+
 
     showPage('dashboard');
 });
@@ -422,8 +439,6 @@ function setupClientListener(currentUserId) {
 function updateDashboardStats(clients) {
     const now = new Date();
     now.setHours(0, 0, 0, 0); 
-    
-    // Límite de "pronto" ahora es 3 días
     const soonLimit = new Date();
     soonLimit.setDate(now.getDate() + 3);
 
@@ -470,7 +485,7 @@ function renderLogic() {
         
         if (currentFilter === 'soon') {
             const soonLimit = new Date();
-            soonLimit.setDate(now.getDate() + 3); // 3 Días
+            soonLimit.setDate(now.getDate() + 3);
             processedClients = processedClients.filter(client => {
                 if (!client.fechaCaducidad) return false;
                 const expiryDate = new Date(client.fechaCaducidad);
@@ -485,7 +500,6 @@ function renderLogic() {
                 return correctedExpiryDate < now;
             });
         }
-        // 'all' no necesita filtro
     }
     
     renderClientList(processedClients);
@@ -496,18 +510,20 @@ function renderClientList(clientsToRender) {
     container.innerHTML = ''; 
 
     if (clientsToRender.length === 0) {
-        container.innerHTML = '<p id="client-list-placeholder" class="text-center text-gray-500 dark:text-gray-400 p-8">No hay clientes que coincidan con el filtro.</p>';
+        container.innerHTML = '<p id="client-list-placeholder" class="text-center text-gray-500 p-8">No hay clientes que coincidan con el filtro.</p>';
     } else {
         clientsToRender.forEach(client => {
             const card = document.createElement('div');
-            card.className = 'client-card-enter flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg p-4 transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-700';
+            // Añadido data-id a la tarjeta y cursor-pointer
+            card.className = 'client-card client-card-enter flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-xl p-4 transition-colors duration-200 hover:bg-gray-100 cursor-pointer';
+            card.dataset.id = client.id;
             
             const [dateText, dateColor] = getExpiryDateStatus(client.fechaCaducidad);
 
             card.innerHTML = `
                 <div class="flex-1 mb-4 sm:mb-0">
-                    <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">${client.name}</p>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">${client.usuario || 'Sin usuario'} • ${client.aplicacion || 'Sin app'}</p>
+                    <p class="text-lg font-semibold text-gray-900">${client.name}</p>
+                    <p class="text-sm text-gray-600">${client.usuario || 'Sin usuario'} • ${client.aplicacion || 'Sin app'}</p>
                     <p class="text-sm font-medium ${dateColor}">${dateText}</p>
                 </div>
                 <div class="flex items-center space-x-2">
@@ -524,7 +540,41 @@ function renderClientList(clientsToRender) {
     }
 }
 
-// --- 9. FUNCIONES DE AYUDA (Helpers) ---
+// --- 9. FUNCIONES DE AYDA (Helpers) ---
+
+function copyTextToClipboard(text) {
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  
+  textArea.style.position = "fixed";
+  textArea.style.top = "0";
+  textArea.style.left = "0";
+  textArea.style.width = "2em";
+  textArea.style.height = "2em";
+  textArea.style.padding = "0";
+  textArea.style.border = "none";
+  textArea.style.outline = "none";
+  textArea.style.boxShadow = "none";
+  textArea.style.background = "transparent";
+
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    const successful = document.execCommand('copy');
+    if (!successful) {
+        console.error('No se pudo copiar el texto.');
+        showAlert('Error', 'No se pudo copiar el texto.');
+    }
+  } catch (err) {
+    console.error('Error al copiar', err);
+    showAlert('Error', 'Error al copiar: ' + err.message);
+  }
+
+  document.body.removeChild(textArea);
+}
+
 
 function populateEditForm(client) {
     document.getElementById('edit-client-id').value = client.id;
@@ -548,7 +598,7 @@ function populateEditForm(client) {
 }
 
 function getExpiryDateStatus(dateString) {
-    if (!dateString) return ["Sin fecha de caducidad", "text-gray-500 dark:text-gray-400"];
+    if (!dateString) return ["Sin fecha de caducidad", "text-gray-500"];
     
     try {
         const now = new Date();
@@ -560,18 +610,18 @@ function getExpiryDateStatus(dateString) {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
         if (correctedExpiryDate < now) {
-            return [`Caducado (hace ${Math.abs(diffDays)} días)`, "text-red-600 font-bold dark:text-red-500"];
+            return [`Caducado (hace ${Math.abs(diffDays)} días)`, "text-red-600 font-bold"];
         } else {
             const soonLimit = new Date();
             soonLimit.setDate(now.getDate() + 3); // 3 días
             if (correctedExpiryDate <= soonLimit) {
-                return [`Caduca pronto (en ${diffDays} días)`, "text-yellow-600 font-semibold dark:text-yellow-400"];
+                return [`Caduca pronto (en ${diffDays} días)`, "text-orange-500 font-semibold"];
             } else {
-                return [`Caduca el ${dateString}`, "text-gray-500 dark:text-gray-400"];
+                return [`Caduca el ${dateString}`, "text-gray-500"];
             }
         }
     } catch(e) {
-        return ["Fecha inválida", "text-red-600 dark:text-red-500"];
+        return ["Fecha inválida", "text-red-600"];
     }
 }
 
@@ -647,5 +697,3 @@ function updateDatalist(names) {
         datalist.appendChild(option);
     });
 }
-
-
