@@ -1,17 +1,20 @@
 <!doctype html>
+
 <html lang="es">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Gestor de Clientes</title>
+  <!-- Corregido el error 404 de favicon -->
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
   
-  <!-- Enlace a tu hoja de estilos CSS -->
+  <!-- Enlace a los archivos separados -->
   <link rel="stylesheet" href="style.css"> 
   
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <!-- Enlace a Font Awesome para el icono de Engranaje (Settings) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <!-- Ícono de Engranaje (Font Awesome) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLMDJc5fS1XCBK7Bf0N8lO+7l8r6k/5tB3zN11E48A0hP5E4d5N2v3zP1V3t5w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
 <body>
@@ -45,10 +48,10 @@
       <button id="nav-dashboard" class="active">Dashboard</button>
       <button id="nav-clientes">Clientes</button>
       <button id="nav-add">Añadir cliente</button>
-      <!-- Nuevo botón de AJUSTES (Engranaje) -->
-      <button id="nav-settings" title="Ajustes y Opciones">
-        <i class="fas fa-cog"></i>
-      </button> 
+      
+      <!-- BOTÓN DE AJUSTES (ENGRANAJE) -->
+      <button id="nav-settings" title="Ajustes" style="margin-left: 12px; font-size: 1.1rem;"><i class="fas fa-cog"></i></button>
+      
     </div>
   </nav>
 </header>
@@ -57,7 +60,7 @@
 
 <section id="section-dashboard">
   <div class="cards-col">
-    <div class="stat">
+    <div class="stat stat-clickable" id="stat-total-link" title="Haz clic para ver todos los clientes.">
       <h3>Total clientes</h3><p id="stat-total">—</p>
     </div>
     <div class="stat stat-clickable" id="stat-3days-link" title="Haz clic para filtrar clientes.">
@@ -76,7 +79,8 @@
   <div class="card-form">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
       <h3>Clientes</h3>
-      <!-- Botón Exportar CSV eliminado de aquí, movido a Ajustes -->
+      <!-- El botón de Exportar se mueve a Ajustes, pero dejamos este por si es necesario un Export rápido -->
+      <!-- <button id="btn-export-csv" class="btn export">Exportar a CSV 📥</button> --> 
     </div>
     
     <input type="text" id="search-input" placeholder="Buscar por Nombre, Usuario o Aplicación..." style="margin-bottom: 12px;" />
@@ -142,6 +146,45 @@
   </div>
 </section>
 
+<!-- NUEVA SECCIÓN DE AJUSTES -->
+<section id="section-settings" style="display:none">
+  <div class="card-form">
+    <h3>⚙️ Ajustes y Herramientas</h3>
+    <div class="settings-grid">
+        <!-- Importar CSV -->
+        <div class="setting-item">
+            <h4>Importar Clientes (CSV)</h4>
+            <p>Sube un archivo CSV para añadir o actualizar clientes masivamente.</p>
+            <button id="btn-import-csv" class="btn renew">Importar CSV ⬆️</button>
+            <input type="file" id="file-import-csv" accept=".csv" style="display:none;">
+        </div>
+
+        <!-- Exportar CSV -->
+        <div class="setting-item">
+            <h4>Exportar Base de Datos</h4>
+            <p>Descarga una copia de seguridad completa de todos tus clientes.</p>
+            <button id="btn-export-csv" class="btn export">Exportar CSV 📥</button>
+        </div>
+
+        <!-- Tutorial -->
+        <div class="setting-item">
+            <h4>Guía de Uso</h4>
+            <p>Abre el manual de la aplicación para revisar todas las funcionalidades.</p>
+            <button id="nav-tutorial" class="btn copy">Ver Tutorial 📚</button>
+        </div>
+
+        <!-- Cerrar Sesión -->
+        <div class="setting-item">
+            <h4>Cerrar Sesión</h4>
+            <p>Finaliza tu sesión actual de forma segura.</p>
+            <button id="btn-logout-settings" class="btn delete">Cerrar Sesión 🔒</button>
+        </div>
+    </div>
+  </div>
+</section>
+<!-- FIN SECCIÓN DE AJUSTES -->
+
+<!-- SECCIÓN TUTORIAL -->
 <section id="section-tutorial" style="display:none">
     <div class="card-form">
         <h3>Guía de Uso del Gestor de Clientes</h3>
@@ -150,12 +193,12 @@
 
             <h4>1. Dashboard (Panel Principal)</h4>
             <ul>
-                <li><strong>Métricas:</strong> Muestra el resumen de la aplicación.</li>
-                <li><strong>Clientes Próximos a Caducar:</strong> Se muestra en **fila horizontal** con un estilo único.</li>
+                <li><strong>Métricas:</strong> Muestra el total de clientes, activos, los que caducan en 3 días y los caducados.</li>
+                <li><strong>Clientes Próximos a Caducar:</strong> Se muestra en **fila horizontal** con un estilo único para una identificación rápida.</li>
             </ul>
 
             <h4>2. Clientes (Listado)</h4>
-            <p>Muestra todas las tarjetas de clientes. Se aplican **colores variados** en el borde izquierdo para una distinción visual.</p>
+            <p>Muestra todas las tarjetas de clientes. Se aplican **colores variados** en el borde izquierdo para una distinción visual del resto de la interfaz.</p>
             <ul>
                 <li><strong>Botón Copiar:</strong> Copia `Usuario`, `Contraseña`, `Aplicación` y `Fecha de caducidad`.</li>
                 <li><strong>Botón Mes Gratis:</strong> Solo se activa si el cliente tiene **3 o más recomendaciones registradas**.</li>
@@ -164,41 +207,14 @@
             <h4>3. Modal de Edición</h4>
             <p>La ventana de edición está optimizada (Scrollable y responsive) para funcionar correctamente en **móvil y PC**.</p>
             <ul>
+                <li><strong>Campos del Formulario:</strong> Los campos para añadir y editar clientes (Nombre, Teléfono, Caducidad, etc.) usan IDs únicos internamente para evitar errores.</li>
                 <li>**Teléfono:** El campo ya viene con el prefijo `+34` por defecto.</li>
             </ul>
         </div>
     </div>
 </section>
+<!-- FIN SECCIÓN TUTORIAL -->
 
-<!-- NUEVA SECCIÓN: AJUSTES -->
-<section id="section-settings" style="display:none">
-    <div class="card-form">
-        <h3>Ajustes y Opciones Avanzadas</h3>
-        <div class="settings-grid">
-            
-            <div class="setting-option" onclick="handleImportClick()">
-                <h4><i class="fas fa-file-import"></i> Importar Clientes (CSV)</h4>
-                <p>Cargar nuevos clientes o actualizar datos masivamente desde un archivo CSV.</p>
-                <input type="file" id="file-import-csv" accept=".csv" style="display: none;">
-            </div>
-
-            <div class="setting-option" id="btn-export-csv">
-                <h4><i class="fas fa-file-export"></i> Exportar Clientes (CSV)</h4>
-                <p>Descargar una copia de seguridad de todos tus clientes en formato CSV.</p>
-            </div>
-
-            <div class="setting-option" onclick="switchSection('tutorial')">
-                <h4><i class="fas fa-book"></i> Tutorial de Uso</h4>
-                <p>Ver la guía detallada de todas las funciones de la aplicación.</p>
-            </div>
-
-            <div class="setting-option logout" id="btn-logout-settings">
-                <h4><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</h4>
-                <p>Finalizar la sesión actual.</p>
-            </div>
-        </div>
-    </div>
-</section>
 
 </main>
 
@@ -279,9 +295,7 @@
 <div id="notifications-container"></div>
 
 
-<!-- Enlace a tu lógica JavaScript -->
+<!-- Enlace al archivo JS -->
 <script type="module" src="script.js"></script>
-
 </body>
 </html>
-
