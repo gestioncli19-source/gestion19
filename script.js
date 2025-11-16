@@ -968,7 +968,8 @@ document.getElementById('file-import-csv')?.addEventListener('change', (event) =
                     successCount++;
                 } catch (error) {
                     errorCount++;
-                    console.error("Error al importar cliente:", client, error);
+                    // *** ESTO ES LO QUE ESTÁ FALLANDO POR REGLAS DE SEGURIDAD ***
+                    console.error("Error al importar cliente:", client, error); 
                 }
             }
 
