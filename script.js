@@ -9,13 +9,13 @@ import {
 import { 
     getFirestore, 
     doc, 
-    setDoc,
     addDoc,
     collection, 
     query,
     onSnapshot,
     serverTimestamp,
-    deleteDoc
+    deleteDoc,
+    updateDoc // Importar updateDoc para editar
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 // --- 2. CONFIGURACIÓN DE FIREBASE ---
@@ -38,7 +38,8 @@ let unsubscribeClientListener = null;
 // --- Variables de estado de la aplicación ---
 let allClientNames = []; 
 let fullClientList = []; 
-let modalConfirmResolve = null; // Para manejar la promesa del modal
+let modalConfirmResolve = null; 
+let currentFilter = 'all'; // Para filtros del dashboard
 
 // --- 4. INICIALIZACIÓN DE LA APP ---
 try {
@@ -75,30 +76,22 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// Botón de Logout
 document.getElementById('logout-button').addEventListener('click', () => {
     console.log("Cerrando sesión...");
     signOut(auth).catch(error => console.error("Error al cerrar sesión:", error));
 });
 
-
-// --- 6. SISTEMA DE MODAL (Reemplaza alert/confirm) ---
-
+// --- 6. SISTEMA DE MODAL (Sin cambios) ---
 const modalBackdrop = document.getElementById('modal-backdrop');
 const modalContainer = document.getElementById('modal-container');
 const modalTitle = document.getElementById('modal-title');
 const modalMessage = document.getElementById('modal-message');
 const modalButtons = document.getElementById('modal-buttons');
 
-/**
- * Muestra una alerta (un solo botón "Aceptar").
- * @param {string} title - Título del modal.
- * @param {string} message - Mensaje del modal.
- */
 function showAlert(title, message) {
     modalTitle.textContent = title;
     modalMessage.textContent = message;
-    modalButtons.innerHTML = '<button id="modal-alert-ok-btn" class="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">Aceptar</button>';
+    modalButtons.innerHTML = '<button id="modal-alert-ok-btn" class="button-primary">Aceptar</button>';
     
     modalBackdrop.classList.remove('hidden');
     modalContainer.classList.remove('hidden');
@@ -109,25 +102,18 @@ function showAlert(title, message) {
     }, { once: true });
 }
 
-/**
- * Muestra una confirmación (dos botones) y devuelve una Promesa.
- * @param {string} title - Título del modal.
- * @param {string} message - Mensaje del modal.
- * @returns {Promise<boolean>} - Resuelve 'true' si se confirma, 'false' si se cancela.
- */
 function showConfirm(title, message) {
     modalTitle.textContent = title;
     modalMessage.textContent = message;
     modalButtons.innerHTML = `
-        <button id="modal-cancel-btn" class="rounded-md bg-gray-200 px-4 py-2 text-gray-800 hover:bg-gray-300">Cancelar</button>
-        <button id="modal-confirm-btn" class="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">Confirmar</button>`;
+        <button id="modal-cancel-btn" class="button-secondary">Cancelar</button>
+        <button id="modal-confirm-btn" class="button-primary">Confirmar</button>`;
     
     modalBackdrop.classList.remove('hidden');
     modalContainer.classList.remove('hidden');
 
     return new Promise((resolve) => {
         modalConfirmResolve = resolve;
-        
         document.getElementById('modal-cancel-btn').addEventListener('click', handleModalCancel, { once: true });
         document.getElementById('modal-confirm-btn').addEventListener('click', handleModalConfirm, { once: true });
     });
@@ -145,9 +131,8 @@ function handleModalCancel() {
     if (modalConfirmResolve) modalConfirmResolve(false);
 }
 
-
 // --- 7. LÓGICA DE NAVEGACIÓN Y UI ---
-let showPage; // Declarar showPage en un ámbito superior
+let showPage;
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- Selectores de Navegación ---
@@ -158,18 +143,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebar-overlay');
     
-    // --- Selectores de "Añadir Cliente" ---
+    // --- Selectores "Añadir Cliente" ---
     const addClientForm = document.getElementById('add-client-form');
     const successMessage = document.getElementById('add-client-success');
     const creationDateInput = document.getElementById('client-creation-date');
     const expiryDateInput = document.getElementById('client-expiry-date');
     const addRecomendacionBtn = document.getElementById('add-recomendacion-btn');
-    const recomendacionesContainer = document.getElementById('recomendaciones-container');
-    const cancelAddClientBtn = document.getElementById('cancel-add-client-btn'); // Botón Cancelar
-
-    // --- Selectores de "Lista de Clientes" ---
+    const cancelAddClientBtn = document.getElementById('cancel-add-client-btn');
+    
+    // --- Selectores "Editar Cliente" ---
+    const editClientForm = document.getElementById('edit-client-form');
+    const editAddRecomendacionBtn = document.getElementById('edit-add-recomendacion-btn');
+    const cancelEditClientBtn = document.getElementById('cancel-edit-client-btn');
+    
+    // --- Selectores "Lista de Clientes" ---
     const searchBar = document.getElementById('search-bar');
     const clientListContainer = document.getElementById('client-list-container');
+    
+    // --- Selectores "Dashboard" (NUEVO) ---
+    const cardTotal = document.getElementById('dashboard-card-total');
+    const cardSoon = document.getElementById('dashboard-card-soon');
+    const cardExpired = document.getElementById('dashboard-card-expired');
 
     // --- Navegación ---
     showPage = function(pageId) {
@@ -184,11 +178,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         hideMobileMenu();
 
-        // Si vamos a la página de "Añadir Cliente", reseteamos el formulario
         if (pageId === 'add-cliente') {
             addClientForm.reset();
-            recomendacionesContainer.innerHTML = '';
-            initializeDateFields();
+            document.getElementById('recomendaciones-container').innerHTML = '';
+            initializeDateFields(creationDateInput, expiryDateInput);
+        }
+        if (pageId === 'clientes') {
+            // Limpiar filtros al ir a la página de clientes
+            searchBar.value = '';
+            currentFilter = 'all';
+            renderLogic();
         }
     }
     
@@ -204,48 +203,43 @@ document.addEventListener('DOMContentLoaded', () => {
         sidebar.classList.add('-translate-x-full');
         sidebarOverlay.classList.add('hidden');
     }
-    
-    menuToggle.addEventListener('click', () => {
-        sidebar.classList.remove('-translate-x-full');
-        sidebarOverlay.classList.remove('hidden');
-    });
-    
+    menuToggle.addEventListener('click', () => sidebar.classList.remove('-translate-x-full'));
     sidebarOverlay.addEventListener('click', hideMobileMenu);
 
-    // --- Lógica de Búsqueda ---
-    searchBar.addEventListener('input', renderLogic);
+    // --- Lógica de Búsqueda y Filtro ---
+    searchBar.addEventListener('input', () => {
+        currentFilter = 'search'; // El filtro de búsqueda anula los del dashboard
+        renderLogic();
+    });
+    
+    cardTotal.addEventListener('click', () => {
+        currentFilter = 'all';
+        showPage('clientes');
+    });
+    cardSoon.addEventListener('click', () => {
+        currentFilter = 'soon';
+        showPage('clientes');
+    });
+    cardExpired.addEventListener('click', () => {
+        currentFilter = 'expired';
+        showPage('clientes');
+    });
 
-    // --- Lógica del Formulario "Añadir Cliente" ---
-
-    initializeDateFields();
+    // --- Lógica Formulario "Añadir Cliente" ---
+    initializeDateFields(creationDateInput, expiryDateInput);
 
     creationDateInput.addEventListener('change', () => {
-        try {
-            const creationDate = new Date(creationDateInput.value);
-            const correctedCreationDate = new Date(creationDate.getTime() + creationDate.getTimezoneOffset() * 60000);
-            
-            correctedCreationDate.setMonth(correctedCreationDate.getMonth() + 3);
-            expiryDateInput.value = formatDate(correctedCreationDate);
-        } catch (e) {
-            console.error("Fecha de creación inválida");
-        }
+        updateExpiryDate(creationDateInput, expiryDateInput);
     });
 
-    addRecomendacionBtn.addEventListener('click', addRecomendacionField);
-
-    recomendacionesContainer.addEventListener('click', (e) => {
-        if (e.target && e.target.classList.contains('remove-recomendacion-btn')) {
-            e.target.parentElement.remove();
-        }
+    addRecomendacionBtn.addEventListener('click', () => {
+        addRecomendacionField('recomendaciones-container');
     });
+    
+    document.getElementById('recomendaciones-container').addEventListener('click', handleRemoveRecomendacion);
+    
+    cancelAddClientBtn.addEventListener('click', () => showPage('clientes'));
 
-    // Botón Cancelar (NUEVO)
-    cancelAddClientBtn.addEventListener('click', () => {
-        // No es necesario resetear (showPage lo hace), solo navegar
-        showPage('clientes'); // O 'dashboard'
-    });
-
-    // Enviar formulario
     addClientForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!userId) {
@@ -253,21 +247,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const recInputs = document.querySelectorAll('.recomendacion-input');
-        const recomendaciones = Array.from(recInputs)
-            .map(input => input.value.trim())
-            .filter(val => val !== '');
+        const [isValid, recomendaciones] = validateRecomendaciones('recomendaciones-container');
+        if (!isValid) return;
 
-        let allValid = true;
-        for (const rec of recomendaciones) {
-            if (!allClientNames.includes(rec)) {
-                allValid = false;
-                showAlert("Error de validación", `El cliente recomendado "${rec}" no existe. Por favor, corrígelo o elimínalo.`);
-                break;
-            }
-        }
-        if (!allValid) return;
-
+        const phoneVal = addClientForm['client-phone'].value.trim();
+        
         const newClientData = {
             name: addClientForm['client-name'].value,
             fechaCreacion: addClientForm['client-creation-date'].value,
@@ -276,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
             password: addClientForm['client-password'].value,
             dispositivo: addClientForm['client-device'].value,
             aplicacion: addClientForm['client-app'].value,
-            phone: addClientForm['client-phone'].value,
+            phone: phoneVal ? `+34${phoneVal}` : '', // Añadir prefijo
             recomendaciones: recomendaciones,
             notas: addClientForm['client-notes'].value,
             createdAt: serverTimestamp()
@@ -286,28 +270,79 @@ document.addEventListener('DOMContentLoaded', () => {
             const clientsCollectionPath = `/artifacts/${appId}/users/${userId}/clients`;
             await addDoc(collection(db, clientsCollectionPath), newClientData);
             
-            console.log("Cliente añadido a Firestore.");
-            // Reset/Navegación ya se maneja en showPage
-            
             successMessage.classList.remove('hidden');
             setTimeout(() => successMessage.classList.add('hidden'), 3000);
-            
             showPage('clientes');
             
         } catch (error) {
             console.error("Error al añadir cliente:", error);
-            showAlert("Error", "Hubo un error al guardar el cliente. Revisa la consola (F12) para más detalles.");
+            showAlert("Error", "Hubo un error al guardar el cliente. Revisa la consola (F12).");
+        }
+    });
+    
+    // --- Lógica Formulario "Editar Cliente" (NUEVO) ---
+    editAddRecomendacionBtn.addEventListener('click', () => {
+        addRecomendacionField('edit-recomendaciones-container');
+    });
+    
+    document.getElementById('edit-recomendaciones-container').addEventListener('click', handleRemoveRecomendacion);
+    
+    cancelEditClientBtn.addEventListener('click', () => showPage('clientes'));
+    
+    document.getElementById('edit-client-creation-date').addEventListener('change', () => {
+        updateExpiryDate(
+            document.getElementById('edit-client-creation-date'),
+            document.getElementById('edit-client-expiry-date')
+        );
+    });
+
+    editClientForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const clientId = document.getElementById('edit-client-id').value;
+        if (!userId || !clientId) {
+            showAlert("Error", "No se pudo guardar. ID de cliente o usuario no encontrado.");
+            return;
+        }
+
+        const [isValid, recomendaciones] = validateRecomendaciones('edit-recomendaciones-container');
+        if (!isValid) return;
+
+        const phoneVal = editClientForm['edit-client-phone'].value.trim();
+
+        const updatedClientData = {
+            name: editClientForm['edit-client-name'].value,
+            fechaCreacion: editClientForm['edit-client-creation-date'].value,
+            fechaCaducidad: editClientForm['edit-client-expiry-date'].value,
+            usuario: editClientForm['edit-client-user'].value,
+            password: editClientForm['edit-client-password'].value,
+            dispositivo: editClientForm['edit-client-device'].value,
+            aplicacion: editClientForm['edit-client-app'].value,
+            phone: phoneVal ? `+34${phoneVal}` : '', // Añadir prefijo
+            recomendaciones: recomendaciones,
+            notas: editClientForm['edit-client-notes'].value
+            // No actualizamos createdAt
+        };
+        
+        try {
+            const docPath = `/artifacts/${appId}/users/${userId}/clients/${clientId}`;
+            await updateDoc(doc(db, docPath), updatedClientData);
+            showAlert("Éxito", "Cliente actualizado correctamente.");
+            showPage('clientes');
+        } catch (error) {
+            console.error("Error al actualizar cliente:", error);
+            showAlert("Error", "Hubo un error al actualizar. Revisa la consola (F12).");
         }
     });
 
-    // --- Lógica de borrado de cliente (delegación de eventos) ---
+    // --- Lógica de borrado/edición de cliente (delegación) ---
     clientListContainer.addEventListener('click', async (e) => {
         const deleteButton = e.target.closest('.delete-client-btn');
+        const editButton = e.target.closest('.edit-client-btn'); // NUEVO
+
         if (deleteButton) {
             const clientId = deleteButton.dataset.id;
             const clientName = deleteButton.dataset.name;
             
-            // Usando el nuevo modal de confirmación
             const confirmed = await showConfirm("Confirmar Eliminación", `¿Estás seguro de que quieres eliminar a "${clientName}"?`);
             
             if (confirmed) {
@@ -321,6 +356,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }
+        
+        if (editButton) { // NUEVO
+            const clientId = editButton.dataset.id;
+            const client = fullClientList.find(c => c.id === clientId);
+            if (client) {
+                populateEditForm(client);
+                showPage('edit-cliente');
+            } else {
+                showAlert("Error", "No se pudieron cargar los datos del cliente.");
+            }
+        }
     });
 
     showPage('dashboard');
@@ -329,13 +375,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // --- 8. LÓGICA DE DATOS (FIRESTORE) ---
 
 function setupClientListener(currentUserId) {
-    console.log(`Configurando listener para el usuario: ${currentUserId}`);
     const clientsCollectionPath = `/artifacts/${appId}/users/${currentUserId}/clients`;
     const q = query(collection(db, clientsCollectionPath));
     
     unsubscribeClientListener = onSnapshot(q, (snapshot) => {
-        console.log(`Nuevos datos recibidos: ${snapshot.size} clientes.`);
-        
         fullClientList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         allClientNames = fullClientList.map(c => c.name);
 
@@ -349,23 +392,22 @@ function setupClientListener(currentUserId) {
     });
 }
 
+/**
+ * @param {Array} clients - La lista completa de clientes.
+ */
 function updateDashboardStats(clients) {
-    const clientCountElement = document.getElementById('client-count');
-    const clientSoonCountElement = document.getElementById('client-soon-count');
-    const clientExpiredCountElement = document.getElementById('client-expired-count');
-
     const now = new Date();
     now.setHours(0, 0, 0, 0); 
     
+    // CAMBIO: Límite de "pronto" ahora es 3 días
     const soonLimit = new Date();
-    soonLimit.setDate(now.getDate() + 30);
+    soonLimit.setDate(now.getDate() + 3);
 
     let soonCount = 0;
     let expiredCount = 0;
 
     clients.forEach(client => {
         if (!client.fechaCaducidad) return; 
-        
         try {
             const expiryDate = new Date(client.fechaCaducidad);
             const correctedExpiryDate = new Date(expiryDate.getTime() + expiryDate.getTimezoneOffset() * 60000);
@@ -376,117 +418,236 @@ function updateDashboardStats(clients) {
                 soonCount++;
             }
         } catch(e) {
-            console.warn(`Fecha de caducidad inválida para cliente ${client.id}: ${client.fechaCaducidad}`);
+            console.warn(`Fecha de caducidad inválida para ${client.id}`);
         }
     });
 
-    clientCountElement.textContent = clients.length;
-    clientSoonCountElement.textContent = soonCount;
-    clientExpiredCountElement.textContent = expiredCount;
+    document.getElementById('client-count').textContent = clients.length;
+    document.getElementById('client-soon-count').textContent = soonCount;
+    document.getElementById('client-expired-count').textContent = expiredCount;
 }
 
+/**
+ * Lógica central para ordenar, filtrar y renderizar la lista
+ */
 function renderLogic() {
     const searchBar = document.getElementById('search-bar');
     const searchTerm = searchBar.value.toLowerCase();
 
-    const sortedClients = [...fullClientList].sort((a, b) => {
+    // 1. Ordenar: Por fecha de caducidad (ascendente)
+    let processedClients = [...fullClientList].sort((a, b) => {
         const dateA = a.fechaCaducidad ? new Date(a.fechaCaducidad) : new Date(0);
         const dateB = b.fechaCaducidad ? new Date(b.fechaCaducidad) : new Date(0);
         return dateA - dateB;
     });
 
-    const filteredClients = searchTerm
-        ? sortedClients.filter(client => client.name.toLowerCase().includes(searchTerm))
-        : sortedClients;
-
-    renderClientList(filteredClients);
+    // 2. Filtrar
+    if (currentFilter === 'search') {
+        processedClients = processedClients.filter(client => client.name.toLowerCase().includes(searchTerm));
+    } else {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        
+        if (currentFilter === 'soon') {
+            const soonLimit = new Date();
+            soonLimit.setDate(now.getDate() + 3);
+            processedClients = processedClients.filter(client => {
+                if (!client.fechaCaducidad) return false;
+                const expiryDate = new Date(client.fechaCaducidad);
+                const correctedExpiryDate = new Date(expiryDate.getTime() + expiryDate.getTimezoneOffset() * 60000);
+                return correctedExpiryDate >= now && correctedExpiryDate <= soonLimit;
+            });
+        } else if (currentFilter === 'expired') {
+            processedClients = processedClients.filter(client => {
+                if (!client.fechaCaducidad) return false;
+                const expiryDate = new Date(client.fechaCaducidad);
+                const correctedExpiryDate = new Date(expiryDate.getTime() + expiryDate.getTimezoneOffset() * 60000);
+                return correctedExpiryDate < now;
+            });
+        }
+        // 'all' no necesita filtro, ya se muestra todo
+    }
+    
+    // 3. Renderizar
+    renderClientList(processedClients);
 }
 
+/**
+ * Renderiza la lista de clientes en el DOM (NUEVO DISEÑO DE TARJETA)
+ */
 function renderClientList(clientsToRender) {
-    const clientListContainer = document.getElementById('client-list-container');
-    const clientListPlaceholder = document.getElementById('client-list-placeholder');
-    clientListContainer.innerHTML = ''; 
+    const container = document.getElementById('client-list-container');
+    container.innerHTML = ''; 
 
     if (clientsToRender.length === 0) {
-        clientListContainer.appendChild(clientListPlaceholder);
+        container.innerHTML = '<p id="client-list-placeholder" class="text-center text-gray-500 p-8">No hay clientes que coincidan con el filtro.</p>';
     } else {
         clientsToRender.forEach(client => {
             const card = document.createElement('div');
-            card.className = 'client-card-enter flex items-center justify-between rounded border border-gray-200 p-4';
+            card.className = 'client-card-enter flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg p-4 transition-colors duration-200 hover:bg-gray-50';
             
-            let dateColor = "text-gray-500";
-            try {
-                const now = new Date();
-                now.setHours(0, 0, 0, 0);
-                const expiryDate = new Date(client.fechaCaducidad);
-                const correctedExpiryDate = new Date(expiryDate.getTime() + expiryDate.getTimezoneOffset() * 60000);
-
-                if (correctedExpiryDate < now) {
-                    dateColor = "text-red-600 font-bold";
-                } else {
-                    const soonLimit = new Date();
-                    soonLimit.setDate(now.getDate() + 30);
-                    if (correctedExpiryDate <= soonLimit) {
-                        dateColor = "text-yellow-600 font-semibold";
-                    }
-                }
-            } catch(e) {} 
+            const [dateText, dateColor] = getExpiryDateStatus(client.fechaCaducidad);
 
             card.innerHTML = `
-                <div>
-                    <p class="font-semibold text-gray-800">${client.name}</p>
-                    <p class="text-sm text-gray-600">${client.usuario || 'Sin usuario'}</p>
-                    <p class="text-sm ${dateColor}">Caduca: ${client.fechaCaducidad || 'N/A'}</p>
+                <div class="flex-1 mb-4 sm:mb-0">
+                    <p class="text-lg font-semibold text-gray-900">${client.name}</p>
+                    <p class="text-sm text-gray-600">${client.usuario || 'Sin usuario'} • ${client.aplicacion || 'Sin app'}</p>
+                    <p class="text-sm font-medium ${dateColor}">${dateText}</p>
                 </div>
-                <button class="delete-client-btn text-gray-400 hover:text-red-500" data-id="${client.id}" data-name="${client.name}">
-                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
+                <div class="flex items-center space-x-2">
+                    <button class="edit-client-btn action-icon-button" data-id="${client.id}" title="Editar">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    </button>
+                    <button class="delete-client-btn action-icon-button" data-id="${client.id}" data-name="${client.name}" title="Eliminar">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
             `;
-            clientListContainer.appendChild(card);
+            container.appendChild(card);
         });
     }
 }
 
 // --- 9. FUNCIONES DE AYUDA (Helpers) ---
 
-function formatDate(date) {
-    if (!date || isNaN(date.getTime())) {
-        return ""; 
+/**
+ * Carga los datos de un cliente en el formulario de edición.
+ */
+function populateEditForm(client) {
+    document.getElementById('edit-client-id').value = client.id;
+    document.getElementById('edit-client-name').value = client.name || '';
+    document.getElementById('edit-client-creation-date').value = client.fechaCreacion || '';
+    document.getElementById('edit-client-expiry-date').value = client.fechaCaducidad || '';
+    document.getElementById('edit-client-user').value = client.usuario || '';
+    document.getElementById('edit-client-password').value = client.password || '';
+    document.getElementById('edit-client-device').value = client.dispositivo || '';
+    document.getElementById('edit-client-app').value = client.aplicacion || 'Spinning TV';
+    // Quitar el prefijo +34 para el input
+    document.getElementById('edit-client-phone').value = client.phone ? client.phone.replace(/^\+34/, '') : '';
+    document.getElementById('edit-client-notes').value = client.notas || '';
+
+    // Rellenar recomendaciones
+    const recContainer = document.getElementById('edit-recomendaciones-container');
+    recContainer.innerHTML = '';
+    if (client.recomendaciones && Array.isArray(client.recomendaciones)) {
+        client.recomendaciones.forEach(recName => {
+            addRecomendacionField('edit-recomendaciones-container', recName);
+        });
     }
+}
+
+/**
+ * Devuelve el texto y color para la fecha de caducidad.
+ */
+function getExpiryDateStatus(dateString) {
+    if (!dateString) return ["Sin fecha de caducidad", "text-gray-500"];
+    
+    try {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const expiryDate = new Date(dateString);
+        const correctedExpiryDate = new Date(expiryDate.getTime() + expiryDate.getTimezoneOffset() * 60000);
+        
+        const diffTime = correctedExpiryDate - now;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (correctedExpiryDate < now) {
+            return [`Caducado (hace ${Math.abs(diffDays)} días)`, "text-red-600 font-bold"];
+        } else {
+            const soonLimit = new Date();
+            soonLimit.setDate(now.getDate() + 3); // 3 días
+            if (correctedExpiryDate <= soonLimit) {
+                return [`Caduca pronto (en ${diffDays} días)`, "text-yellow-600 font-semibold"];
+            } else {
+                return [`Caduca el ${dateString}`, "text-gray-500"];
+            }
+        }
+    } catch(e) {
+        return ["Fecha inválida", "text-red-600"];
+    }
+}
+
+function formatDate(date) {
+    if (!date || isNaN(date.getTime())) return ""; 
     return date.toISOString().split('T')[0];
 }
 
-function initializeDateFields() {
-    const creationDateInput = document.getElementById('client-creation-date');
-    const expiryDateInput = document.getElementById('client-expiry-date');
-    
+/**
+ * Establece los valores por defecto de los campos de fecha en un formulario.
+ */
+function initializeDateFields(creationInput, expiryInput) {
     const today = new Date();
     const expiry = new Date();
     expiry.setMonth(today.getMonth() + 3);
-
-    creationDateInput.value = formatDate(today);
-    expiryDateInput.value = formatDate(expiry);
+    creationInput.value = formatDate(today);
+    expiryInput.value = formatDate(expiry);
 }
 
-function addRecomendacionField() {
-    const container = document.getElementById('recomendaciones-container');
+/**
+ * Actualiza la fecha de caducidad a 3 meses desde la de creación.
+ */
+function updateExpiryDate(creationInput, expiryInput) {
+    try {
+        const creationDate = new Date(creationInput.value);
+        const correctedCreationDate = new Date(creationDate.getTime() + creationDate.getTimezoneOffset() * 60000);
+        
+        correctedCreationDate.setMonth(correctedCreationDate.getMonth() + 3);
+        expiryInput.value = formatDate(correctedCreationDate);
+    } catch (e) {
+        console.error("Fecha de creación inválida");
+    }
+}
+
+/**
+ * Añade un nuevo campo de recomendación (reutilizable).
+ * @param {string} containerId - ID del div contenedor.
+ * @param {string} [value=''] - Valor opcional para pre-rellenar (para edición).
+ */
+function addRecomendacionField(containerId, value = '') {
+    const container = document.getElementById(containerId);
     const fieldWrapper = document.createElement('div');
     fieldWrapper.className = 'flex items-center';
     
     fieldWrapper.innerHTML = `
         <input type="text" 
-               class="recomendacion-input block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" 
+               class="recomendacion-input form-input" 
                list="existing-clients-list" 
-               placeholder="Buscar nombre de cliente...">
+               placeholder="Buscar nombre de cliente..."
+               value="${value}">
         <button type="button" class="remove-recomendacion-btn">&times;</button>
     `;
     container.appendChild(fieldWrapper);
 }
 
+function handleRemoveRecomendacion(e) {
+    if (e.target && e.target.classList.contains('remove-recomendacion-btn')) {
+        e.target.parentElement.remove();
+    }
+}
+
+/**
+ * Valida los campos de recomendación de un formulario.
+ * @param {string} containerId - ID del div contenedor.
+ * @returns {Array} - [boolean (esValido), Array (nombresValidos)]
+ */
+function validateRecomendaciones(containerId) {
+    const recInputs = document.querySelectorAll(`#${containerId} .recomendacion-input`);
+    const recomendaciones = Array.from(recInputs)
+        .map(input => input.value.trim())
+        .filter(val => val !== '');
+
+    for (const rec of recomendaciones) {
+        if (!allClientNames.includes(rec)) {
+            showAlert("Error de validación", `El cliente recomendado "${rec}" no existe. Por favor, corrígelo o elimínalo.`);
+            return [false, []];
+        }
+    }
+    return [true, recomendaciones];
+}
+
 function updateDatalist(names) {
     const datalist = document.getElementById('existing-clients-list');
     if (!datalist) return;
-    
     datalist.innerHTML = ''; 
     names.forEach(name => {
         const option = document.createElement('option');
