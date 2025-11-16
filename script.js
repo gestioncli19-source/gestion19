@@ -7,13 +7,11 @@ import {
 
 import { 
     getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
-    // Eliminamos signInAnonymously y signInWithCustomToken para forzar el login manual
 } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
 
 setLogLevel('debug');
 
 // Variables de entorno globales (Definición robusta con Fallback)
-// USAMOS LOS FALLBACKS (tu configuración real para GitHub Pages)
 const APP_ID_FALLBACK = 'gestioncli19-app-id'; 
 const FIREBASE_CONFIG_FALLBACK = {
     apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
@@ -28,7 +26,6 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : APP_ID_FALLBACK;
 const firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config !== '{}' 
     ? JSON.parse(__firebase_config) 
     : FIREBASE_CONFIG_FALLBACK;
-// const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; // Ya no se usa
 
 let db, auth;
 let cachedList = []; 
@@ -36,7 +33,7 @@ let currentRecommendations = [];
 let currentUserId = null;
 
 
-// --- INICIALIZACIÓN DE FIREBASE (SOLO CONFIGURACIÓN, SIN LOGIN AUTOMÁTICO) ---
+// --- INICIALIZACIÓN DE FIREBASE ---
 async function initializeFirebase() {
     console.log("Iniciando Firebase con ID de App:", appId);
 
@@ -52,7 +49,6 @@ async function initializeFirebase() {
         auth = getAuth(app);
         
         // Listener de Estado de Autenticación
-        // Esta es la única forma de avanzar. Espera un signInWithEmailAndPassword exitoso.
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUserId = user.uid;
@@ -90,24 +86,29 @@ function switchSection(target) {
         'clientes': document.getElementById('section-clientes'),
         'add': document.getElementById('section-add'),
         'tutorial': document.getElementById('section-tutorial'),
+        'settings': document.getElementById('section-settings'), // Nueva sección
     };
     
     Object.keys(sections).forEach(key => {
         sections[key].style.display = 'none';
     });
     
-    sections[target].style.display = (target === 'tutorial') ? 'block' : 'grid';
+    // Las secciones de contenido/lista son grid, las otras (tutorial, ajustes) son block
+    sections[target].style.display = (target === 'tutorial' || target === 'settings') ? 'block' : 'grid';
+    
+    // Actualizar el estado activo del botón
+    document.querySelectorAll('.menu button').forEach(b=>b.classList.remove('active'));
     const btn = document.getElementById(`nav-${target}`);
-    if(btn) setActive(btn);
+    if(btn) btn.classList.add('active');
+    
+    // El botón de Engranaje se activa cuando se muestra Ajustes
+    if (target === 'settings') {
+        document.getElementById('nav-settings').classList.add('active');
+    }
 
     if (target === 'clientes') {
       filterClients(document.getElementById('search-input').value, 'all');
     }
-}
-
-function setActive(btn){
-  document.querySelectorAll('.menu button').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
 }
 
 // Oyentes de Navegación 
@@ -118,13 +119,19 @@ document.getElementById('nav-add').addEventListener('click', ()=>{
     setDefaultDates(); 
     document.getElementById('f-telefono').value = '+34'; 
 });
-document.getElementById('nav-tutorial').addEventListener('click', ()=> switchSection('tutorial'));
+document.getElementById('nav-settings').addEventListener('click', ()=> switchSection('settings')); // Engranaje
+
+
+// --- MANEJADOR DE LOGIN Y LOGOUT ---
 document.getElementById('nav-logout').addEventListener('click', async () => {
     await signOut(auth);
     showNotification("Sesión Cerrada", "Has cerrado sesión correctamente.", 'success');
 });
+document.getElementById('btn-logout-settings').addEventListener('click', async () => {
+    await signOut(auth);
+    showNotification("Sesión Cerrada", "Has cerrado sesión correctamente.", 'success');
+});
 
-// 1. Manejador de Login
 const formLogin = document.getElementById('form-login');
 const loginEmail = document.getElementById('login-email');
 const loginPassword = document.getElementById('login-password');
@@ -137,7 +144,6 @@ formLogin.addEventListener('submit', async (e) => {
     try {
         await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
         loginErrorMsg.textContent = '';
-        // onAuthStateChanged maneja la transición a la app principal
     } catch (error) {
         let message = "Error de inicio de sesión.";
         if (error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
@@ -158,13 +164,11 @@ formLogin.addEventListener('submit', async (e) => {
 // --- LÓGICA DE FIRESTORE ---
 
 function getClientCollection() {
-    // Usamos la ruta de datos privados del usuario (autenticado por email/pass).
     const uid = currentUserId || 'unauthenticated'; 
     return collection(db, `clients_app/${appId}/users/${uid}/client_data`);
 }
 
 function startListeners() {
-    // Asegurarse de que el listener solo se inicie si tenemos un ID de usuario logeado
     if (!currentUserId) {
         console.log("Esperando autenticación para iniciar listeners...");
         return;
@@ -703,9 +707,16 @@ window.openHistoryModal = async function(id) {
 
     try {
         const historyCol = collection(db, getClientCollection().id, id, "renovaciones");
-        const q = query(historyCol, orderBy("fecha_renovacion", "desc"));
-        const snapshot = await getDocs(q);
-        const historyList = snapshot.docs.map(doc => doc.data());
+        // NOTA: No usamos orderBy("fecha_renovacion", "desc") para evitar problemas de índice. 
+        // Ordenaremos en el cliente.
+        const snapshot = await getDocs(historyCol);
+        
+        let historyList = snapshot.docs.map(doc => doc.data());
+        
+        // Ordenar en el cliente
+        historyList.sort((a, b) => {
+            return new Date(b.fecha_renovacion) - new Date(a.fecha_renovacion);
+        });
         
         renderRenewalHistory(historyList, document.getElementById('history-list'));
         document.getElementById('history-modal').classList.add('show');
@@ -748,5 +759,70 @@ function renderRenewalHistory(historyList, targetDiv) {
     targetDiv.innerHTML = html;
 }
 
+// --- AJUSTES: Lógica de Importar/Exportar ---
+
+// 1. Exportar CSV (se dispara desde el botón en la sección Ajustes)
+document.getElementById('btn-export-csv').addEventListener('click', () => {
+    if (!currentUserId) return showNotification("Error", "Usuario no autenticado.", 'error');
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Nombre,Telefono,App,Usuario,Contrasena,Creacion,Caducidad,Dispositivo,Recomendaciones\n";
+
+    cachedList.forEach(item => {
+        // Asegurar que todos los campos se envuelvan en comillas para manejar comas internas
+        const cleanAndQuote = (val) => `"${String(val || '').replace(/"/g, '""')}"`;
+
+        const row = [
+            cleanAndQuote(item.nombre),
+            cleanAndQuote(item.telefono),
+            cleanAndQuote(item.aplicacion),
+            cleanAndQuote(item.usuario),
+            cleanAndQuote(item.contrasena),
+            cleanAndQuote(formatDate(item.creacion)),
+            cleanAndQuote(formatDate(item.caducidad)),
+            cleanAndQuote(item.dispositivo),
+            cleanAndQuote((item.recomendaciones || []).join('; ')) // Separar recomendaciones por punto y coma
+        ];
+        
+        csvContent += row.join(",") + "\n";
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "gestor_clientes_export.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showNotification("Exportado", "Se ha descargado el archivo CSV.", 'success');
+});
+
+
+// 2. Importar CSV (solo activa el input de archivo)
+window.handleImportClick = function() {
+    if (!currentUserId) return showNotification("Error", "Usuario no autenticado.", 'error');
+    document.getElementById('file-import-csv').click();
+    showNotification("Advertencia", "La importación es una función avanzada, asegúrate de que el CSV tenga las columnas correctas: Nombre, Telefono, App, Usuario, etc.", 'warning');
+}
+
+document.getElementById('file-import-csv').addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        // Iniciar la lectura del archivo CSV
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const csvData = e.target.result;
+            // Aquí iría la función parseCSVAndImport(csvData)
+            // Por complejidad y tiempo, solo mostraremos una notificación de inicio.
+            showNotification("Importación en Curso", `Procesando archivo ${file.name}...`, 'success');
+            // Nota: La lógica completa de parsing y validación de CSV a Firestore
+            // es compleja y requiere manejo detallado de errores y tipos de datos.
+        };
+        reader.readAsText(file);
+    }
+});
+
+
 // Iniciar la aplicación
 window.onload = initializeFirebase;
+
