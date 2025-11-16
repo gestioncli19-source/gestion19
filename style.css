@@ -66,7 +66,7 @@ body {
 }
 
 .form-input {
-    /* Fondo muy claro, bordes suaves, enfoque Teal */
+    /* Fondo BLANCO para hacer el campo visible, bordes suaves, enfoque Teal */
     @apply mt-1 block w-full rounded-xl border-gray-300 bg-white p-3 shadow-sm focus:border-teal-500 focus:ring focus:ring-teal-500 focus:ring-opacity-50;
 }
 /* Ajuste de color del texto para select y date */
@@ -80,9 +80,6 @@ select.form-input option {
 
 
 /* --- Botones --- */
-/* La mayoría de estilos de botones (success/danger) se movieron a index.html. 
-   Solo quedan las clases generales aquí: */
-
 .button-primary {
     @apply inline-flex items-center justify-center rounded-full border border-transparent bg-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition-colors hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2;
 }
