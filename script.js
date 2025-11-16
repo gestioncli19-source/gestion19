@@ -410,7 +410,8 @@ window.toggleRenovara = async function(checkbox) {
     if (!currentUserId) return showNotification("Error", "Usuario no autenticado.", 'error');
 
     try {
-        await updateDoc(doc(db, getClientCollection().id, id), { renovara: newValue });
+        // CORRECCIÓN DE REFERENCIA DE DOCUMENTO: doc(colección, id)
+        await updateDoc(doc(getClientCollection(), id), { renovara: newValue });
         showNotification("Estado Actualizado", `Estado de 'Renovará' cambiado a ${newValue ? 'Sí' : 'No'}.`, 'success');
     } catch (error) {
         showNotification("Error", "No se pudo actualizar el estado de 'Renovará'.", 'error');
@@ -458,11 +459,12 @@ window.addFreeMonth = async function(id) {
     const newCaducidad = getNewCaducidad(oldCaducidad, 1); 
 
     try {
-        await updateDoc(doc(db, getClientCollection().id, id), {
+        // CORRECCIÓN DE REFERENCIA DE DOCUMENTO: doc(colección, id)
+        await updateDoc(doc(getClientCollection(), id), {
             caducidad: newCaducidad
         });
 
-        await addDoc(collection(db, getClientCollection().id, id, "renovaciones"), {
+        await addDoc(collection(getClientCollection().path, id, "renovaciones"), {
             fecha_renovacion: new Date().toISOString(),
             caducidad_anterior: oldCaducidad || 'Fecha no registrada',
             nueva_caducidad: newCaducidad,
@@ -485,11 +487,12 @@ window.renewItem = async function(id){
   const newCaducidad = getNewCaducidad(oldCaducidad, 3); 
 
   try {
-      await updateDoc(doc(db, getClientCollection().id, id), {
+      // CORRECCIÓN DE REFERENCIA DE DOCUMENTO: doc(colección, id)
+      await updateDoc(doc(getClientCollection(), id), {
         caducidad: newCaducidad
       });
 
-      await addDoc(collection(db, getClientCollection().id, id, "renovaciones"), {
+      await addDoc(collection(getClientCollection().path, id, "renovaciones"), {
           fecha_renovacion: new Date().toISOString(),
           caducidad_anterior: oldCaducidad || 'Fecha no registrada',
           nueva_caducidad: newCaducidad,
@@ -589,10 +592,12 @@ window.deleteItem = async function(id) {
     if (!currentUserId) return showNotification("Error", "Usuario no autenticado.", 'error');
 
     try {
-        await deleteDoc(doc(db, getClientCollection().id, id));
+        // CORRECCIÓN DE REFERENCIA DE DOCUMENTO: doc(colección, id)
+        await deleteDoc(doc(getClientCollection(), id));
         showNotification("Eliminado", "Cliente eliminado con éxito.", 'success');
     } catch (error) {
         showNotification("Error", "No se pudo eliminar el cliente. (Revisa reglas de Firestore)", 'error');
+        // El error persistente aparece aquí.
         console.error("Error deleting item:", error);
     }
 }
@@ -650,7 +655,8 @@ async function handleEditSubmit(e){
   };
 
   try {
-      await updateDoc(doc(db, getClientCollection().id, id), data);
+      // CORRECCIÓN DE REFERENCIA DE DOCUMENTO: doc(colección, id)
+      await updateDoc(doc(getClientCollection(), id), data);
       document.getElementById('modal').classList.remove('show');
       showNotification("Guardado", `Cambios en cliente ${data.nombre} guardados.`, 'success');
       currentRecommendations = [];
@@ -682,8 +688,8 @@ async function handleAddSubmit(e){
       const col = getClientCollection();
       const docRef = await addDoc(col, data);
       
-      const historyCol = collection(db, col.id, docRef.id, "renovaciones");
-      await addDoc(historyCol, {
+      // REGISTRO DE HISTORIAL (Necesita la regla recursiva)
+      await addDoc(collection(col.path, docRef.id, "renovaciones"), {
           fecha_renovacion: new Date().toISOString(),
           caducidad_anterior: 'Nuevo Cliente',
           nueva_caducidad: data.caducidad,
@@ -744,7 +750,8 @@ window.openHistoryModal = async function(id) {
     document.getElementById('history-modal-title').textContent = `Historial de Renovaciones de ${item.nombre}`;
 
     try {
-        const historyCol = collection(db, getClientCollection().id, id, "renovaciones");
+        // Uso de collection(path, id, subcollection)
+        const historyCol = collection(getClientCollection().path, id, "renovaciones"); 
         const snapshot = await getDocs(historyCol);
         
         let historyList = snapshot.docs.map(doc => doc.data());
@@ -805,7 +812,6 @@ function parseCSV(csvText) {
     if (lines.length < 2) return [];
 
     // Cabeceras esperadas: SOLO los 4 campos solicitados
-    // NOTA: Normalizamos a mayúsculas para la comparación, pero aceptamos minúsculas del archivo.
     const expectedHeaders = ["Nombre", "Usuario", "Contrasena", "Caducidad"];
     
     // Obtenemos las cabeceras del archivo y las normalizamos (eliminando comillas y espacios)
@@ -955,9 +961,8 @@ document.getElementById('file-import-csv')?.addEventListener('change', (event) =
 
                     const docRef = await addDoc(collectionRef, importData);
 
-                    // Registrar en el historial de creación
-                    const historyCol = collection(db, collectionRef.id, docRef.id, "renovaciones");
-                    await addDoc(historyCol, {
+                    // Registrar en el historial de creación (Necesita la regla recursiva)
+                    await addDoc(collection(collectionRef.path, docRef.id, "renovaciones"), {
                         fecha_renovacion: new Date().toISOString(),
                         caducidad_anterior: 'Importado',
                         nueva_caducidad: importData.caducidad.toISOString(),
@@ -968,7 +973,7 @@ document.getElementById('file-import-csv')?.addEventListener('change', (event) =
                     successCount++;
                 } catch (error) {
                     errorCount++;
-                    // *** ESTO ES LO QUE ESTÁ FALLANDO POR REGLAS DE SEGURIDAD ***
+                    // El error de permisos ocurre aquí, al escribir en la subcolección 'renovaciones'
                     console.error("Error al importar cliente:", client, error); 
                 }
             }
