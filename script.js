@@ -35,6 +35,12 @@ let app, auth, db;
 let userId = null;
 let unsubscribeClientListener = null;
 
+// PROMISE para asegurar que la autenticación anónima ha finalizado
+let authReadyResolve; 
+const authReadyPromise = new Promise(resolve => {
+    authReadyResolve = resolve;
+});
+
 // --- Variables de estado de la aplicación ---
 let allClientNames = []; 
 let fullClientList = []; 
@@ -60,8 +66,9 @@ onAuthStateChanged(auth, async (user) => {
         if (!unsubscribeClientListener) {
             setupClientListener(userId);
         }
+        authReadyResolve(userId); // Resuelve la promesa con el ID real
     } else {
-        console.log("Usuario no autenticado, intentando iniciar sesión...");
+        console.log("Usuario no autenticado, intentando iniciar sesión anónima...");
         userId = null;
         if (unsubscribeClientListener) {
             unsubscribeClientListener();
@@ -69,12 +76,25 @@ onAuthStateChanged(auth, async (user) => {
         }
         try {
             await signInAnonymously(auth);
-            console.log("Login anónimo exitoso.");
+            // onAuthStateChanged se disparará de nuevo con el nuevo user
         } catch (error) {
             console.error("Error en el login anónimo:", error);
+            authReadyResolve('auth_failed'); // Resuelve la promesa con error si falla
         }
     }
 });
+
+// FUNCIÓN CLAVE: Espera que la autenticación termine antes de escribir
+async function getValidatedUserId() {
+    if (userId) return userId;
+    const result = await authReadyPromise;
+    if (result === 'auth_failed' || !userId) {
+         // En modo de pruebas, permitimos el fallo temporal si no es error de Firebase
+         if (auth.currentUser?.uid) return auth.currentUser.uid;
+         throw new Error("Autenticación fallida o pendiente. Intenta de nuevo.");
+    }
+    return userId;
+}
 
 document.getElementById('logout-button').addEventListener('click', () => {
     console.log("Cerrando sesión...");
@@ -107,7 +127,7 @@ function showConfirm(title, message) {
     modalMessage.textContent = message;
     modalButtons.innerHTML = `
         <button id="modal-cancel-btn" class="button-secondary">Cancelar</button>
-        <button id="modal-confirm-btn" class="button-success">Confirmar</button>`;
+        <button id="modal-confirm-btn" class="button-primary">Confirmar</button>`;
     
     modalBackdrop.classList.remove('hidden');
     modalContainer.classList.remove('hidden');
@@ -179,6 +199,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 link.classList.add('active');
             } else if (pageId === 'edit-cliente') {
                 titleText = 'Editar Cliente';
+            } else if (pageId === 'settings') {
+                titleText = 'Ajustes';
             }
             
             pageTitle.textContent = titleText;
@@ -246,10 +268,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     addClientForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!userId) {
-            showAlert("Error", "Debes estar autenticado para añadir clientes.");
+        
+        let currentUserId;
+        try {
+            // FUNCIÓN CLAVE: Esperamos el ID de usuario antes de proceder
+            currentUserId = await getValidatedUserId();
+        } catch (error) {
+            console.error("Error de autenticación:", error);
+            showAlert("Error de Autenticación", "Aún no se pudo establecer la conexión con Firebase. Espera un momento y vuelve a intentarlo.");
             return;
         }
+
 
         const [isValid, recomendaciones] = validateRecomendaciones('recomendaciones-container');
         if (!isValid) return;
@@ -271,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const clientsCollectionPath = `/artifacts/${appId}/users/${userId}/clients`;
+            const clientsCollectionPath = `/artifacts/${appId}/users/${currentUserId}/clients`;
             await addDoc(collection(db, clientsCollectionPath), newClientData);
             
             successMessage.classList.remove('hidden');
@@ -279,8 +308,8 @@ document.addEventListener('DOMContentLoaded', () => {
             showPage('clientes');
             
         } catch (error) {
-            console.error("Error al añadir cliente:", error);
-            showAlert("Error", "Hubo un error al guardar el cliente. Revisa la consola (F12).");
+            console.error("Error al añadir cliente (Firebase):", error);
+            showAlert("Error de Firebase", "Hubo un error al guardar. Revisa las reglas de Firestore (F12).");
         }
     });
     
@@ -419,6 +448,11 @@ Aplicación: ${client.aplicacion || ''}`;
 // --- 8. LÓGICA DE DATOS (FIRESTORE) ---
 
 function setupClientListener(currentUserId) {
+    if (!currentUserId) {
+         console.warn("Autenticación pendiente. No se puede iniciar el listener de Firestore.");
+         return; 
+    }
+    
     const clientsCollectionPath = `/artifacts/${appId}/users/${currentUserId}/clients`;
     const q = query(collection(db, clientsCollectionPath));
     
