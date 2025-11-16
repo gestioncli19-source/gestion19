@@ -15,7 +15,7 @@ import {
     onSnapshot,
     serverTimestamp,
     deleteDoc,
-    updateDoc // Importar updateDoc para editar
+    updateDoc
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 // --- 2. CONFIGURACIÓN DE FIREBASE ---
@@ -39,7 +39,7 @@ let unsubscribeClientListener = null;
 let allClientNames = []; 
 let fullClientList = []; 
 let modalConfirmResolve = null; 
-let currentFilter = 'all'; // Para filtros del dashboard
+let currentFilter = 'all';
 
 // --- 4. INICIALIZACIÓN DE LA APP ---
 try {
@@ -81,7 +81,7 @@ document.getElementById('logout-button').addEventListener('click', () => {
     signOut(auth).catch(error => console.error("Error al cerrar sesión:", error));
 });
 
-// --- 6. SISTEMA DE MODAL (Sin cambios) ---
+// --- 6. SISTEMA DE MODAL ---
 const modalBackdrop = document.getElementById('modal-backdrop');
 const modalContainer = document.getElementById('modal-container');
 const modalTitle = document.getElementById('modal-title');
@@ -91,6 +91,7 @@ const modalButtons = document.getElementById('modal-buttons');
 function showAlert(title, message) {
     modalTitle.textContent = title;
     modalMessage.textContent = message;
+    // Usar los nuevos botones de color
     modalButtons.innerHTML = '<button id="modal-alert-ok-btn" class="button-primary">Aceptar</button>';
     
     modalBackdrop.classList.remove('hidden');
@@ -107,7 +108,7 @@ function showConfirm(title, message) {
     modalMessage.textContent = message;
     modalButtons.innerHTML = `
         <button id="modal-cancel-btn" class="button-secondary">Cancelar</button>
-        <button id="modal-confirm-btn" class="button-primary">Confirmar</button>`;
+        <button id="modal-confirm-btn" class="button-success">Confirmar</button>`;
     
     modalBackdrop.classList.remove('hidden');
     modalContainer.classList.remove('hidden');
@@ -135,7 +136,6 @@ function handleModalCancel() {
 let showPage;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Selectores de Navegación ---
     const navLinks = document.querySelectorAll('.nav-link');
     const pageContents = document.querySelectorAll('.page-content');
     const pageTitle = document.getElementById('page-title');
@@ -143,7 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebar-overlay');
     
-    // --- Selectores "Añadir Cliente" ---
     const addClientForm = document.getElementById('add-client-form');
     const successMessage = document.getElementById('add-client-success');
     const creationDateInput = document.getElementById('client-creation-date');
@@ -151,19 +150,50 @@ document.addEventListener('DOMContentLoaded', () => {
     const addRecomendacionBtn = document.getElementById('add-recomendacion-btn');
     const cancelAddClientBtn = document.getElementById('cancel-add-client-btn');
     
-    // --- Selectores "Editar Cliente" ---
     const editClientForm = document.getElementById('edit-client-form');
     const editAddRecomendacionBtn = document.getElementById('edit-add-recomendacion-btn');
     const cancelEditClientBtn = document.getElementById('cancel-edit-client-btn');
     
-    // --- Selectores "Lista de Clientes" ---
     const searchBar = document.getElementById('search-bar');
     const clientListContainer = document.getElementById('client-list-container');
     
-    // --- Selectores "Dashboard" (NUEVO) ---
     const cardTotal = document.getElementById('dashboard-card-total');
     const cardSoon = document.getElementById('dashboard-card-soon');
     const cardExpired = document.getElementById('dashboard-card-expired');
+
+    // --- Lógica del Tema (Modo Claro/Oscuro) ---
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeToggleKnob = document.getElementById('theme-toggle-knob');
+    const html = document.documentElement; // Tag <html>
+
+    // Al cargar, comprobar preferencia guardada o del sistema
+    if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        html.classList.add('dark');
+        themeToggle.setAttribute('aria-checked', 'true');
+        themeToggleKnob.classList.add('translate-x-5');
+    } else {
+        html.classList.remove('dark');
+        themeToggle.setAttribute('aria-checked', 'false');
+        themeToggleKnob.classList.remove('translate-x-0'); // Asegurar posición inicial
+    }
+
+    // Listener para el botón de tema
+    themeToggle.addEventListener('click', () => {
+        if (html.classList.contains('dark')) {
+            html.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+            themeToggle.setAttribute('aria-checked', 'false');
+            themeToggleKnob.classList.remove('translate-x-5');
+            themeToggleKnob.classList.add('translate-x-0');
+        } else {
+            html.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+            themeToggle.setAttribute('aria-checked', 'true');
+            themeToggleKnob.classList.add('translate-x-5');
+            themeToggleKnob.classList.remove('translate-x-0');
+        }
+    });
+
 
     // --- Navegación ---
     showPage = function(pageId) {
@@ -171,10 +201,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const activePage = document.getElementById(`page-${pageId}`);
         if (activePage) {
             activePage.classList.remove('hidden');
+            
+            // Lógica de Título Actualizada
             const link = document.querySelector(`.nav-link[data-page="${pageId}"]`);
-            pageTitle.textContent = link ? link.querySelector('span').textContent : 'Página';
-            navLinks.forEach(l => l.classList.remove('active'));
-            if(link) link.classList.add('active');
+            let titleText = 'Página';
+            if (link) {
+                titleText = link.querySelector('span').textContent;
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+            } else if (pageId === 'edit-cliente') {
+                titleText = 'Editar Cliente';
+            }
+            
+            pageTitle.textContent = titleText;
         }
         hideMobileMenu();
 
@@ -184,7 +223,6 @@ document.addEventListener('DOMContentLoaded', () => {
             initializeDateFields(creationDateInput, expiryDateInput);
         }
         if (pageId === 'clientes') {
-            // Limpiar filtros al ir a la página de clientes
             searchBar.value = '';
             currentFilter = 'all';
             renderLogic();
@@ -204,11 +242,12 @@ document.addEventListener('DOMContentLoaded', () => {
         sidebarOverlay.classList.add('hidden');
     }
     menuToggle.addEventListener('click', () => sidebar.classList.remove('-translate-x-full'));
+    // CERRAR AL PULSAR FUERA (ya estaba)
     sidebarOverlay.addEventListener('click', hideMobileMenu);
 
-    // --- Lógica de Búsqueda y Filtro ---
+    // --- Lógica de Búsqueda y Filtro (Dashboard) ---
     searchBar.addEventListener('input', () => {
-        currentFilter = 'search'; // El filtro de búsqueda anula los del dashboard
+        currentFilter = 'search'; 
         renderLogic();
     });
     
@@ -227,17 +266,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Lógica Formulario "Añadir Cliente" ---
     initializeDateFields(creationDateInput, expiryDateInput);
-
-    creationDateInput.addEventListener('change', () => {
-        updateExpiryDate(creationDateInput, expiryDateInput);
-    });
-
-    addRecomendacionBtn.addEventListener('click', () => {
-        addRecomendacionField('recomendaciones-container');
-    });
-    
+    creationDateInput.addEventListener('change', () => updateExpiryDate(creationDateInput, expiryDateInput));
+    addRecomendacionBtn.addEventListener('click', () => addRecomendacionField('recomendaciones-container'));
     document.getElementById('recomendaciones-container').addEventListener('click', handleRemoveRecomendacion);
-    
     cancelAddClientBtn.addEventListener('click', () => showPage('clientes'));
 
     addClientForm.addEventListener('submit', async (e) => {
@@ -260,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
             password: addClientForm['client-password'].value,
             dispositivo: addClientForm['client-device'].value,
             aplicacion: addClientForm['client-app'].value,
-            phone: phoneVal ? `+34${phoneVal}` : '', // Añadir prefijo
+            phone: phoneVal ? `+34${phoneVal}` : '',
             recomendaciones: recomendaciones,
             notas: addClientForm['client-notes'].value,
             createdAt: serverTimestamp()
@@ -280,13 +311,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // --- Lógica Formulario "Editar Cliente" (NUEVO) ---
-    editAddRecomendacionBtn.addEventListener('click', () => {
-        addRecomendacionField('edit-recomendaciones-container');
-    });
-    
+    // --- Lógica Formulario "Editar Cliente" ---
+    editAddRecomendacionBtn.addEventListener('click', () => addRecomendacionField('edit-recomendaciones-container'));
     document.getElementById('edit-recomendaciones-container').addEventListener('click', handleRemoveRecomendacion);
-    
     cancelEditClientBtn.addEventListener('click', () => showPage('clientes'));
     
     document.getElementById('edit-client-creation-date').addEventListener('change', () => {
@@ -317,10 +344,9 @@ document.addEventListener('DOMContentLoaded', () => {
             password: editClientForm['edit-client-password'].value,
             dispositivo: editClientForm['edit-client-device'].value,
             aplicacion: editClientForm['edit-client-app'].value,
-            phone: phoneVal ? `+34${phoneVal}` : '', // Añadir prefijo
+            phone: phoneVal ? `+34${phoneVal}` : '',
             recomendaciones: recomendaciones,
             notas: editClientForm['edit-client-notes'].value
-            // No actualizamos createdAt
         };
         
         try {
@@ -337,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Lógica de borrado/edición de cliente (delegación) ---
     clientListContainer.addEventListener('click', async (e) => {
         const deleteButton = e.target.closest('.delete-client-btn');
-        const editButton = e.target.closest('.edit-client-btn'); // NUEVO
+        const editButton = e.target.closest('.edit-client-btn');
 
         if (deleteButton) {
             const clientId = deleteButton.dataset.id;
@@ -357,12 +383,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        if (editButton) { // NUEVO
+        if (editButton) {
             const clientId = editButton.dataset.id;
             const client = fullClientList.find(c => c.id === clientId);
             if (client) {
                 populateEditForm(client);
-                showPage('edit-cliente');
+                // Aquí es donde se establece el Título de la cabecera
+                showPage('edit-cliente'); 
             } else {
                 showAlert("Error", "No se pudieron cargar los datos del cliente.");
             }
@@ -392,14 +419,11 @@ function setupClientListener(currentUserId) {
     });
 }
 
-/**
- * @param {Array} clients - La lista completa de clientes.
- */
 function updateDashboardStats(clients) {
     const now = new Date();
     now.setHours(0, 0, 0, 0); 
     
-    // CAMBIO: Límite de "pronto" ahora es 3 días
+    // Límite de "pronto" ahora es 3 días
     const soonLimit = new Date();
     soonLimit.setDate(now.getDate() + 3);
 
@@ -427,14 +451,10 @@ function updateDashboardStats(clients) {
     document.getElementById('client-expired-count').textContent = expiredCount;
 }
 
-/**
- * Lógica central para ordenar, filtrar y renderizar la lista
- */
 function renderLogic() {
     const searchBar = document.getElementById('search-bar');
     const searchTerm = searchBar.value.toLowerCase();
 
-    // 1. Ordenar: Por fecha de caducidad (ascendente)
     let processedClients = [...fullClientList].sort((a, b) => {
         const dateA = a.fechaCaducidad ? new Date(a.fechaCaducidad) : new Date(0);
         const dateB = b.fechaCaducidad ? new Date(b.fechaCaducidad) : new Date(0);
@@ -450,7 +470,7 @@ function renderLogic() {
         
         if (currentFilter === 'soon') {
             const soonLimit = new Date();
-            soonLimit.setDate(now.getDate() + 3);
+            soonLimit.setDate(now.getDate() + 3); // 3 Días
             processedClients = processedClients.filter(client => {
                 if (!client.fechaCaducidad) return false;
                 const expiryDate = new Date(client.fechaCaducidad);
@@ -465,33 +485,29 @@ function renderLogic() {
                 return correctedExpiryDate < now;
             });
         }
-        // 'all' no necesita filtro, ya se muestra todo
+        // 'all' no necesita filtro
     }
     
-    // 3. Renderizar
     renderClientList(processedClients);
 }
 
-/**
- * Renderiza la lista de clientes en el DOM (NUEVO DISEÑO DE TARJETA)
- */
 function renderClientList(clientsToRender) {
     const container = document.getElementById('client-list-container');
     container.innerHTML = ''; 
 
     if (clientsToRender.length === 0) {
-        container.innerHTML = '<p id="client-list-placeholder" class="text-center text-gray-500 p-8">No hay clientes que coincidan con el filtro.</p>';
+        container.innerHTML = '<p id="client-list-placeholder" class="text-center text-gray-500 dark:text-gray-400 p-8">No hay clientes que coincidan con el filtro.</p>';
     } else {
         clientsToRender.forEach(client => {
             const card = document.createElement('div');
-            card.className = 'client-card-enter flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg p-4 transition-colors duration-200 hover:bg-gray-50';
+            card.className = 'client-card-enter flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg p-4 transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-gray-700';
             
             const [dateText, dateColor] = getExpiryDateStatus(client.fechaCaducidad);
 
             card.innerHTML = `
                 <div class="flex-1 mb-4 sm:mb-0">
-                    <p class="text-lg font-semibold text-gray-900">${client.name}</p>
-                    <p class="text-sm text-gray-600">${client.usuario || 'Sin usuario'} • ${client.aplicacion || 'Sin app'}</p>
+                    <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">${client.name}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">${client.usuario || 'Sin usuario'} • ${client.aplicacion || 'Sin app'}</p>
                     <p class="text-sm font-medium ${dateColor}">${dateText}</p>
                 </div>
                 <div class="flex items-center space-x-2">
@@ -510,9 +526,6 @@ function renderClientList(clientsToRender) {
 
 // --- 9. FUNCIONES DE AYUDA (Helpers) ---
 
-/**
- * Carga los datos de un cliente en el formulario de edición.
- */
 function populateEditForm(client) {
     document.getElementById('edit-client-id').value = client.id;
     document.getElementById('edit-client-name').value = client.name || '';
@@ -522,11 +535,9 @@ function populateEditForm(client) {
     document.getElementById('edit-client-password').value = client.password || '';
     document.getElementById('edit-client-device').value = client.dispositivo || '';
     document.getElementById('edit-client-app').value = client.aplicacion || 'Spinning TV';
-    // Quitar el prefijo +34 para el input
     document.getElementById('edit-client-phone').value = client.phone ? client.phone.replace(/^\+34/, '') : '';
     document.getElementById('edit-client-notes').value = client.notas || '';
 
-    // Rellenar recomendaciones
     const recContainer = document.getElementById('edit-recomendaciones-container');
     recContainer.innerHTML = '';
     if (client.recomendaciones && Array.isArray(client.recomendaciones)) {
@@ -536,11 +547,8 @@ function populateEditForm(client) {
     }
 }
 
-/**
- * Devuelve el texto y color para la fecha de caducidad.
- */
 function getExpiryDateStatus(dateString) {
-    if (!dateString) return ["Sin fecha de caducidad", "text-gray-500"];
+    if (!dateString) return ["Sin fecha de caducidad", "text-gray-500 dark:text-gray-400"];
     
     try {
         const now = new Date();
@@ -552,18 +560,18 @@ function getExpiryDateStatus(dateString) {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
         if (correctedExpiryDate < now) {
-            return [`Caducado (hace ${Math.abs(diffDays)} días)`, "text-red-600 font-bold"];
+            return [`Caducado (hace ${Math.abs(diffDays)} días)`, "text-red-600 font-bold dark:text-red-500"];
         } else {
             const soonLimit = new Date();
             soonLimit.setDate(now.getDate() + 3); // 3 días
             if (correctedExpiryDate <= soonLimit) {
-                return [`Caduca pronto (en ${diffDays} días)`, "text-yellow-600 font-semibold"];
+                return [`Caduca pronto (en ${diffDays} días)`, "text-yellow-600 font-semibold dark:text-yellow-400"];
             } else {
-                return [`Caduca el ${dateString}`, "text-gray-500"];
+                return [`Caduca el ${dateString}`, "text-gray-500 dark:text-gray-400"];
             }
         }
     } catch(e) {
-        return ["Fecha inválida", "text-red-600"];
+        return ["Fecha inválida", "text-red-600 dark:text-red-500"];
     }
 }
 
@@ -572,9 +580,6 @@ function formatDate(date) {
     return date.toISOString().split('T')[0];
 }
 
-/**
- * Establece los valores por defecto de los campos de fecha en un formulario.
- */
 function initializeDateFields(creationInput, expiryInput) {
     const today = new Date();
     const expiry = new Date();
@@ -583,9 +588,6 @@ function initializeDateFields(creationInput, expiryInput) {
     expiryInput.value = formatDate(expiry);
 }
 
-/**
- * Actualiza la fecha de caducidad a 3 meses desde la de creación.
- */
 function updateExpiryDate(creationInput, expiryInput) {
     try {
         const creationDate = new Date(creationInput.value);
@@ -598,11 +600,6 @@ function updateExpiryDate(creationInput, expiryInput) {
     }
 }
 
-/**
- * Añade un nuevo campo de recomendación (reutilizable).
- * @param {string} containerId - ID del div contenedor.
- * @param {string} [value=''] - Valor opcional para pre-rellenar (para edición).
- */
 function addRecomendacionField(containerId, value = '') {
     const container = document.getElementById(containerId);
     const fieldWrapper = document.createElement('div');
@@ -625,11 +622,6 @@ function handleRemoveRecomendacion(e) {
     }
 }
 
-/**
- * Valida los campos de recomendación de un formulario.
- * @param {string} containerId - ID del div contenedor.
- * @returns {Array} - [boolean (esValido), Array (nombresValidos)]
- */
 function validateRecomendaciones(containerId) {
     const recInputs = document.querySelectorAll(`#${containerId} .recomendacion-input`);
     const recomendaciones = Array.from(recInputs)
