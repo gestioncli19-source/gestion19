@@ -74,85 +74,85 @@ function setupEventListeners() {
     
     // --- MANEJADOR DE LOGIN ---
     const formLogin = document.getElementById('form-login');
-    const loginEmail = document.getElementById('login-email');
-    const loginPassword = document.getElementById('login-password');
     const loginErrorMsg = document.getElementById('login-error-message');
 
-    formLogin.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        loginErrorMsg.textContent = 'Iniciando sesión...';
+    if (formLogin) {
+        formLogin.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loginErrorMsg.textContent = 'Iniciando sesión...';
 
-        if (!auth) {
-            loginErrorMsg.textContent = 'Error: Firebase no está inicializado. Intenta recargar.';
-            return;
-        }
-
-        try {
-            await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
-            loginErrorMsg.textContent = '';
-        } catch (error) {
-            let message = "Error de inicio de sesión.";
-            
-            switch (error.code) {
-                case 'auth/wrong-password':
-                case 'auth/user-not-found':
-                case 'auth/invalid-credential':
-                    message = "Usuario o contraseña incorrectos.";
-                    break;
-                case 'auth/operation-not-allowed':
-                    message = "ERROR CRÍTICO: El proveedor Email/Password NO está habilitado en Firebase Console.";
-                    break;
-                default:
-                    message = `Error de autenticación: ${error.code}`;
+            if (!auth) {
+                loginErrorMsg.textContent = 'Error: Firebase no está inicializado. Intenta recargar.';
+                return;
             }
             
-            loginErrorMsg.textContent = message;
-            console.error("Login error:", error);
-        }
-    });
+            const loginEmail = document.getElementById('login-email');
+            const loginPassword = document.getElementById('login-password');
 
-    // --- OYENTES DE NAVEGACIÓN ---
-    document.getElementById('nav-dashboard').addEventListener('click', ()=> switchSection('dashboard'));
-    document.getElementById('nav-clientes').addEventListener('click', ()=> switchSection('clientes'));
-    document.getElementById('nav-add').addEventListener('click', ()=>{
+            try {
+                await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
+                loginErrorMsg.textContent = '';
+            } catch (error) {
+                let message = "Error de inicio de sesión.";
+                
+                switch (error.code) {
+                    case 'auth/wrong-password':
+                    case 'auth/user-not-found':
+                    case 'auth/invalid-credential':
+                        message = "Usuario o contraseña incorrectos.";
+                        break;
+                    case 'auth/operation-not-allowed':
+                        message = "ERROR CRÍTICO: El proveedor Email/Password NO está habilitado en Firebase Console.";
+                        break;
+                    default:
+                        message = `Error de autenticación: ${error.code}`;
+                }
+                
+                loginErrorMsg.textContent = message;
+                console.error("Login error:", error);
+            }
+        });
+    }
+
+    // --- OYENTES DE NAVEGACIÓN Y DASHBOARD ---
+    document.getElementById('nav-dashboard')?.addEventListener('click', ()=> switchSection('dashboard'));
+    document.getElementById('nav-clientes')?.addEventListener('click', ()=> switchSection('clientes'));
+    document.getElementById('nav-add')?.addEventListener('click', ()=>{
         switchSection('add');
         setDefaultDates(); 
         document.getElementById('f-telefono').value = '+34'; 
     });
-    // Icono de Engranaje
-    document.getElementById('nav-settings').addEventListener('click', ()=> switchSection('settings')); 
+    document.getElementById('nav-settings')?.addEventListener('click', ()=> switchSection('settings')); 
 
-    // Opciones del Menú de Ajustes
-    document.getElementById('btn-export-csv').addEventListener('click', () => exportCSV());
-    document.getElementById('btn-logout-settings').addEventListener('click', async () => {
-        await signOut(auth);
-        showNotification("Sesión Cerrada", "Has cerrado sesión correctamente.", 'success');
-    });
-    document.getElementById('btn-import-csv').addEventListener('click', () => handleImportClick());
-    document.getElementById('nav-tutorial').addEventListener('click', ()=> switchSection('tutorial'));
-    
-    // Oyentes de la sección Clientes
-    document.getElementById('search-input').addEventListener('input', (e) => {
+    document.getElementById('search-input')?.addEventListener('input', (e) => {
         filterClients(e.target.value, 'all');
     });
-    document.getElementById('stat-3days-link').addEventListener('click', () => {
+    document.getElementById('stat-3days-link')?.addEventListener('click', () => {
         currentFilter = 'soon';
         document.getElementById('search-input').value = '';
         switchSection('clientes');
     });
-    document.getElementById('stat-expired-link').addEventListener('click', () => {
+    document.getElementById('stat-expired-link')?.addEventListener('click', () => {
         currentFilter = 'expired';
         document.getElementById('search-input').value = '';
         switchSection('clientes');
     });
 
-
-    // Oyentes de Modales y Formularios
-    document.getElementById('modal-cancel').addEventListener('click', () => {
+    // --- Opciones del Menú de Ajustes ---
+    document.getElementById('btn-export-csv')?.addEventListener('click', () => exportCSV());
+    document.getElementById('btn-logout-settings')?.addEventListener('click', async () => {
+        await signOut(auth);
+        showNotification("Sesión Cerrada", "Has cerrado sesión correctamente.", 'success');
+    });
+    document.getElementById('btn-import-csv')?.addEventListener('click', () => handleImportClick());
+    document.getElementById('nav-tutorial')?.addEventListener('click', ()=> switchSection('tutorial'));
+    
+    // --- OYENTES DE MODALES Y FORMULARIOS ---
+    document.getElementById('modal-cancel')?.addEventListener('click', () => {
         document.getElementById('modal').classList.remove('show');
         currentRecommendations = [];
     });
-    document.getElementById('history-modal-close').addEventListener('click', () => {
+    document.getElementById('history-modal-close')?.addEventListener('click', () => {
         document.getElementById('history-modal').classList.remove('show');
     });
     
@@ -160,11 +160,11 @@ function setupEventListeners() {
     addRecommendationLogic('f'); 
     addRecommendationLogic('e'); 
     
-    // Aquí se inicializan los submits de los formularios
-    document.getElementById('form-edit').addEventListener('submit', handleEditSubmit);
-    document.getElementById('form-add').addEventListener('submit', handleAddSubmit);
-    document.getElementById('f-reset').addEventListener('click', handleResetClick);
-    document.getElementById('f-creacion').addEventListener('change', handleCreationDateChange);
+    // Manejadores de Submit y Reset
+    document.getElementById('form-edit')?.addEventListener('submit', handleEditSubmit);
+    document.getElementById('form-add')?.addEventListener('submit', handleAddSubmit);
+    document.getElementById('f-reset')?.addEventListener('click', handleResetClick);
+    document.getElementById('f-creacion')?.addEventListener('change', handleCreationDateChange);
 }
 
 
@@ -206,7 +206,7 @@ function switchSection(target) {
         document.getElementById('nav-settings').classList.add('active');
     } else {
         // Para Dashboard, Clientes y Añadir, activamos su propio botón
-        document.getElementById(targetId).classList.add('active');
+        document.getElementById(targetId)?.classList.add('active');
     }
 
     if (target === 'clientes') {
@@ -239,8 +239,7 @@ function startListeners() {
         renderDashboard(list);
         updateStats(list);
         
-        // Si ya estamos en la sección clientes, refrescamos la vista
-        if (document.getElementById('section-clientes').style.display !== 'none') {
+        if (document.getElementById('section-clientes')?.style.display !== 'none') {
             filterClients(document.getElementById('search-input').value, currentFilter);
         }
     }, (error) => {
@@ -618,14 +617,16 @@ const addRecommendationLogic = (prefix) => {
     const container = document.getElementById(`${prefix}-recommended-clients`);
     const addButton = document.getElementById(`${prefix}-add-recommendation-btn`);
 
-    addButton.onclick = () => {
-        const name = input.value.trim();
-        if (name && !currentRecommendations.includes(name)) {
-            currentRecommendations.push(name);
-            input.value = '';
-            renderRecommendations(currentRecommendations, container, prefix);
-        }
-    };
+    if (input && addButton) { // Verificación añadida
+        addButton.onclick = () => {
+            const name = input.value.trim();
+            if (name && !currentRecommendations.includes(name)) {
+                currentRecommendations.push(name);
+                input.value = '';
+                renderRecommendations(currentRecommendations, container, prefix);
+            }
+        };
+    }
 };
 
 
@@ -833,6 +834,19 @@ window.handleImportClick = function() {
 }
 
 
-// Iniciar la aplicación: Primero se inicializa Firebase, luego se configuran los oyentes.
+document.getElementById('file-import-csv')?.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const csvData = e.target.result;
+            showNotification("Importación en Curso", `Procesando archivo ${file.name}...`, 'success');
+        };
+        reader.readAsText(file);
+    }
+});
+
+
+// Iniciar la aplicación
 window.onload = initializeFirebase;
 document.addEventListener('DOMContentLoaded', setupEventListeners);
