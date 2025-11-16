@@ -65,6 +65,7 @@
 }
 
 .form-input {
+    /* Fondo ligeramente gris (bg-gray-50/dark:bg-gray-700) para contraste */
     @apply mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400;
 }
 /* Estilo para el <select> en modo oscuro */
@@ -80,6 +81,7 @@ select.form-input option {
 
 
 /* --- Botones (redondeados) --- */
+/* NOTA: Se ha forzado rounded-full en button-success/danger */
 .button-primary {
     @apply inline-flex items-center justify-center rounded-full border border-transparent bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
 }
@@ -102,9 +104,7 @@ select.form-input option {
      @apply p-2 rounded-full text-gray-400 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-200;
 }
 
-/* --- NUEVO: Modal de Vista --- */
+/* --- Modal de Vista --- */
 .view-modal-pre {
     @apply bg-gray-50 dark:bg-gray-700 rounded-md p-4 text-sm font-mono whitespace-pre-wrap break-words;
 }
-
-
