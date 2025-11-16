@@ -68,7 +68,7 @@ async function initializeFirebase() {
 }
 
 
-// --- CONFIGURACIÓN DE OYENTES DE EVENTOS (LA SOLUCIÓN AL ERROR DE NULL) ---
+// --- CONFIGURACIÓN DE OYENTES DE EVENTOS ---
 
 function setupEventListeners() {
     
@@ -791,26 +791,77 @@ function renderRenewalHistory(historyList, targetDiv) {
 
 // --- AJUSTES: Lógica de Importar/Exportar ---
 
+/**
+ * Función para analizar datos CSV y convertirlos en una lista de objetos, 
+ * esperando SOLO los campos mínimos: Nombre,Usuario,Contrasena,Caducidad.
+ * @param {string} csvText Datos CSV como texto.
+ * @returns {Array} Lista de objetos cliente.
+ */
+function parseCSV(csvText) {
+    const lines = csvText.split('\n').filter(line => line.trim() !== '');
+    if (lines.length < 2) return [];
+
+    // Cabeceras esperadas: SOLO los 4 campos solicitados
+    const expectedHeaders = ["Nombre", "Usuario", "Contrasena", "Caducidad"];
+    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    
+    // Verificación de cabeceras simplificada
+    if (headers.join(',') !== expectedHeaders.join(',')) {
+        console.error("CSV Headers mismatch. Expected:", expectedHeaders.join(','), "Got:", headers.join(','));
+        showNotification("Error de CSV", "Las cabeceras del archivo NO coinciden con el formato mínimo esperado: Nombre,Usuario,Contrasena,Caducidad.", 'error');
+        return [];
+    }
+
+    const clients = [];
+    for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
+        if (!values || values.length !== expectedHeaders.length) continue;
+
+        const client = {};
+        expectedHeaders.forEach((key, index) => {
+            let value = values[index].trim().replace(/^"|"$/g, '');
+            client[key.toLowerCase()] = value;
+        });
+
+        // Asignar valores predeterminados para campos faltantes
+        const now = new Date();
+        const defaultCaducidad = client.caducidad && !isNaN(new Date(client.caducidad).getTime()) 
+                                 ? new Date(client.caducidad).toISOString() 
+                                 : getNewCaducidad(now, 3);
+        
+        clients.push({
+            nombre: client.nombre,
+            usuario: client.usuario,
+            contrasena: client.contrasena,
+            caducidad: defaultCaducidad,
+            telefono: '+34',
+            aplicacion: 'Spinning TV', // Valor por defecto
+            dispositivo: 'Importado',
+            creacion: now.toISOString(),
+            recomendaciones: [],
+            renovara: false
+        });
+    }
+    return clients;
+}
+
+
 // 1. Exportar CSV (función separada para usar en el botón de ajustes)
 function exportCSV() {
     if (!currentUserId) return showNotification("Error", "Usuario no autenticado.", 'error');
 
     let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Nombre,Telefono,App,Usuario,Contrasena,Creacion,Caducidad,Dispositivo,Recomendaciones\n";
+    // Cabecera que se espera para la Importación (los 4 campos esenciales)
+    csvContent += "Nombre,Usuario,Contrasena,Caducidad\n";
 
     cachedList.forEach(item => {
         const cleanAndQuote = (val) => `"${String(val || '').replace(/"/g, '""')}"`;
 
         const row = [
             cleanAndQuote(item.nombre),
-            cleanAndQuote(item.telefono),
-            cleanAndQuote(item.aplicacion),
             cleanAndQuote(item.usuario),
             cleanAndQuote(item.contrasena),
-            cleanAndQuote(formatDate(item.creacion)),
-            cleanAndQuote(formatDate(item.caducidad)),
-            cleanAndQuote(item.dispositivo),
-            cleanAndQuote((item.recomendaciones || []).join('; ')) 
+            cleanAndQuote(formatDate(item.caducidad)) // Exportamos la fecha en formato legible
         ];
         
         csvContent += row.join(",") + "\n";
@@ -819,28 +870,75 @@ function exportCSV() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "gestor_clientes_export.csv");
+    link.setAttribute("download", "gestor_clientes_export_simple.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showNotification("Exportado", "Se ha descargado el archivo CSV.", 'success');
+    showNotification("Exportado", "Se ha descargado el archivo CSV simple.", 'success');
 }
 
 // 2. Importar CSV (solo activa el input de archivo)
 window.handleImportClick = function() {
     if (!currentUserId) return showNotification("Error", "Usuario no autenticado.", 'error');
     document.getElementById('file-import-csv').click();
-    showNotification("Advertencia", "La importación es una función avanzada, asegúrate de que el CSV tenga las columnas correctas: Nombre, Telefono, App, Usuario, etc.", 'warning');
+    showNotification("Advertencia", "Formato esperado para importar: Nombre,Usuario,Contrasena,Caducidad.", 'warning');
 }
 
-
+// Lógica de importación completa
 document.getElementById('file-import-csv')?.addEventListener('change', (event) => {
     const file = event.target.files[0];
     if (file) {
         const reader = new FileReader();
         reader.onload = async (e) => {
             const csvData = e.target.result;
-            showNotification("Importación en Curso", `Procesando archivo ${file.name}...`, 'success');
+            const clientsToImport = parseCSV(csvData);
+            
+            if (clientsToImport.length === 0) {
+                showNotification("Importación Fallida", "El archivo CSV está vacío o tiene un formato incorrecto. Ningún cliente importado.", 'error');
+                event.target.value = ''; // Limpiar el input
+                return;
+            }
+
+            let successCount = 0;
+            let errorCount = 0;
+            const collectionRef = getClientCollection();
+
+            showNotification("Importando...", `Iniciando importación de ${clientsToImport.length} clientes. Esto puede tardar.`, 'success');
+
+            for (const client of clientsToImport) {
+                try {
+                    // Convertir la fecha de caducidad (que ahora está en ISO string) a objeto Date
+                    const importData = {
+                        ...client,
+                        caducidad: new Date(client.caducidad),
+                        creacion: new Date(client.creacion)
+                    };
+
+                    const docRef = await addDoc(collectionRef, importData);
+
+                    // Registrar en el historial de creación
+                    const historyCol = collection(db, collectionRef.id, docRef.id, "renovaciones");
+                    await addDoc(historyCol, {
+                        fecha_renovacion: new Date().toISOString(),
+                        caducidad_anterior: 'Importado',
+                        nueva_caducidad: importData.caducidad.toISOString(),
+                        tipo_accion: 'Importación CSV',
+                        usuario: auth.currentUser ? auth.currentUser.email : 'Usuario Desconocido'
+                    });
+
+                    successCount++;
+                } catch (error) {
+                    errorCount++;
+                    console.error("Error al importar cliente:", client, error);
+                }
+            }
+
+            if (errorCount === 0) {
+                 showNotification("Importación Finalizada", `Éxito: Se importaron ${successCount} clientes.`, 'success');
+            } else {
+                 showNotification("Importación con Errores", `Completado: ${successCount} importados, ${errorCount} fallaron (revisa la consola para detalles).`, 'warning');
+            }
+            event.target.value = ''; // Limpiar el input
         };
         reader.readAsText(file);
     }
