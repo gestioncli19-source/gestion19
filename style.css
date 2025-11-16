@@ -79,28 +79,16 @@ select.form-input option {
 }
 
 
-/* --- Botones (Acento Teal) --- */
-/* Estilos base con efecto de elevación (shadow-md) */
-.base-button {
-    @apply inline-flex items-center justify-center rounded-full border border-transparent px-6 py-3 text-sm font-semibold text-white shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
-}
+/* --- Botones --- */
+/* La mayoría de estilos de botones (success/danger) se movieron a index.html. 
+   Solo quedan las clases generales aquí: */
 
 .button-primary {
-    @apply base-button bg-teal-600 hover:bg-teal-700 focus:ring-teal-500 hover:shadow-lg hover:scale-[1.01];
+    @apply inline-flex items-center justify-center rounded-full border border-transparent bg-teal-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition-colors hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2;
 }
 
 .button-secondary {
     @apply inline-flex items-center justify-center rounded-full border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2;
-}
-
-.button-success {
-    /* Diseño profesional: Verde, sombra, efecto de scale al pasar el ratón */
-    @apply base-button bg-green-600 hover:bg-green-700 focus:ring-green-500 hover:shadow-lg hover:scale-[1.01];
-}
-
-.button-danger {
-    /* Diseño profesional: Rojo, sombra, efecto de scale al pasar el ratón */
-    @apply base-button bg-red-600 hover:bg-red-700 focus:ring-red-500 hover:shadow-lg hover:scale-[1.01];
 }
 
 
