@@ -794,33 +794,60 @@ function renderRenewalHistory(historyList, targetDiv) {
 /**
  * Función para analizar datos CSV y convertirlos en una lista de objetos, 
  * esperando SOLO los campos mínimos: Nombre,Usuario,Contrasena,Caducidad.
+ * Se configura para usar PUNTO Y COMA (;) como separador.
  * @param {string} csvText Datos CSV como texto.
  * @returns {Array} Lista de objetos cliente.
  */
 function parseCSV(csvText) {
+    // Definimos el separador como PUNTO Y COMA (;)
+    const SEPARATOR = ';';
     const lines = csvText.split('\n').filter(line => line.trim() !== '');
     if (lines.length < 2) return [];
 
     // Cabeceras esperadas: SOLO los 4 campos solicitados
+    // NOTA: Normalizamos a mayúsculas para la comparación, pero aceptamos minúsculas del archivo.
     const expectedHeaders = ["Nombre", "Usuario", "Contrasena", "Caducidad"];
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
     
-    // Verificación de cabeceras simplificada
-    if (headers.join(',') !== expectedHeaders.join(',')) {
-        console.error("CSV Headers mismatch. Expected:", expectedHeaders.join(','), "Got:", headers.join(','));
-        showNotification("Error de CSV", "Las cabeceras del archivo NO coinciden con el formato mínimo esperado: Nombre,Usuario,Contrasena,Caducidad.", 'error');
+    // Obtenemos las cabeceras del archivo y las normalizamos (eliminando comillas y espacios)
+    const headers = lines[0].split(SEPARATOR).map(h => h.trim().toLowerCase().replace(/"/g, ''));
+    
+    // Comprobamos si las cabeceras del archivo coinciden con las esperadas (ignorando mayúsculas)
+    const normalizedExpectedHeaders = expectedHeaders.map(h => h.toLowerCase());
+    
+    // Simplificamos la verificación uniendo los arrays con un separador común
+    if (headers.join(',') !== normalizedExpectedHeaders.join(',')) {
+        console.error("CSV Headers mismatch. Expected:", normalizedExpectedHeaders.join(','), "Got:", headers.join(','));
+        showNotification("Error de CSV", `Las cabeceras del archivo NO coinciden con el formato mínimo esperado. Separador: ${SEPARATOR}. Cabeceras esperadas: ${expectedHeaders.join(SEPARATOR)}.`, 'error');
         return [];
     }
+    
+    // Regex para manejar campos entrecomillados que puedan contener el separador
+    const CSV_REGEX = new RegExp(`(?:"((?:[^"]|"")*)"|([^${SEPARATOR}]+))(${SEPARATOR}|$)`, 'g');
 
     const clients = [];
     for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
-        if (!values || values.length !== expectedHeaders.length) continue;
+        const line = lines[i].trim();
+        if (!line) continue;
+
+        let values = [];
+        let match;
+        
+        while ((match = CSV_REGEX.exec(line)) !== null) {
+            // match[1] es el grupo de campo entre comillas, match[2] es el campo sin comillas
+            const value = match[1] !== undefined ? match[1].replace(/""/g, '"') : match[2];
+            values.push(value.trim());
+        }
+
+        if (values.length !== expectedHeaders.length) {
+             console.warn(`Saltando línea ${i + 1} por número incorrecto de campos. Esperado ${expectedHeaders.length}, encontrado ${values.length}. Línea: ${line}`);
+             continue;
+        }
 
         const client = {};
         expectedHeaders.forEach((key, index) => {
-            let value = values[index].trim().replace(/^"|"$/g, '');
-            client[key.toLowerCase()] = value;
+            // Usamos la cabecera original (Nombre, Usuario, etc.) para el mapeo
+            const normalizedKey = key.toLowerCase();
+            client[normalizedKey] = values[index];
         });
 
         // Asignar valores predeterminados para campos faltantes
@@ -850,12 +877,24 @@ function parseCSV(csvText) {
 function exportCSV() {
     if (!currentUserId) return showNotification("Error", "Usuario no autenticado.", 'error');
 
+    // Definimos el separador para la exportación como PUNTO Y COMA (;)
+    const EXPORT_SEPARATOR = ';';
     let csvContent = "data:text/csv;charset=utf-8,";
+    
     // Cabecera que se espera para la Importación (los 4 campos esenciales)
-    csvContent += "Nombre,Usuario,Contrasena,Caducidad\n";
+    csvContent += "Nombre;Usuario;Contrasena;Caducidad\n";
 
     cachedList.forEach(item => {
-        const cleanAndQuote = (val) => `"${String(val || '').replace(/"/g, '""')}"`;
+        // Función para limpiar y entrecomillar el valor usando el separador de exportación
+        const cleanAndQuote = (val) => {
+            let str = String(val || '');
+            // Si el valor contiene el separador o comillas, lo encerramos en comillas
+            if (str.includes(EXPORT_SEPARATOR) || str.includes('"')) {
+                str = str.replace(/"/g, '""'); // Escapar comillas dobles
+                return `"${str}"`;
+            }
+            return str;
+        };
 
         const row = [
             cleanAndQuote(item.nombre),
@@ -864,7 +903,7 @@ function exportCSV() {
             cleanAndQuote(formatDate(item.caducidad)) // Exportamos la fecha en formato legible
         ];
         
-        csvContent += row.join(",") + "\n";
+        csvContent += row.join(EXPORT_SEPARATOR) + "\n";
     });
 
     const encodedUri = encodeURI(csvContent);
@@ -874,14 +913,14 @@ function exportCSV() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showNotification("Exportado", "Se ha descargado el archivo CSV simple.", 'success');
+    showNotification("Exportado", "Se ha descargado el archivo CSV simple (separado por punto y coma).", 'success');
 }
 
 // 2. Importar CSV (solo activa el input de archivo)
 window.handleImportClick = function() {
     if (!currentUserId) return showNotification("Error", "Usuario no autenticado.", 'error');
     document.getElementById('file-import-csv').click();
-    showNotification("Advertencia", "Formato esperado para importar: Nombre,Usuario,Contrasena,Caducidad.", 'warning');
+    showNotification("Advertencia", "Formato esperado para importar: Nombre;Usuario;Contrasena;Caducidad (separado por punto y coma).", 'warning');
 }
 
 // Lógica de importación completa
