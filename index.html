@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Gestor de Clientes</title>
   
-  <!-- CORRECCIÓN DE RUTA: Ruta relativa simple, asume que style.css está junto a index.html -->
+  <!-- Enlace a tu hoja de estilos CSS -->
   <link rel="stylesheet" href="style.css"> 
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- Enlace a Font Awesome para el icono de Engranaje (Settings) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 
@@ -43,8 +45,10 @@
       <button id="nav-dashboard" class="active">Dashboard</button>
       <button id="nav-clientes">Clientes</button>
       <button id="nav-add">Añadir cliente</button>
-      <button id="nav-tutorial">Tutorial</button> 
-      <button id="nav-logout" class="btn delete" style="margin-left: 12px;">Cerrar Sesión</button>
+      <!-- Nuevo botón de AJUSTES (Engranaje) -->
+      <button id="nav-settings" title="Ajustes y Opciones">
+        <i class="fas fa-cog"></i>
+      </button> 
     </div>
   </nav>
 </header>
@@ -72,7 +76,7 @@
   <div class="card-form">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
       <h3>Clientes</h3>
-      <button id="btn-export-csv" class="btn export">Exportar a CSV 📥</button>
+      <!-- Botón Exportar CSV eliminado de aquí, movido a Ajustes -->
     </div>
     
     <input type="text" id="search-input" placeholder="Buscar por Nombre, Usuario o Aplicación..." style="margin-bottom: 12px;" />
@@ -166,6 +170,35 @@
     </div>
 </section>
 
+<!-- NUEVA SECCIÓN: AJUSTES -->
+<section id="section-settings" style="display:none">
+    <div class="card-form">
+        <h3>Ajustes y Opciones Avanzadas</h3>
+        <div class="settings-grid">
+            
+            <div class="setting-option" onclick="handleImportClick()">
+                <h4><i class="fas fa-file-import"></i> Importar Clientes (CSV)</h4>
+                <p>Cargar nuevos clientes o actualizar datos masivamente desde un archivo CSV.</p>
+                <input type="file" id="file-import-csv" accept=".csv" style="display: none;">
+            </div>
+
+            <div class="setting-option" id="btn-export-csv">
+                <h4><i class="fas fa-file-export"></i> Exportar Clientes (CSV)</h4>
+                <p>Descargar una copia de seguridad de todos tus clientes en formato CSV.</p>
+            </div>
+
+            <div class="setting-option" onclick="switchSection('tutorial')">
+                <h4><i class="fas fa-book"></i> Tutorial de Uso</h4>
+                <p>Ver la guía detallada de todas las funciones de la aplicación.</p>
+            </div>
+
+            <div class="setting-option logout" id="btn-logout-settings">
+                <h4><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</h4>
+                <p>Finalizar la sesión actual.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
 </main>
 
@@ -246,8 +279,9 @@
 <div id="notifications-container"></div>
 
 
-<!-- CORRECCIÓN DE RUTA: Ruta relativa simple, asume que script.js está junto a index.html -->
+<!-- Enlace a tu lógica JavaScript -->
 <script type="module" src="script.js"></script>
 
 </body>
 </html>
+
