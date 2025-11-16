@@ -20,7 +20,7 @@
         };
     </script>
 
-    <!-- 2. Enlace a tu hoja de estilos -->
+    <!-- 2. Enlace a tu hoja de estilos (Aún necesario para estilos de formulario) -->
     <link rel="stylesheet" href="style.css">
 
 </head>
@@ -185,13 +185,25 @@
                             <!-- Notas -->
                             <textarea id="client-notes" name="client-notes" rows="4" class="form-input" placeholder="Notas Adicionales"></textarea>
                             
-                            <!-- Botones de Acción (Redondeados y Profesionales) -->
+                            <!-- Botones de Acción (Estilo integrado) -->
                             <div class="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end">
-                                <button type="button" id="cancel-add-client-btn" class="button-danger">
+                                
+                                <!-- Botón CANCELAR (Rojo) -->
+                                <button type="button" id="cancel-add-client-btn" 
+                                    class="inline-flex items-center justify-center rounded-full border border-transparent 
+                                           bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-md 
+                                           transition-all duration-200 hover:bg-red-700 focus:ring-red-500 
+                                           hover:shadow-lg hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-offset-2">
                                     <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                     Cancelar
                                 </button>
-                                <button type="submit" class="button-success">
+                                
+                                <!-- Botón GUARDAR (Verde) -->
+                                <button type="submit" 
+                                    class="inline-flex items-center justify-center rounded-full border border-transparent 
+                                           bg-green-600 px-6 py-3 text-sm font-semibold text-white shadow-md 
+                                           transition-all duration-200 hover:bg-green-700 focus:ring-green-500 
+                                           hover:shadow-lg hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-offset-2">
                                     <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                     Guardar Cliente
                                 </button>
@@ -267,13 +279,25 @@
                             <!-- Notas -->
                             <textarea id="edit-client-notes" name="edit-client-notes" rows="4" class="form-input" placeholder="Notas Adicionales"></textarea>
                             
-                            <!-- Botones de Acción (Redondeados y Profesionales) -->
+                            <!-- Botones de Acción (Estilo integrado) -->
                             <div class="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end">
-                                <button type="button" id="cancel-edit-client-btn" class="button-danger">
+                                
+                                <!-- Botón CANCELAR (Rojo) -->
+                                <button type="button" id="cancel-edit-client-btn" 
+                                    class="inline-flex items-center justify-center rounded-full border border-transparent 
+                                           bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-md 
+                                           transition-all duration-200 hover:bg-red-700 focus:ring-red-500 
+                                           hover:shadow-lg hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-offset-2">
                                     <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                     Cancelar
                                 </button>
-                                <button type="submit" class="button-success">
+                                
+                                <!-- Botón GUARDAR (Verde) -->
+                                <button type="submit" 
+                                    class="inline-flex items-center justify-center rounded-full border border-transparent 
+                                           bg-green-600 px-6 py-3 text-sm font-semibold text-white shadow-md 
+                                           transition-all duration-200 hover:bg-green-700 focus:ring-green-500 
+                                           hover:shadow-lg hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-offset-2">
                                     <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                     Guardar Cambios
                                 </button>
