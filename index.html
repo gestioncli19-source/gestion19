@@ -8,7 +8,7 @@
     <!-- 1. Carga de Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Configuración de Tailwind (sin dark mode)
+        // Configuración de Tailwind CSS
         tailwind.config = {
             theme: {
                 extend: {
@@ -20,7 +20,7 @@
         };
     </script>
 
-    <!-- 2. Enlace a tu hoja de estilos (Aún necesario para estilos de formulario) -->
+    <!-- 2. Enlace a tu hoja de estilos (Para estilos custom como botones y formularios) -->
     <link rel="stylesheet" href="style.css">
 
 </head>
@@ -53,6 +53,12 @@
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
                     <span class="font-medium">Añadir Cliente</span>
                 </a>
+
+                <!-- Restaurada la página de Ajustes -->
+                 <a href="#" data-page="settings" class="nav-link group flex items-center space-x-3 rounded-xl px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 002.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <span class="font-medium">Ajustes</span>
+                </a>
             </nav>
 
             <div class="p-4 border-t border-gray-700">
@@ -66,14 +72,14 @@
         <!-- 2. Contenido Principal -->
         <div class="flex flex-1 flex-col overflow-hidden">
             
-            <!-- Cabecera limpia -->
+            <!-- Cabecera limpia y compacta -->
             <header class="flex h-16 items-center justify-start space-x-4 border-b border-gray-200 bg-white px-4 shadow-sm md:justify-start md:space-x-0 md:px-8">
                 <button id="menu-toggle" class="text-gray-500 md:hidden mr-4">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
                 
-                <!-- Título aún más pequeño -->
-                <h2 id="page-title" class="text-base font-semibold text-gray-800">Dashboard</h2>
+                <!-- Título aún más pequeño: text-lg -->
+                <h2 id="page-title" class="text-lg font-semibold text-gray-800">Dashboard</h2>
             </header>
 
             <main class="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
@@ -108,7 +114,7 @@
                 <!-- Página: Lista de Clientes -->
                 <div id="page-clientes" class="page-content hidden space-y-6">
                     <div>
-                        <input type="search" id="search-bar" placeholder="Buscar por nombre..." class="w-full rounded-2xl border-gray-300 bg-white p-3 shadow-md focus:border-teal-500 focus:ring-teal-500">
+                        <input type="search" id="search-bar" placeholder="Buscar por nombre..." class="w-full rounded-2xl border-gray-300 bg-white p-3 shadow-md focus:border-teal-500 focus:ring-teal-500 focus:ring-opacity-50">
                     </div>
                     <div class="rounded-2xl bg-white p-2 shadow-lg sm:p-4">
                         <div id="client-list-container" class="space-y-2">
@@ -306,7 +312,23 @@
                     </div>
                 </div>
 
-                <!-- Eliminada la página de Ajustes -->
+                <!-- Página: Ajustes -->
+                <div id="page-settings" class="page-content hidden">
+                    <div class="rounded-2xl bg-white p-6 shadow-xl">
+                        <h3 class="text-xl font-semibold text-gray-800 border-b pb-3 mb-4">Configuración de la Aplicación</h3>
+                        
+                        <div class="space-y-4">
+                            <p class="text-gray-600">
+                                Esta es la sección de ajustes. Puedes usarla en el futuro para agregar opciones
+                                como cambiar el límite de días para "Caducan pronto" o administrar usuarios.
+                            </p>
+                            <div class="bg-teal-50 border-l-4 border-teal-500 text-teal-700 p-4 rounded-lg" role="alert">
+                                <p class="font-bold">Modo de Pruebas Activo</p>
+                                <p>Actualmente, la aplicación permite guardar clientes incluso si la autenticación anónima está pendiente, para facilitar las pruebas. Si necesitas seguridad, deberás restaurar la validación en <code>script.js</code>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
             </main>
         </div>
