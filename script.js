@@ -1,10 +1,9 @@
-// --- 3.1 IMPORTS DE FIREBASE ---
-// Estas importaciones son necesarias para que Firebase funcione.
+// --- 1. IMPORTS DE FIREBASE ---
+// Importamos las funciones que necesitamos desde las librerías de Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { 
     getAuth, 
     signInAnonymously, 
-    signInWithCustomToken, 
     onAuthStateChanged,
     signOut
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -19,13 +18,8 @@ import {
     serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// --- 3.2 CONFIGURACIÓN DE FIREBASE ---
-
-// ¡¡¡ IMPORTANTE !!!
-// Para tu proyecto real en GitHub, DEBES usar la configuración que me diste.
-// Las variables __app_id, __firebase_config, etc., NO existirán fuera de esta plataforma.
-
-// --- INICIO: CÓDIGO PARA TU PROYECTO REAL (DESCOMENTA ESTO) ---
+// --- 2. CONFIGURACIÓN DE FIREBASE ---
+// Esta es tu configuración personal de Firebase.
 const firebaseConfig = {
   apiKey: "AIzaSyCA2fZvN8WVKWwEDL0z694C2o5190OMhq8",
   authDomain: "gestioncandy-b9356.firebaseapp.com",
@@ -35,26 +29,11 @@ const firebaseConfig = {
   appId: "1:869982852654:web:ac450321a746e62365f1bf"
 };
 
-// Usa el ID de tu proyecto o un nombre único para las rutas de la base de datos
+// Usamos el ID de tu proyecto para las rutas de la base de datos
 const appId = "gestioncandy-b9356"; 
 
-// En tu app real, no tendrás un 'initialAuthToken'.
-// Deberás implementar tu propio sistema de login (ej. con email/pass, Google, etc.)
-// Por ahora, usaremos 'signInAnonymously' si 'initialAuthToken' es nulo.
-const initialAuthToken = null; 
-// --- FIN: CÓDIGO PARA TU PROYECTO REAL ---
-
-
-/*
-// --- INICIO: CÓDIGO SOLO PARA LA PLATAFORMA (COMENTA ESTO EN TU PROYECTO) ---
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? '{}' : __firebase_config);
-const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-// --- FIN: CÓDIGO SOLO PARA LA PLATAFORMA ---
-*/
-
-
-// --- 3.3 INICIALIZACIÓN DE FIREBASE ---
+// --- 3. INICIALIZACIÓN DE FIREBASE ---
+// Variables globales para acceder a Firebase
 let app, auth, db;
 let userId = null;
 let unsubscribeClientListener = null; // Para detener el listener al hacer logout
@@ -70,7 +49,7 @@ try {
     document.body.innerHTML = "Error al conectar con Firebase. Revisa la configuración.";
 }
 
-// --- 3.4 MANEJO DE AUTENTICACIÓN ---
+// --- 4. MANEJO DE AUTENTICACIÓN ---
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
@@ -98,19 +77,15 @@ onAuthStateChanged(auth, async (user) => {
             console.log("Listener de clientes detenido.");
         }
 
-        // Intentar autenticación (primero con token, luego anónima)
+        // --- IMPORTANTE ---
+        // Como no tienes un sistema de login (email/pass) aún,
+        // iniciamos sesión de forma anónima.
+        // Esto es perfecto para probar.
         try {
-            if (initialAuthToken) {
-                // Esto solo funcionará en la plataforma
-                await signInWithCustomToken(auth, initialAuthToken);
-                console.log("Login con Custom Token exitoso.");
-            } else {
-                // Esto se ejecutará en tu proyecto real (hasta que pongas un login)
-                await signInAnonymously(auth);
-                console.log("Login anónimo exitoso.");
-            }
+            await signInAnonymously(auth);
+            console.log("Login anónimo exitoso.");
         } catch (error) {
-            console.error("Error en el proceso de autenticación:", error);
+            console.error("Error en el login anónimo:", error);
             document.getElementById('user-id-display').textContent = "Error de Auth";
         }
     }
@@ -122,7 +97,7 @@ document.getElementById('logout-button').addEventListener('click', () => {
     signOut(auth).catch(error => console.error("Error al cerrar sesión:", error));
 });
 
-// --- 3.5 LÓGICA DE NAVEGACIÓN Y UI ---
+// --- 5. LÓGICA DE NAVEGACIÓN Y UI ---
 
 // Esperamos a que el DOM esté cargado para asignar los listeners
 document.addEventListener('DOMContentLoaded', () => {
@@ -170,12 +145,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Lógica del menú móvil
     function hideMobileMenu() {
-        sidebar.classList.add('-translate-x-full');
+        sidebar.classList.add('-translatex-full');
         sidebarOverlay.classList.add('hidden');
     }
     
     menuToggle.addEventListener('click', () => {
-        sidebar.classList.remove('-translate-x-full');
+        sidebar.classList.remove('-translatex-full');
         sidebarOverlay.classList.remove('hidden');
     });
     
@@ -184,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Mostrar página de dashboard por defecto
     showPage('dashboard');
     
-    // --- 3.6 LÓGICA DE FIRESTORE (CLIENTES) ---
+    // --- 6. LÓGICA DE FIRESTORE (CLIENTES) ---
     
     // Añadir Cliente
     const addClientForm = document.getElementById('add-client-form');
@@ -202,7 +177,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const phone = addClientForm['client-phone'].value;
         
         // Ruta de la colección (privada para cada usuario)
-        // Usamos la variable 'appId' que definimos arriba
         const clientsCollectionPath = `/artifacts/${appId}/users/${userId}/clients`;
         
         try {
@@ -233,7 +207,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // Función para configurar el listener de Clientes (se llama post-auth)
 function setupClientListener(currentUserId) {
     console.log(`Configurando listener para el usuario: ${currentUserId}`);
-    // Usamos la variable 'appId' que definimos arriba
     const clientsCollectionPath = `/artifacts/${appId}/users/${currentUserId}/clients`;
     const clientListContainer = document.getElementById('client-list-container');
     const clientListPlaceholder = document.getElementById('client-list-placeholder');
@@ -287,4 +260,5 @@ function setupClientListener(currentUserId) {
         clientListContainer.innerHTML = '<p class="text-red-500">Error al cargar clientes.</p>';
     });
 }
+
 
